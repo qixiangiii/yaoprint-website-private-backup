@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>联系我们 — 曜印 YAOPRINT</title>
+<meta name="description" content="联系曜印科技：获取产品报价、行业方案咨询、渠道合作与售后支持。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#ff7a1a" stroke-width="2"/>
+        <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#ff7a1a"/>
+        <path d="M9 18.5l7 4 7-4" stroke="#2dd4bf" stroke-width="2"/>
+      </svg>
+      曜印<span class="en">YAOPRINT</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html">首页</a>
+      <a href="products.html">产品中心</a>
+      <a href="solutions.html">行业应用</a>
+      <a href="support.html">支持与服务</a>
+      <a href="about.html">关于我们</a>
+      <a href="contact.html" class="active">联系我们</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary btn-sm">获取报价</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>联系我们</h1>
+    <p>告诉我们您的需求，曜印顾问将在 1 个工作日内与您联系。</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="contact-grid">
+
+      <div class="contact-info">
+        <h3>直接联系方式</h3>
+        <p style="color:var(--text-gray); font-size:14px; margin-bottom:28px;">批量采购、行业方案与渠道合作建议直接电话联系，响应更快。</p>
+
+        <div class="c-item">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h2l2 5-2.5 1.5a12 12 0 0 0 6 6L15 13l5 2v2a2 2 0 0 1-2 2h-1A15 15 0 0 1 4 6V5Z"/></svg></div>
+          <div><b>咨询热线</b><span>400-XXX-XXXX（工作日 9:00–18:00）</span></div>
+        </div>
+        <div class="c-item">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+          <div><b>商务邮箱</b><span>sales@yaoprint.example.com</span></div>
+        </div>
+        <div class="c-item">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+          <div><b>公司地址</b><span>广东省深圳市宝安区 XX 科技园 X 栋（占位）</span></div>
+        </div>
+        <div class="c-item">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M4 19a5 5 0 0 1 10 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15 19a4.5 4.5 0 0 1 7 -2"/></svg></div>
+          <div><b>渠道合作</b><span>partner@yaoprint.example.com</span></div>
+        </div>
+      </div>
+
+      <form class="contact-form" id="contactForm">
+        <h3 style="margin-bottom:24px;">获取报价 / 咨询</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">姓名 *</label>
+            <input type="text" id="name" required placeholder="您的称呼">
+          </div>
+          <div class="form-group">
+            <label for="phone">电话 *</label>
+            <input type="tel" id="phone" required placeholder="方便联系的电话">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="company">公司 / 学校</label>
+            <input type="text" id="company" placeholder="选填">
+          </div>
+          <div class="form-group">
+            <label for="type">咨询类型</label>
+            <select id="type">
+              <option>产品报价咨询</option>
+              <option>教育行业方案</option>
+              <option>工业/企业采购</option>
+              <option>渠道代理合作</option>
+              <option>售后技术支持</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="msg">需求描述</label>
+          <textarea id="msg" rows="4" placeholder="例如：学校拟采购 20 台教育版打印机，希望了解报价与课程资源…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">提交，顾问将尽快联系我</button>
+        <div id="formTip" style="display:none; margin-top:16px; padding:14px 18px; border-radius:10px; background:#e8fbf5; color:#0b7a63; font-size:14px;">
+          ✅ 提交成功（演示站点）。正式上线后此表单将接入您的邮箱或询盘系统。
+        </div>
+        <p class="form-note">提交即表示您同意我们仅将信息用于本次业务联系。我们承诺不向第三方泄露您的信息。</p>
+      </form>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#ff7a1a" stroke-width="2"/>
+            <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#ff7a1a"/>
+            <path d="M9 18.5l7 4 7-4" stroke="#2dd4bf" stroke-width="2"/>
+          </svg>
+          曜印<span class="en">YAOPRINT</span>
+        </a>
+        <p>曜印科技专注高精度 3D 打印设备的研发与制造，让每一个创意即刻成为实物。</p>
+      </div>
+      <div>
+        <h4>产品</h4>
+        <ul>
+          <li><a href="products.html#m1">桌面级 FDM 系列</a></li>
+          <li><a href="products.html#x5">工业级高速系列</a></li>
+          <li><a href="products.html#p2">光固化系列</a></li>
+          <li><a href="products.html#filament">打印耗材</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>支持</h4>
+        <ul>
+          <li><a href="support.html">常见问题</a></li>
+          <li><a href="support.html#download">文件下载</a></li>
+          <li><a href="support.html#service">售后服务</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>公司</h4>
+        <ul>
+          <li><a href="about.html">关于曜印</a></li>
+          <li><a href="about.html#milestones">发展历程</a></li>
+          <li><a href="solutions.html">行业应用</a></li>
+          <li><a href="contact.html">渠道合作</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span>粤ICP备XXXXXXXX号-1（占位）</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

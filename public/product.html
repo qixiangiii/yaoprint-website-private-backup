@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">产品详情 — 曜印 YAOPRINT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+/* 详情页专属样式(拓竹风格) */
+.detail-section { padding: 80px 0; }
+.detail-section.dark { background: var(--ink-2); color: #fff; }
+.detail-section.dark h2 { color: #fff; }
+.detail-section.dark p { color: #aaa; }
+.detail-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+}
+.detail-split.reverse { grid-template-columns: 1fr 1fr; }
+.detail-split .img-box { border-radius: 16px; overflow: hidden; aspect-ratio: 4/3; }
+.detail-split .img-box img { width: 100%; height: 100%; object-fit: cover; }
+.detail-split h2 { font-size: 36px; font-weight: 800; line-height: 1.15; margin-bottom: 16px; letter-spacing: -0.5px; }
+.detail-split p { color: var(--gray-4); font-size: 16px; line-height: 1.8; }
+
+.gallery-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
+.gallery-3 .big { grid-row: span 2; aspect-ratio: 3/4; }
+.gallery-3 .small { aspect-ratio: 1; }
+.gallery-cell { border-radius: 12px; overflow: hidden; position: relative; }
+.gallery-cell img { width: 100%; height: 100%; object-fit: cover; }
+
+.feature-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feature-cell { background: #fff; border-radius: 16px; overflow: hidden; }
+.feature-cell .img { aspect-ratio: 16/10; overflow: hidden; }
+.feature-cell .img img { width: 100%; height: 100%; object-fit: cover; }
+.feature-cell .body { padding: 24px; }
+.feature-cell h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.feature-cell p { color: var(--gray-4); font-size: 14px; }
+
+@media (max-width: 1024px) {
+  .detail-split { grid-template-columns: 1fr; }
+  .gallery-3 { grid-template-columns: 1fr 1fr; }
+  .gallery-3 .big { grid-column: span 2; grid-row: auto; aspect-ratio: 16/9; }
+  .feature-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
+      曜印<span class="en">YAOPRINT</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="products.html" class="active">产品</a>
+      <a href="filament.html">耗材</a>
+      <a href="explore.html">探索</a>
+      <a href="solutions.html">行业应用</a>
+      <a href="software.html">软件</a>
+      <a href="support.html">支持</a>
+      <a href="about.html">关于</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary btn-sm">立即咨询</a>
+      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div id="productBox">加载中…</div>
+
+<section class="section soft">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">More Products</span>
+      <h2>更多产品</h2>
+    </div>
+    <div class="product-grid" data-products></div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
+          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
+        </a>
+        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造。</p>
+      </div>
+      <div><h4>产品</h4><ul><li><a href="products.html">3D 打印机</a></li><li><a href="filament.html">耗材</a></li></ul></div>
+      <div><h4>支持</h4><ul><li><a href="support.html">技术支持</a></li><li><a href="contact.html">联系我们</a></li></ul></div>
+      <div><h4>公司</h4><ul><li><a href="about.html">关于</a></li><li><a href="contact.html">渠道合作</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span>粤ICP备XXXXXXXX号-1</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const slug = params.get('slug') || 'r1';
+fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p => {
+  document.getElementById('pageTitle').textContent = `${p.name} — 曜印 YAOPRINT`;
+  const hero = p.hero_image || '/img/hero/r1.jpg';
+  const gallery = p.gallery || [];
+  const specs = Object.entries(p.spec || {}).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+
+  // 拓竹风:大图 hero + 多个交替图文 + 3 图大格 + 详细参数
+  let html = '';
+  // 1. 全图 hero
+  html += `
+  <section class="hero" style="padding:64px 0 0">
+    <div class="container" style="padding:0">
+      <div class="hero-swiper" style="min-height:560px">
+        <div class="hero-slide" style="min-height:560px;height:70vh;max-height:700px">
+          <img class="hero-img" src="${hero}" alt="${p.name}">
+          <div class="hero-overlay">
+            <span class="hero-tag">${p.tag || ''}</span>
+            <h1>${p.name}</h1>
+            <p class="hero-sub">${p.subtitle || ''}</p>
+            <p class="hero-lead">${p.description || ''}</p>
+            <p style="color:#fff;font-size:22px;font-weight:700;margin-bottom:16px">${p.price || ''}</p>
+            <div class="hero-actions">
+              <a href="contact.html" data-product-consult class="btn btn-light btn-lg">立即咨询</a>
+              <a href="compare.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">参数对比</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
+  // 2. 主特性(左图右文)
+  if (gallery[0]) html += `
+  <section class="detail-section">
+    <div class="container">
+      <div class="detail-split">
+        <div class="img-box"><img src="${gallery[0]}" alt="主特性"></div>
+        <div>
+          <span class="kicker">Highlight 01</span>
+          <h2>${p.subtitle || ''}</h2>
+          <p>${p.description || '曜印团队针对用户反馈与行业趋势,重新设计每一处细节,只为给创作者一台更好用的 3D 打印机。'}</p>
+          <a href="contact.html" class="btn btn-outline mt-2">了解更多</a>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
+  // 3. 次特性(左文右图)
+  if (gallery[1]) html += `
+  <section class="detail-section soft">
+    <div class="container">
+      <div class="detail-split">
+        <div>
+          <span class="kicker">Highlight 02</span>
+          <h2>工程级精度与可靠性</h2>
+          <p>从核心传动结构到振动补偿算法,曜印自研的高速运动系统,确保在 600mm/s 的极速下依然保持 0.05mm 级的打印精度,小批量生产与手板验证的效率利器。</p>
+        </div>
+        <div class="img-box"><img src="${gallery[1]}" alt="次特性"></div>
+      </div>
+    </div>
+  </section>`;
+
+  // 4. 三图大格(细节特写)
+  if (gallery.length >= 3) html += `
+  <section class="detail-section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Details</span>
+        <h2>每一个细节,都经得起放大</h2>
+        <p>曜印从用户最关心的细节入手,重新审视 3D 打印机的每一个组件。</p>
+      </div>
+      <div class="gallery-3">
+        <div class="gallery-cell big"><img src="${gallery[2]}" alt=""></div>
+        <div class="gallery-cell small"><img src="${gallery[3] || gallery[0]}" alt=""></div>
+        <div class="gallery-cell small"><img src="${gallery[4] || gallery[0]}" alt=""></div>
+      </div>
+    </div>
+  </section>`;
+
+  // 5. 三特性卡
+  if (gallery.length >= 5) html += `
+  <section class="detail-section soft">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Features</span>
+        <h2>核心特性</h2>
+      </div>
+      <div class="feature-grid-3">
+        <div class="feature-cell"><div class="img"><img src="${gallery[5] || hero}" alt=""></div><div class="body"><h3>极速打印</h3><p>自研运动系统实现 600mm/s 稳定输出,大幅缩短交付周期。</p></div></div>
+        <div class="feature-cell"><div class="img"><img src="${gallery[6] || hero}" alt=""></div><div class="body"><h3>智能调平</h3><p>全自动调平 + AI 首层监测,新手 15 分钟开箱出件。</p></div></div>
+        <div class="feature-cell"><div class="img"><img src="${gallery[0]}" alt=""></div><div class="body"><h3>丰富生态</h3><p>开放切片、社区模型、官方课程,创作无门槛。</p></div></div>
+      </div>
+    </div>
+  </section>`;
+
+  // 5. 颜色选择
+  if (p.colors && p.colors.length) html += `
+  <section class="detail-section soft">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Colors</span>
+        <h2>选择你的颜色</h2>
+        <p>为 ${p.name} 选择适合你的外观配色。</p>
+      </div>
+      <div class="color-swatches">
+        ${p.colors.map((c, i) => `<button class="color-swatch ${i === 0 ? 'active' : ''}" type="button" data-color="${c.hex || ''}">
+          <span class="dot" style="background:${c.hex || '#ddd'}"></span><span class="name">${c.name || ''}</span>
+        </button>`).join('')}
+      </div>
+    </div>
+  </section>`;
+
+  // 5b. 套装选择
+  if (p.kits && p.kits.length) html += `
+  <section class="detail-section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Kits</span>
+        <h2>选择你的套装</h2>
+        <p>从标准到完整工坊方案,按需选择最合适的套装。</p>
+      </div>
+      <div class="kit-grid">
+        ${p.kits.map((k, i) => `<article class="kit-card ${i === 1 ? 'featured' : ''}">
+          ${i === 1 ? '<span class="kit-tag">推荐</span>' : ''}
+          <h3>${k.name || ''}</h3>
+          <div class="price">${k.price || ''}</div>
+          <p>${k.desc || ''}</p>
+          <a href="contact.html" class="btn ${i === 1 ? 'btn-primary' : 'btn-outline'} btn-sm">选择此套装</a>
+        </article>`).join('')}
+      </div>
+    </div>
+  </section>`;
+
+  // 6. 详细参数
+  html += `
+  <section class="detail-section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Specs</span>
+        <h2>详细参数</h2>
+      </div>
+      <div class="spec-wrap" style="max-width:800px;margin:0 auto">
+        <table class="spec-table">
+          <tbody>${specs || '<tr><td>暂无参数</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  </section>`;
+
+  // 7. 用户评价
+  html += `
+  <section class="detail-section soft">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">User Reviews</span>
+        <h2>用户怎么说</h2>
+        <p>来自全球创作者的真实使用反馈。</p>
+      </div>
+      <div class="user-review-grid">
+        <div class="user-review-card">
+          <div class="stars">★★★★★</div>
+          <h4>"速度与精度的完美平衡"</h4>
+          <p>用 ${p.name} 打印了一周的工业手板,精度完全符合需求,600mm/s 模式下表面依旧光滑,AI 首层监测救了我无数次。</p>
+          <div class="author">
+            <div class="avatar">M</div>
+            <div><div class="name">Mike · 工业设计师</div><div class="title">深圳某硬件公司</div></div>
+          </div>
+        </div>
+        <div class="user-review-card">
+          <div class="stars">★★★★★</div>
+          <h4>"新手也能 15 分钟开箱即印"</h4>
+          <p>从开箱到第一件成品只用了 12 分钟,自动调平超方便,班级管理后台让我们 30 台集群部署变得轻松。</p>
+          <div class="author">
+            <div class="avatar">L</div>
+            <div><div class="name">李老师 · 创客空间</div><div class="title">省重点中学</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
+  // 7. CTA
+  html += `
+  <section class="cta-band">
+    <div class="container">
+      <h2>立即拥有 ${p.name}</h2>
+      <p>曜印顾问将在 1 个工作日内为您提供选型建议与报价。</p>
+      <a href="contact.html" class="btn btn-lg">免费咨询</a>
+    </div>
+  </section>`;
+
+  document.getElementById('productBox').outerHTML = `<div>${html}</div>`;
+
+  // 色卡与套装交互：选中后更新可访问状态，并把选择带入咨询链接。
+  const colorButtons = document.querySelectorAll('.color-swatch');
+  const kitCards = document.querySelectorAll('.kit-card');
+  const updateConsultLinks = () => {
+    const color = document.querySelector('.color-swatch.active .name')?.textContent || '';
+    const kit = document.querySelector('.kit-card.selected h3')?.textContent || '';
+    document.querySelectorAll('[data-product-consult]').forEach(link => {
+      const params = new URLSearchParams({ product: p.name, color, kit });
+      link.href = `contact.html?${params.toString()}`;
+    });
+  };
+  colorButtons.forEach(button => {
+    button.setAttribute('aria-pressed', button.classList.contains('active') ? 'true' : 'false');
+    button.addEventListener('click', () => {
+      colorButtons.forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+      updateConsultLinks();
+    });
+  });
+  kitCards.forEach((card, index) => {
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', index === 1 ? 'true' : 'false');
+    if (index === 1) card.classList.add('selected');
+    const choose = () => {
+      kitCards.forEach(item => { item.classList.toggle('selected', item === card); item.setAttribute('aria-pressed', String(item === card)); });
+      updateConsultLinks();
+    };
+    card.addEventListener('click', choose);
+    card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(); } });
+  });
+  updateConsultLinks();
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>曜印 YAOPRINT — 专业3D打印机品牌 | 桌面级 · 工业级 · 光固化</title>
+<meta name="description" content="曜印科技专注高精度3D打印机研发制造，产品覆盖桌面级FDM、工业级高速打印机与光固化设备，服务教育、工业、医疗、文创等行业客户。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= 导航 ================= -->
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#ff7a1a" stroke-width="2"/>
+        <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#ff7a1a"/>
+        <path d="M9 18.5l7 4 7-4" stroke="#2dd4bf" stroke-width="2"/>
+      </svg>
+      曜印<span class="en">YAOPRINT</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html" class="active">首页</a>
+      <a href="products.html">产品中心</a>
+      <a href="solutions.html">行业应用</a>
+      <a href="support.html">支持与服务</a>
+      <a href="about.html">关于我们</a>
+      <a href="contact.html">联系我们</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary btn-sm">获取报价</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= Hero ================= -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="container">
+    <div>
+      <span class="hero-badge">曜印 X5 Pro 全新发布</span>
+      <h1>让每一个创意<br><span class="grad">即刻成为实物</span></h1>
+      <p class="lead">工业级精度、12倍速高效打印、开箱即印。曜印为教育、工业与创作者提供可靠的3D打印整体方案。</p>
+      <div class="hero-actions">
+        <a href="products.html" class="btn btn-primary">探索产品系列</a>
+        <a href="contact.html" class="btn btn-ghost">获取行业报价</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="glow"></div>
+      <!-- 首屏打印机插画（封闭舱体式） -->
+      <svg class="printer-hero" viewBox="0 0 260 260" fill="none">
+        <rect x="42" y="26" width="176" height="200" rx="18" fill="#1a2340" stroke="#2a3657" stroke-width="2"/>
+        <rect x="58" y="42" width="120" height="130" rx="10" fill="#0d1326" stroke="#31406b" stroke-width="1.5"/>
+        <rect x="58" y="42" width="120" height="130" rx="10" fill="url(#glass)" opacity=".5"/>
+        <defs>
+          <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2dd4bf" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#ff7a1a" stop-opacity=".1"/>
+          </linearGradient>
+        </defs>
+        <!-- 打印舱内部：导轨与打印头 -->
+        <rect x="70" y="58" width="96" height="6" rx="3" fill="#31406b"/>
+        <rect x="102" y="54" width="28" height="24" rx="4" fill="#ff7a1a"/>
+        <rect x="112" y="78" width="8" height="10" fill="#ffb35c"/>
+        <!-- 正在打印的模型 -->
+        <path d="M108 150 h16 v-14 h8 v-16 h-32 v16 h8 Z" fill="#2dd4bf" opacity=".9"/>
+        <rect x="66" y="154" width="104" height="10" rx="3" fill="#31406b"/>
+        <!-- 控制屏 -->
+        <rect x="58" y="188" width="70" height="22" rx="6" fill="#0d1326" stroke="#31406b" stroke-width="1.5"/>
+        <rect x="64" y="194" width="34" height="4" rx="2" fill="#2dd4bf"/>
+        <rect x="64" y="202" width="22" height="4" rx="2" fill="#31406b"/>
+        <!-- 状态灯 -->
+        <circle cx="200" cy="199" r="5" fill="#ff7a1a"/>
+        <circle cx="200" cy="199" r="9" fill="#ff7a1a" opacity=".25"/>
+        <!-- 顶部品牌条 -->
+        <rect x="42" y="26" width="176" height="200" rx="18" stroke="#ff7a1a" stroke-width="0" />
+        <rect x="70" y="30" width="60" height="4" rx="2" fill="#ff7a1a" opacity=".8"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 数据信任条 ================= -->
+<section class="stats-band">
+  <div class="container">
+    <div class="stat reveal"><b>380<i>K+</i></b><span>全球累计出货（台）</span></div>
+    <div class="stat reveal"><b>0.05<i>mm</i></b><span>最高打印精度</span></div>
+    <div class="stat reveal"><b>60<i>+</i></b><span>国家与地区</span></div>
+    <div class="stat reveal"><b>120<i>+</i></b><span>授权专利技术</span></div>
+  </div>
+</section>
+
+<!-- ================= 明星产品 ================= -->
+<section class="section" id="products">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Products</span>
+      <h2>明星产品系列</h2>
+      <p>从入门创作到批量生产，曜印为每一个阶段提供合适的设备。</p>
+    </div>
+    <div class="product-grid">
+
+      <!-- 产品1：开放式 FDM -->
+      <article class="product-card reveal">
+        <div class="product-visual">
+          <span class="product-tag">热销爆款</span>
+          <svg viewBox="0 0 220 220" fill="none">
+            <!-- 开放式框架 FDM -->
+            <rect x="34" y="188" width="152" height="18" rx="6" fill="#1a2340"/>
+            <rect x="42" y="52" width="12" height="140" rx="4" fill="#1a2340"/>
+            <rect x="166" y="52" width="12" height="140" rx="4" fill="#1a2340"/>
+            <rect x="42" y="44" width="136" height="10" rx="5" fill="#ff7a1a"/>
+            <rect x="66" y="62" width="88" height="8" rx="4" fill="#31406b"/>
+            <rect x="98" y="58" width="24" height="22" rx="4" fill="#ff7a1a"/>
+            <path d="M96 168h28v-18h10v-22H86v22h10Z" fill="#2dd4bf" opacity=".9"/>
+            <rect x="52" y="172" width="116" height="9" rx="4" fill="#31406b"/>
+            <rect x="146" y="190" width="30" height="12" rx="4" fill="#0d1326" stroke="#31406b"/>
+          </svg>
+        </div>
+        <div class="product-body">
+          <h3>曜印 M1</h3>
+          <div class="slogan">新手的最佳选择</div>
+          <p>开箱即印的桌面级 FDM 打印机，一键自动调平，静音运行，是教育与入门创作的理想伙伴。</p>
+          <div class="spec-chips">
+            <span>220×220×250 mm</span><span>0.1 mm 精度</span><span>500 mm/s</span>
+          </div>
+          <div class="product-actions">
+            <a href="products.html#m1" class="btn btn-outline btn-sm">了解更多</a>
+            <a href="contact.html" class="btn btn-dark btn-sm">立即咨询</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 产品2：工业级 -->
+      <article class="product-card reveal">
+        <div class="product-visual">
+          <span class="product-tag alt">旗舰机型</span>
+          <svg viewBox="0 0 220 220" fill="none">
+            <!-- 封闭式工业机 -->
+            <rect x="40" y="26" width="140" height="172" rx="14" fill="#101a33" stroke="#2a3657" stroke-width="2"/>
+            <rect x="52" y="40" width="96" height="106" rx="8" fill="#0a0f22" stroke="#31406b"/>
+            <rect x="60" y="52" width="80" height="6" rx="3" fill="#31406b"/>
+            <rect x="86" y="48" width="26" height="20" rx="4" fill="#2dd4bf"/>
+            <path d="M84 122h26v-16h10v-24H74v24h10Z" fill="#ff9e4d"/>
+            <rect x="58" y="126" width="86" height="9" rx="3" fill="#31406b"/>
+            <rect x="52" y="160" width="58" height="22" rx="6" fill="#0a0f22" stroke="#31406b"/>
+            <rect x="58" y="166" width="30" height="4" rx="2" fill="#2dd4bf"/>
+            <rect x="58" y="173" width="20" height="4" rx="2" fill="#31406b"/>
+            <circle cx="164" cy="171" r="6" fill="#2dd4bf"/>
+            <circle cx="164" cy="171" r="11" fill="#2dd4bf" opacity=".2"/>
+            <rect x="160" y="32" width="8" height="150" rx="4" fill="#ff7a1a" opacity=".85"/>
+          </svg>
+        </div>
+        <div class="product-body">
+          <h3>曜印 X5 Pro</h3>
+          <div class="slogan">12倍速批量生产</div>
+          <p>全封闭恒温腔体 + 双散热风道，600mm/s 极速稳定输出，小批量生产与手板验证的效率利器。</p>
+          <div class="spec-chips">
+            <span>350×350×350 mm</span><span>0.05 mm 精度</span><span>600 mm/s</span>
+          </div>
+          <div class="product-actions">
+            <a href="products.html#x5" class="btn btn-outline btn-sm">了解更多</a>
+            <a href="contact.html" class="btn btn-dark btn-sm">立即咨询</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 产品3：光固化 -->
+      <article class="product-card reveal">
+        <div class="product-visual">
+          <span class="product-tag">新品上市</span>
+          <svg viewBox="0 0 220 220" fill="none">
+            <!-- 光固化机 -->
+            <rect x="52" y="24" width="116" height="174" rx="12" fill="#101a33" stroke="#2a3657" stroke-width="2"/>
+            <rect x="64" y="38" width="92" height="34" rx="6" fill="#1c2748"/>
+            <path d="M72 52h14M72 60h22" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round"/>
+            <rect x="128" y="46" width="20" height="16" rx="3" fill="#ff7a1a"/>
+            <!-- Z轴丝杆与托架 -->
+            <rect x="66" y="80" width="6" height="104" rx="3" fill="#31406b"/>
+            <rect x="148" y="80" width="6" height="104" rx="3" fill="#31406b"/>
+            <rect x="66" y="92" width="88" height="8" rx="4" fill="#ff7a1a"/>
+            <rect x="88" y="100" width="44" height="8" rx="3" fill="#2dd4bf"/>
+            <!-- 树脂槽与打印平台 -->
+            <rect x="70" y="158" width="80" height="26" rx="5" fill="#0a0f22" stroke="#31406b"/>
+            <rect x="74" y="166" width="72" height="14" rx="3" fill="#7c3aed" opacity=".55"/>
+            <rect x="52" y="192" width="116" height="14" rx="6" fill="#1a2340"/>
+          </svg>
+        </div>
+        <div class="product-body">
+          <h3>曜印 P2 光固化</h3>
+          <div class="slogan">0.01mm 超高细节</div>
+          <p>8K 单色液晶屏 + 矢量光引擎，呈现发丝级细节，为手办、牙科与珠宝建模而生。</p>
+          <div class="spec-chips">
+            <span>228×128×230 mm</span><span>8K 单色屏</span><span>0.01 mm</span>
+          </div>
+          <div class="product-actions">
+            <a href="products.html#p2" class="btn btn-outline btn-sm">了解更多</a>
+            <a href="contact.html" class="btn btn-dark btn-sm">立即咨询</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= 应用场景 ================= -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Applications</span>
+      <h2>无处不在的创造力</h2>
+      <p>从课堂到工厂，曜印设备正在各行各业创造价值。</p>
+    </div>
+    <div class="scene-grid">
+      <div class="scene-card reveal">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="1.8"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/></svg></div>
+        <h3>教育 & STEAM</h3>
+        <p>配套课程资源与安全设计，让创客课堂轻松落地，培养学生的空间思维。</p>
+      </div>
+      <div class="scene-card reveal">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg></div>
+        <h3>工业手板验证</h3>
+        <p>当天出件、快速迭代，将传统开模数周的设计验证周期缩短至数小时。</p>
+      </div>
+      <div class="scene-card reveal">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.8"><path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0 1 12 6.5 5.5 5.5 0 0 1 21.5 12C19 16.4 12 21 12 21Z"/><path d="M8 12h2l1.5-3 2 5L15 11h2"/></svg></div>
+        <h3>医疗 & 牙科</h3>
+        <p>0.01mm 级光固化精度，满足齿科模型、术前导板等个性化医疗需求。</p>
+      </div>
+      <div class="scene-card reveal">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-.8-1.6-.8-2.5c0-1 .8-1.5 2-1.5H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8Z"/><circle cx="7.5" cy="11" r="1.2" fill="#f43f5e"/><circle cx="10.5" cy="7.5" r="1.2" fill="#f43f5e"/><circle cx="15" cy="7.5" r="1.2" fill="#f43f5e"/></svg></div>
+        <h3>文创 & 手办</h3>
+        <p>极高细节还原度与丰富耗材色彩，让设计作品以最接近想象的方式呈现。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 核心优势 ================= -->
+<section class="section soft">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Why Yaoprint</span>
+      <h2>为什么选择曜印</h2>
+    </div>
+    <div class="feature-list">
+      <div class="feature reveal">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></div>
+        <div><h4>自研高速运动系统</h4><p>核心传动结构与振动补偿算法全部自研，高速下依然保持稳定精度。</p></div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5.5V11c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5.5L12 2Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div>
+        <div><h4>开箱即印</h4><p>整机预装调试、自动调平校准，新手 15 分钟内即可完成首次打印。</p></div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <div><h4>48 小时响应服务</h4><p>全国服务网络覆盖，48 小时内响应，核心部件 12 个月质保。</p></div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13"/><path d="M9 7h6M9 11h6"/></svg></div>
+        <div><h4>免费模型与课程</h4><p>官方模型库与曜印学院持续更新，随设备附赠体系化入门课程。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 案例 ================= -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Case Studies</span>
+      <h2>客户案例</h2>
+      <p>看看真实用户如何用曜印设备提升效率、创造价值。</p>
+    </div>
+    <div class="case-grid">
+      <div class="case-card reveal">
+        <div class="case-inner">
+          <em>教育行业</em>
+          <h3>某省重点中学创客实验室</h3>
+          <p>部署 30 台曜印 M1，两年内培养学生团队获省级科创奖项 12 项。</p>
+        </div>
+      </div>
+      <div class="case-card c2 reveal">
+        <div class="case-inner">
+          <em>制造业</em>
+          <h3>深圳智能硬件公司</h3>
+          <p>用 X5 Pro 替代外包手板，单件打样成本降低 65%，迭代周期从 7 天缩短到 1 天。</p>
+        </div>
+      </div>
+      <div class="case-card c3 reveal">
+        <div class="case-inner">
+          <em>医疗齿科</em>
+          <h3>连锁齿科门诊数字化</h3>
+          <p>P2 光固化方案实现椅旁即刻出模，患者等待时间从 1 周缩短至 2 小时。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 媒体评价 ================= -->
+<section class="section soft">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Media Reviews</span>
+      <h2>媒体与用户评价</h2>
+    </div>
+    <div class="quote-strip">
+      <div class="quote-card reveal">
+        <p>“X5 Pro 的高速打印没有牺牲精度，是我们评测过的同价位产品中综合表现最均衡的一台。”</p>
+        <div class="src">— 《数码测评周刊》</div>
+      </div>
+      <div class="quote-card reveal">
+        <p>“M1 对新手的友好程度令人印象深刻，从开箱到第一件成品只用了不到 30 分钟。”</p>
+        <div class="src">— 创客空间 年度盘点</div>
+      </div>
+      <div class="quote-card reveal">
+        <p>“曜印的切片软件生态成熟稳定，班级管理功能让批量部署变得非常省心。”</p>
+        <div class="src">— 教育装备采购指南</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta-band">
+  <div class="container">
+    <h2>准备好开始打印了吗？</h2>
+    <p>告诉我们您的应用场景，曜印顾问将在 1 个工作日内为您提供选型建议与报价。</p>
+    <div class="hero-actions">
+      <a href="contact.html" class="btn btn-primary">免费获取选型方案</a>
+      <a href="products.html" class="btn btn-ghost">浏览全部产品</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 页脚 ================= -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#ff7a1a" stroke-width="2"/>
+            <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#ff7a1a"/>
+            <path d="M9 18.5l7 4 7-4" stroke="#2dd4bf" stroke-width="2"/>
+          </svg>
+          曜印<span class="en">YAOPRINT</span>
+        </a>
+        <p>曜印科技专注高精度 3D 打印设备的研发与制造，让每一个创意即刻成为实物。</p>
+        <div class="social-row">
+          <a href="#" aria-label="微信"><svg viewBox="0 0 24 24"><path d="M9.5 4C5.9 4 3 6.5 3 9.6c0 1.8 1 3.4 2.5 4.4l-.7 2.2 2.4-1.2c.7.2 1.5.3 2.3.3h.4A5.5 5.5 0 0 1 9.5 4Zm-2 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Zm4.5 0a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Zm3.5 1.3c-3.1 0-5.6 2.1-5.6 4.8 0 2.6 2.5 4.7 5.6 4.7.6 0 1.2-.1 1.8-.3l2 1-.6-1.9c1.3-.9 2.4-2.1 2.4-3.5 0-2.7-2.5-4.8-5.6-4.8Zm-1.9 2.8a.8.8 0 1 1 0 1.5.8.8 0 0 1 0-1.5Zm3.8 0a.8.8 0 1 1 0 1.5.8.8 0 0 1 0-1.5Z"/></svg></a>
+          <a href="#" aria-label="微博"><svg viewBox="0 0 24 24"><path d="M10 8.5c-3.9.4-7 2.8-7 5.9 0 3.3 3.6 5.6 8 5.6 4.5 0 8-2.5 8-5.8 0-2.7-2.6-4.6-5.6-4.9-.4 0-.6-.3-.5-.6.3-1 .2-2-.6-2.6-1-.8-2.6-.5-3.9.6l.5 1c.9-.8 1.9-1 2.4-.6.4.4.3 1-.1 1.6-.2.4 0 .8.8.8Zm-1.3 3.2c2.4-.2 4.4 1 4.5 2.6.2 1.7-1.6 3.2-3.9 3.4-2.4.2-4.4-.9-4.6-2.6-.1-1.6 1.6-3.2 4-3.4Zm-.4 2.1a1.5 1.5 0 1 0 .3 3 1.5 1.5 0 0 0-.3-3ZM18.6 4c-.5 0-1 .1-1.5.2l.3 1.2c.4-.1.8-.2 1.2-.2a2.6 2.6 0 0 1 2.5 3.3l1.2.4A3.9 3.9 0 0 0 18.6 4Zm-.1 2.1c-.3 0-.5 0-.8.1l.3 1.1 1.2.3c.4.2.6.6.5 1l1.1.4a2 2 0 0 0-2.3-2.9Z"/></svg></a>
+          <a href="#" aria-label="B站"><svg viewBox="0 0 24 24"><path d="M17.8 4.7a1 1 0 0 1 1.4 1.4L17.8 7.5H19a3 3 0 0 1 3 3V17a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-6.5a3 3 0 0 1 3-3h1.2L4.8 6.1a1 1 0 0 1 1.4-1.4L8.9 7.5h6.2l-2.3-2.8a1 1 0 0 1 1.4-1.4l2.3 2.9 1.3-1.5ZM19 9.5H5a1 1 0 0 0-1 1V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6.5a1 1 0 0 0-1-1Zm-9 2 4 2.2-4 2.3v-4.5Z"/></svg></a>
+          <a href="#" aria-label="抖音"><svg viewBox="0 0 24 24"><path d="M16.6 3c.4 2.2 1.8 3.6 4 3.9v3c-1.6 0-3-.5-4.3-1.4v6.3c0 3.4-2.3 5.7-5.5 5.7A5.4 5.4 0 0 1 5.3 15c0-3.3 2.8-5.6 6.2-5.2v3.1c-1.7-.4-3.2.6-3.2 2.2 0 1.4 1 2.4 2.4 2.4 1.5 0 2.5-1 2.5-2.7V3h3.4Z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>产品</h4>
+        <ul>
+          <li><a href="products.html#m1">桌面级 FDM 系列</a></li>
+          <li><a href="products.html#x5">工业级高速系列</a></li>
+          <li><a href="products.html#p2">光固化系列</a></li>
+          <li><a href="products.html#filament">打印耗材</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>支持</h4>
+        <ul>
+          <li><a href="support.html">常见问题</a></li>
+          <li><a href="support.html#download">文件下载</a></li>
+          <li><a href="support.html#service">售后服务</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>公司</h4>
+        <ul>
+          <li><a href="about.html">关于曜印</a></li>
+          <li><a href="about.html#milestones">发展历程</a></li>
+          <li><a href="solutions.html">行业应用</a></li>
+          <li><a href="contact.html">渠道合作</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span>粤ICP备XXXXXXXX号-1（占位）</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

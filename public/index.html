@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>曜印 YAOPRINT — 3D 打印机 | 让每一个创意即刻成为实物</title>
+<meta name="description" content="曜印 YAOPRINT 专注高精度 3D 打印机研发制造,产品覆盖桌面 FDM、工业级高速、光固化与原厂耗材,服务教育、工业、医疗、文创。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- 导航 -->
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/>
+        <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/>
+        <path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/>
+      </svg>
+      曜印<span class="en">YAOPRINT</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="products.html">产品</a>
+      <a href="filament.html">耗材</a>
+      <a href="explore.html">探索</a>
+      <a href="solutions.html">行业应用</a>
+      <a href="software.html">软件</a>
+      <a href="support.html">支持</a>
+      <a href="about.html">关于</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary btn-sm">立即咨询</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero 轮播 — 全图位(参考拓竹官网) -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-swiper" data-cms-heroes>
+      <div class="hero-slide" data-img="/img/hero/r1.jpg">
+        <img class="hero-img" src="/img/hero/r1.jpg" alt="曜印 R1">
+        <div class="hero-overlay">
+          <span class="hero-tag">2026 新品</span>
+          <h1>万千想象<br><span class="green">一点灵光</span></h1>
+          <p class="hero-sub">曜印 R1</p>
+          <p class="hero-lead">超紧凑桌面级 3D 打印机,小巧机身却拥有不妥协的打印性能。2026 年 9 月,敬请期待。</p>
+          <div class="hero-actions">
+            <a href="product.html?slug=r1" class="btn btn-light btn-lg">了解更多</a>
+            <a href="contact.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">预约试用</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide" data-img="/img/hero/a2l.jpg" style="display:none">
+        <img class="hero-img" src="/img/hero/a2l.jpg" alt="曜印 A2L">
+        <div class="hero-overlay">
+          <span class="hero-tag new">新品</span>
+          <h1>创意无限大</h1>
+          <p class="hero-sub">曜印 A2L</p>
+          <p class="hero-lead">彩色触控大屏 + 全自动调平,2026 全新 A 系列旗舰,让多色打印成为日常。</p>
+          <div class="hero-actions">
+            <a href="product.html?slug=a2l" class="btn btn-light btn-lg">立即购买</a>
+            <a href="product.html?slug=a2l" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">了解更多</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide" data-img="/img/hero/h2d.jpg" style="display:none">
+        <img class="hero-img" src="/img/hero/h2d.jpg" alt="曜印 H2D">
+        <div class="hero-overlay">
+          <span class="hero-tag new">新品</span>
+          <h1>重新定义<br><span class="green">个人智造</span></h1>
+          <p class="hero-sub">曜印 H2D</p>
+          <p class="hero-lead">3D 打印、激光雕刻、笔绘、刀切、贴纸模切五合一,你的瑞士军刀智造中心。</p>
+          <div class="hero-actions">
+            <a href="product.html?slug=h2d" class="btn btn-light btn-lg">立即购买</a>
+            <a href="compare.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">参数对比</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide" data-img="/img/hero/letsmakeit.jpg" style="display:none">
+        <img class="hero-img" src="/img/hero/letsmakeit.jpg" alt="Let's Make It 创造基金">
+        <div class="hero-overlay">
+          <span class="hero-tag eco">激励计划</span>
+          <h1>Let's Make It<br><span class="green">创造基金</span></h1>
+          <p class="hero-sub">最高 $300,000 激励,让伟大创造成真</p>
+          <p class="hero-lead">面向全球创作者的资助计划,寻找用 3D 打印改变世界的你。</p>
+          <div class="hero-actions">
+            <a href="news.html?slug=letsmakeit" class="btn btn-light btn-lg">了解详情</a>
+            <a href="contact.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">提交申请</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide" data-img="/img/hero/h2c.jpg" style="display:none">
+        <img class="hero-img" src="/img/hero/h2c.jpg" alt="曜印 H2C">
+        <div class="hero-overlay">
+          <span class="hero-tag new">新品</span>
+          <h1>出色,无需妥协</h1>
+          <p class="hero-sub">曜印 H2C · Vortek 多材料系统</p>
+          <p class="hero-lead">全新多材料 Vortek 系统支持 8 种工程材料热切换,大幅减少换料时间。</p>
+          <div class="hero-actions">
+            <a href="product.html?slug=h2c" class="btn btn-light btn-lg">立即购买</a>
+            <a href="product.html?slug=h2c" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">了解更多</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-slide" data-img="/img/hero/p2s.jpg" style="display:none">
+        <img class="hero-img" src="/img/hero/p2s.jpg" alt="曜印 P2S">
+        <div class="hero-overlay">
+          <span class="hero-tag new">新品</span>
+          <h1>再一次,成为经典</h1>
+          <p class="hero-sub">曜印 P2S · 8K 单色光固化</p>
+          <p class="hero-lead">8K 单色液晶屏,矢量光引擎,超高细节让手办、牙科、珠宝建模栩栩如生。</p>
+          <div class="hero-actions">
+            <a href="product.html?slug=p2s" class="btn btn-light btn-lg">立即购买</a>
+            <a href="product.html?slug=p2s" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">了解更多</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-pagination"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 数据信任条 -->
+<section class="stats-band">
+  <div class="container">
+    <div class="stat" data-stat="1"><b><span data-setting="stat1_value">1.5</span><i data-setting="stat1_unit">M+</i></b><span data-setting="stat1_label">全球累计出货(台)</span></div>
+    <div class="stat" data-stat="2"><b><span data-setting="stat2_value">0.01</span><i data-setting="stat2_unit">mm</i></b><span data-setting="stat2_label">最高打印精度</span></div>
+    <div class="stat" data-stat="3"><b><span data-setting="stat3_value">100</span><i data-setting="stat3_unit">+</i></b><span data-setting="stat3_label">国家与地区</span></div>
+    <div class="stat" data-stat="4"><b><span data-setting="stat4_value">300</span><i data-setting="stat4_unit">+</i></b><span data-setting="stat4_label">授权专利技术</span></div>
+  </div>
+</section>
+
+<!-- 产品展示 -->
+<section class="section" id="products">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">3D Printers</span>
+      <h2>明星产品系列</h2>
+      <p>从入门到量产,曜印为每一个阶段提供合适的设备。</p>
+    </div>
+    <div class="product-grid" data-products></div>
+  </div>
+</section>
+
+<!-- 三大品类(图卡,拓竹风格) -->
+<section class="section soft">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Categories</span>
+      <h2>全场景覆盖</h2>
+      <p>无论你是入门创客、工业用户,还是珠宝牙科专业人士,曜印都有匹配方案。</p>
+    </div>
+    <div class="quick-grid">
+      <a href="products.html" class="quick-card">
+        <img src="/img/quick/printer.jpg" alt="3D 打印机">
+        <div class="quick-overlay">
+          <h3>3D 打印机</h3>
+          <p>创客的生产力工具</p>
+          <div class="quick-actions">
+            <span class="btn btn-light btn-sm">立即购买</span>
+            <span class="btn btn-link btn-sm" style="color:#fff">产品对比 →</span>
+          </div>
+        </div>
+      </a>
+      <a href="filament.html" class="quick-card">
+        <img src="/img/quick/filament.jpg" alt="耗材">
+        <div class="quick-overlay">
+          <h3>耗材</h3>
+          <p>高质量 3D 打印耗材</p>
+          <div class="quick-actions">
+            <span class="btn btn-light btn-sm">立即购买</span>
+            <span class="btn btn-link btn-sm" style="color:#fff">了解更多 →</span>
+          </div>
+        </div>
+      </a>
+      <a href="software.html" class="quick-card">
+        <img src="/img/quick/makerworld.jpg" alt="MakerWorld">
+        <div class="quick-overlay">
+          <h3>MakerWorld</h3>
+          <p>下载免费优质模型</p>
+          <div class="quick-actions">
+            <span class="btn btn-light btn-sm">了解更多</span>
+          </div>
+        </div>
+      </a>
+      <a href="products.html" class="quick-card">
+        <img src="/img/quick/maker.jpg" alt="创客宝库">
+        <div class="quick-overlay">
+          <h3>创客宝库</h3>
+          <p>用非 3D 打印配件丰富模型</p>
+          <div class="quick-actions">
+            <span class="btn btn-light btn-sm">立即购买</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 3D 打印能做什么 -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">3D Printing Inspirations</span>
+      <h2>3D 打印能做什么</h2>
+      <p>从手办到工装夹具,从一个想法到一件实物,3D 打印正在改变创造的方式。</p>
+    </div>
+    <div class="scene-grid" data-scenes></div>
+  </div>
+</section>
+
+<!-- 学社 -->
+<section class="section soft">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Get Started</span>
+      <h2>新手入门?从这里启航</h2>
+      <p>从 0 到 1 进阶 3D 打印,免费课程、海量模型、专业耗材一站直达。</p>
+    </div>
+    <div class="scene-grid" data-academy></div>
+  </div>
+</section>
+
+<!-- KOL 视频 -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Pro Reviews</span>
+      <h2>看看专业用户怎么说</h2>
+      <p>来自全球科技 KOL 与专业媒体的真实评测。</p>
+    </div>
+    <div class="video-grid" data-videos></div>
+  </div>
+</section>
+
+<!-- 媒体评价 -->
+<section class="section soft">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Media Reviews</span>
+      <h2>获奖/媒体评价</h2>
+      <p>The Verge、TechRadar、Tom's Hardware 等国际媒体的客观评价。</p>
+    </div>
+    <div class="media-grid" data-reviews></div>
+  </div>
+</section>
+
+<!-- 品牌新闻 -->
+<section class="news-block">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker" style="color:#1aaf5d">Brand News</span>
+      <h2>品牌新闻</h2>
+      <p>产品发布、社区故事、行业洞察第一时间送达。</p>
+    </div>
+    <div class="news-list">
+      <div class="news-featured reveal" data-news-featured></div>
+      <div class="news-side" data-news-list></div>
+    </div>
+  </div>
+</section>
+
+<!-- 订阅 -->
+<section class="subscribe">
+  <div class="container">
+    <div class="subscribe-inner">
+      <div>
+        <h3>第一时间获得最新的产品动态、促销和免费试用信息</h3>
+        <p class="mt-2" style="color:var(--gray-4)">订阅曜印周报,精彩内容不容错过。</p>
+      </div>
+      <div>
+        <form class="subscribe-form" id="subForm">
+          <input type="email" name="email" placeholder="请输入您的邮箱" required>
+          <button class="btn btn-primary" type="submit">订阅我们</button>
+        </form>
+        <div class="subscribe-check">
+          <input type="checkbox" required>
+          <span>我同意曜印 <a href="#">使用条款</a> 和 <a href="#">隐私政策</a>。</span>
+        </div>
+        <div class="form-tip" id="subTip" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-band">
+  <div class="container">
+    <h2>准备好开始打印了吗?</h2>
+    <p>告诉我们您的应用场景,曜印顾问将在 1 个工作日内为您提供选型建议与报价。</p>
+    <div class="hero-actions" style="justify-content:center">
+      <a href="contact.html" class="btn btn-lg">免费获取选型方案</a>
+      <a href="products.html" class="btn btn-outline btn-lg">浏览全部产品</a>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/>
+            <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/>
+            <path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/>
+          </svg>
+          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
+        </a>
+        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造,让每一个创意即刻成为实物。</p>
+        <div class="social-row">
+          <a href="#" aria-label="微信"><svg viewBox="0 0 24 24"><path d="M9.5 4C5.9 4 3 6.5 3 9.6c0 1.8 1 3.4 2.5 4.4l-.7 2.2 2.4-1.2c.7.2 1.5.3 2.3.3h.4A5.5 5.5 0 0 1 9.5 4Z"/></svg></a>
+          <a href="#" aria-label="微博"><svg viewBox="0 0 24 24"><path d="M10 8.5c-3.9.4-7 2.8-7 5.9 0 3.3 3.6 5.6 8 5.6 4.5 0 8-2.5 8-5.8 0-2.7-2.6-4.6-5.6-4.9Z"/></svg></a>
+          <a href="#" aria-label="B 站"><svg viewBox="0 0 24 24"><path d="M17.8 4.7 15.5 7H19a3 3 0 0 1 3 3V17a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-6.5a3 3 0 0 1 3-3h1.2L4.8 6.1 6.2 4.7 8.5 7h6.2L17 4.7Z"/></svg></a>
+          <a href="#" aria-label="抖音"><svg viewBox="0 0 24 24"><path d="M16.6 3c.4 2.2 1.8 3.6 4 3.9v3c-1.6 0-3-.5-4.3-1.4v6.3c0 3.4-2.3 5.7-5.5 5.7A5.4 5.4 0 0 1 5.3 15c0-3.3 2.8-5.6 6.2-5.2v3.1c-1.7-.4-3.2.6-3.2 2.2 0 1.4 1 2.4 2.4 2.4 1.5 0 2.5-1 2.5-2.7V3h3.4Z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>打印机</h4>
+        <ul>
+          <li><a href="products.html">3D 打印机</a></li>
+          <li><a href="filament.html">打印耗材</a></li>
+          <li><a href="products.html">配件</a></li>
+          <li><a href="products.html">备用零件</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>软件</h4>
+        <ul>
+          <li><a href="software.html">曜印 Studio</a></li>
+          <li><a href="software.html">曜印 Handy</a></li>
+          <li><a href="software.html">Farm Manager</a></li>
+          <li><a href="#">系统状态</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>支持</h4>
+        <ul>
+          <li><a href="support.html">技术支持</a></li>
+          <li><a href="support.html">曜印学院</a></li>
+          <li><a href="filament.html">耗材指南</a></li>
+          <li><a href="#">官方 Wiki</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>公司</h4>
+        <ul>
+          <li><a href="about.html">关于我们</a></li>
+          <li><a href="news.html">博客</a></li>
+          <li><a href="contact.html">联系我们</a></li>
+          <li><a href="contact.html">渠道合作</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-setting="copyright">© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span data-setting="icp">粤ICP备XXXXXXXX号-1</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+<script>
+fetch('/api/settings').then(r => r.json()).then(s => {
+  document.querySelectorAll('[data-setting]').forEach(el => {
+    const k = el.getAttribute('data-setting');
+    if (s[k]) el.textContent = s[k];
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品中心 — 曜印 YAOPRINT 3D 打印机</title>
+<meta name="description" content="曜印全系列 3D 打印机:桌面 FDM、工业级高速、光固化与原厂耗材。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
+      曜印<span class="en">YAOPRINT</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="products.html" class="active">产品</a>
+      <a href="filament.html">耗材</a>
+      <a href="explore.html">探索</a>
+      <a href="solutions.html">行业应用</a>
+      <a href="software.html">软件</a>
+      <a href="support.html">支持</a>
+      <a href="about.html">关于</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="contact.html" class="btn btn-primary btn-sm">立即咨询</a>
+      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- 全图位 Hero -->
+<section class="hero" style="padding:64px 0 0">
+  <div class="container" style="padding:0">
+    <div class="hero-swiper" style="min-height:380px">
+      <div class="hero-slide" style="min-height:380px">
+        <img class="hero-img" src="/img/hero/h2d.jpg" alt="3D 打印机">
+        <div class="hero-overlay">
+          <h1 style="font-size:48px">3D 打印机</h1>
+          <p class="hero-sub">创客的生产力工具</p>
+          <p class="hero-lead">全系列自研设备,覆盖桌面创作到工业量产,每台出厂前均经过 48 小时连续打印测试。</p>
+          <div class="hero-actions">
+            <a href="compare.html" class="btn btn-light btn-lg">产品对比</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="filter-bar">
+      <button class="active" data-filter="all">全部产品</button>
+      <button data-filter="fdm">桌面 FDM</button>
+      <button data-filter="pro">工业级</button>
+      <button data-filter="resin">光固化</button>
+    </div>
+    <div class="product-grid" data-products></div>
+  </div>
+</section>
+
+<section class="section soft" id="compare">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Compare</span>
+      <h2>参数对比</h2>
+      <p>快速对比各型号核心参数,找到最适合您的那一台。</p>
+    </div>
+    <div class="spec-wrap reveal">
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>参数</th><th>曜印 R1</th><th>A1 mini</th><th>A1</th><th>P1S</th><th>H2D</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>打印技术</td><td>FDM</td><td>FDM</td><td>FDM 多色</td><td>FDM 多色</td><td>FDM 5 合 1</td></tr>
+          <tr><td>成型尺寸</td><td>200×200×200</td><td>180×180×180</td><td>256×256×256</td><td>256×256×256</td><td>325×320×325</td></tr>
+          <tr><td>打印精度</td><td>±0.1mm</td><td>±0.1mm</td><td>±0.1mm</td><td>±0.05mm</td><td>±0.05mm</td></tr>
+          <tr><td>最大速度</td><td>500mm/s</td><td>500mm/s</td><td>500mm/s</td><td>500mm/s</td><td>600mm/s</td></tr>
+          <tr><td>调平方式</td><td>全自动</td><td>全自动</td><td>全自动</td><td>全自动 + AI</td><td>AI 监测</td></tr>
+          <tr><td>腔体结构</td><td>开放</td><td>开放</td><td>封闭</td><td>封闭恒温</td><td>封闭恒温</td></tr>
+          <tr><td>多色支持</td><td>—</td><td>—</td><td>4 色 AMS lite</td><td>8 色 AMS</td><td>8 色 AMS</td></tr>
+          <tr><td>激光/刀切</td><td>—</td><td>—</td><td>—</td><td>—</td><td>支持</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>不确定选哪一台?</h2>
+    <p>告诉我们您的打印需求与预算,曜印顾问为您一对一推荐。</p>
+    <a href="contact.html" class="btn btn-lg">获取选型建议</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
+          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
+        </a>
+        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造。</p>
+      </div>
+      <div><h4>产品</h4><ul><li><a href="products.html">3D 打印机</a></li><li><a href="filament.html">打印耗材</a></li><li><a href="products.html">配件</a></li></ul></div>
+      <div><h4>支持</h4><ul><li><a href="support.html">技术支持</a></li><li><a href="support.html">曜印学院</a></li><li><a href="contact.html">联系我们</a></li></ul></div>
+      <div><h4>公司</h4><ul><li><a href="about.html">关于</a></li><li><a href="news.html">博客</a></li><li><a href="contact.html">渠道合作</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span>粤ICP备XXXXXXXX号-1</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

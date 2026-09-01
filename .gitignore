@@ -1,0 +1,23 @@
+# Dependencies installed locally
+node_modules/
+
+# Runtime data: may contain administrator credentials and customer submissions
+data/*.db
+data/*.db-*
+data/*.sqlite
+data/*.sqlite-*
+
+# Deployment secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Files uploaded through the administrator interface
+public/uploads/
+
+# Logs and operating-system metadata
+*.log
+.DS_Store
+
+# Local editor and task metadata
+.zcode/

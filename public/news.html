@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新闻 — 曜印 YAOPRINT</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="navbar">
+  <div class="container">
+    <a href="/index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
+      曜印<span class="en">YAOPRINT</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="/products.html">产品</a>
+      <a href="/filament.html">耗材</a>
+      <a href="/explore.html">探索</a>
+      <a href="/solutions.html">行业应用</a>
+      <a href="/software.html">软件</a>
+      <a href="/support.html">支持</a>
+      <a href="/about.html">关于</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="/contact.html" class="btn btn-primary btn-sm">联系我们</a>
+      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- 全图位 Hero -->
+<section class="hero" style="padding:64px 0 0">
+  <div class="container" style="padding:0">
+    <div class="hero-swiper" style="min-height:380px">
+      <div class="hero-slide" style="min-height:380px">
+        <img class="hero-img" id="newsHeroImg" src="/img/hero/letsmakeit.jpg" alt="品牌新闻">
+        <div class="hero-overlay">
+          <h1 style="font-size:48px" id="newsTitle">品牌新闻</h1>
+          <p class="hero-sub" id="newsSummary">产品发布、社区故事、行业洞察第一时间送达</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="newsBody" style="display:none">
+  <div class="container">
+    <div class="form-wrap" style="max-width:800px;padding:40px">
+      <div class="mb-2" style="color:var(--brand);font-weight:600" id="newsTag"></div>
+      <h2 id="newsH2" style="font-size:32px;font-weight:800;margin-bottom:20px"></h2>
+      <p id="newsMeta" style="color:var(--gray-3);font-size:13px;margin-bottom:20px"></p>
+      <p id="newsContent" style="font-size:16px;line-height:1.9;color:var(--gray-5)"></p>
+      <div class="mt-4">
+        <a href="/news.html" class="btn btn-outline">← 返回新闻列表</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="newsList">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="kicker">Brand News</span>
+      <h2>品牌新闻</h2>
+      <p>产品发布、社区故事、行业洞察第一时间送达。</p>
+    </div>
+    <div class="case-grid" id="newsGrid"></div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/index.html" class="logo">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
+          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
+        </a>
+        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造。</p>
+      </div>
+      <div><h4>产品</h4><ul><li><a href="/products.html">3D 打印机</a></li><li><a href="/filament.html">耗材</a></li></ul></div>
+      <div><h4>支持</h4><ul><li><a href="/support/academy.html">曜印学院</a></li><li><a href="/support.html">技术支持</a></li><li><a href="/contact.html">联系我们</a></li></ul></div>
+      <div><h4>公司</h4><ul><li><a href="/about.html">关于</a></li><li><a href="/news.html">新闻</a></li><li><a href="/contact.html">渠道合作</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span>粤ICP备XXXXXXXX号-1</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+<script>
+const slug = new URLSearchParams(location.search).get('slug');
+if (slug) {
+  fetch('/api/news/' + encodeURIComponent(slug)).then(r => { if (!r.ok) throw new Error('新闻不存在'); return r.json(); }).then(n => {
+    document.getElementById('newsList').style.display = 'none';
+    document.getElementById('newsBody').style.display = '';
+    document.title = n.title + ' — 曜印 YAOPRINT';
+    if (n.cover) document.getElementById('newsHeroImg').src = n.cover;
+    document.getElementById('newsTag').textContent = n.tag || '新闻';
+    document.getElementById('newsH2').textContent = n.title;
+    document.getElementById('newsMeta').textContent = '发布于 ' + (n.published_at || '').slice(0, 10);
+    document.getElementById('newsContent').textContent = n.body || n.summary || '';
+  }).catch(() => { location.href = '/news.html'; });
+} else {
+  fetch('/api/news?limit=20').then(r => { if (!r.ok) throw new Error('加载失败'); return r.json(); }).then(list => {
+    const colors = ['c1', 'c2', 'c3'];
+    document.getElementById('newsGrid').innerHTML = list.map((n, i) => `
+      <a class="case-card ${colors[i % 3]}" href="news.html?slug=${n.slug}" style="background-image:url('${n.cover || '/img/scenes/diy.jpg'}');background-size:cover;background-position:center">
+        <div><em>${n.tag || '新闻'}</em><h3>${n.title}</h3><p>${n.summary || ''}</p></div>
+      </a>`).join('') || '<div class="media-card"><h4>暂时没有新闻</h4><p>欢迎浏览产品、探索创作场景，或订阅后续动态。</p><a href="/explore.html">去探索 →</a></div>';
+  }).catch(() => { document.getElementById('newsGrid').innerHTML = '<div class="media-card"><h4>新闻加载失败</h4><p>请稍后重试，或通过联系我们获取最新动态。</p><a href="/contact.html">联系我们 →</a></div>'; });
+}
+</script>
+</body>
+</html>
