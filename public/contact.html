@@ -52,7 +52,7 @@
         <div class="feature-card" style="margin-bottom:16px"><div class="ico">📞</div><div><h3>电话</h3><p data-setting="contact_phone">400-123-4567</p></div></div>
         <div class="feature-card" style="margin-bottom:16px"><div class="ico">📧</div><div><h3>邮箱</h3><p data-setting="contact_email">hello@yaoprint.com</p></div></div>
         <div class="feature-card" style="margin-bottom:16px"><div class="ico">📍</div><div><h3>地址</h3><p data-setting="contact_address">深圳市南山区高新南一道 88 号</p></div></div>
-        <div class="feature-card"><div class="ico">🕐</div><div><h3>工作时间</h3><p>周一至周日 9:00 - 21:00</p></div></div>
+        <div class="feature-card"><div class="ico">🕐</div><div><h3>工作时间</h3><p data-setting="contact_hours">周一至周日 9:00 - 21:00</p></div></div>
       </div>
       <form class="form-wrap" id="contactForm" style="padding:32px">
         <h3 style="font-size:24px;font-weight:800;margin-bottom:8px">提交您的需求</h3>
@@ -103,20 +103,12 @@
       <div><h4>公司</h4><ul><li><a href="/about.html">关于</a></li><li><a href="/news.html">新闻</a></li><li><a href="/contact.html">渠道合作</a></li></ul></div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
-      <span>粤ICP备XXXXXXXX号-1</span>
+      <span data-setting="copyright">© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
+      <span data-setting="icp">粤ICP备XXXXXXXX号-1</span>
     </div>
   </div>
 </footer>
 
 <script src="/js/main.js"></script>
-<script>
-fetch('/api/settings').then(r => r.json()).then(s => {
-  document.querySelectorAll('[data-setting]').forEach(el => {
-    const k = el.getAttribute('data-setting');
-    if (s[k]) el.textContent = s[k];
-  });
-});
-</script>
 </body>
 </html>
