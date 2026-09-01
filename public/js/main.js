@@ -266,7 +266,7 @@
     try {
       const list = await fetchJSON('/api/videos');
       if (!list.length) return renderState(target, 'empty', '暂时没有视频。');
-      target.innerHTML = list.map(item => `<a href="${text(item.url || 'explore.html')}" class="video-card" ${item.url && item.url !== '#' ? 'target="_blank" rel="noopener"' : ''}><div class="video-thumb">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : ''}</div><div class="video-body">${text(item.title)}</div></a>`).join('');
+      target.innerHTML = list.map(item => `<a href="${text(item.url && item.url !== '#' ? item.url : '/explore/creators.html')}" class="video-card" ${item.url && item.url !== '#' ? 'target="_blank" rel="noopener"' : ''}><div class="video-thumb">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : ''}</div><div class="video-body">${text(item.title)}</div></a>`).join('');
     } catch (error) { renderState(target, 'error', '视频加载失败。', loadVideos); }
   }
   loadVideos();
@@ -343,6 +343,48 @@
       }
     });
   }
+  const contentDetailPath = {
+    material: 'filament/material.html', case: 'solutions/case.html', tutorial: 'support/article.html',
+    faq: 'support/article.html', model: 'explore/project.html', project: 'explore/project.html',
+    service: 'support/article.html', channel: 'content.html', policy: 'content.html'
+  };
+  const contentHref = item => `/${contentDetailPath[item.type] || 'content.html'}?type=${encodeURIComponent(item.type)}&slug=${encodeURIComponent(item.slug)}`;
+
+  async function loadContentList() {
+    const target = $('[data-content-list]');
+    if (!target) return;
+    const type = target.dataset.contentList;
+    renderState(target, 'loading');
+    try {
+      const list = await fetchJSON(`/api/content?type=${encodeURIComponent(type)}`);
+      if (!list.length) return renderState(target, 'empty', '暂时没有已发布内容。');
+      target.innerHTML = list.map(item => `<article class="content-card reveal"><a class="content-cover" href="${contentHref(item)}">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : '<div class="image-fallback">曜印<br>内容中心</div>'}</a><div class="content-card-body">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h3><a href="${contentHref(item)}">${text(item.title)}</a></h3><p>${text(item.summary || '')}</p><a class="btn-link" href="${contentHref(item)}">查看详情</a></div></article>`).join('');
+      $$('.reveal', target).forEach(element => observer.observe(element));
+    } catch { renderState(target, 'error', '内容加载失败，请稍后重试。', loadContentList); }
+  }
+  loadContentList();
+
+  async function loadContentDetail() {
+    const target = $('[data-content-detail]');
+    if (!target) return;
+    const params = new URLSearchParams(location.search), type = params.get('type'), slug = params.get('slug');
+    if (!type || !slug) return renderState(target, 'empty', '请选择需要查看的内容。');
+    renderState(target, 'loading');
+    try {
+      const item = await fetchJSON(`/api/content/${encodeURIComponent(type)}/${encodeURIComponent(slug)}`);
+      document.title = `${item.title} — 曜印 YAOPRINT`;
+      target.innerHTML = `<article class="content-detail">${item.cover ? `<img class="content-detail-cover" src="${text(item.cover)}" alt="${text(item.title)}">` : ''}<div class="content-detail-copy">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h1>${text(item.title)}</h1><p class="content-detail-summary">${text(item.summary || '')}</p><div class="content-detail-body">${text(item.body || '').split(/\n+/).filter(Boolean).map(p => `<p>${p}</p>`).join('')}</div>${Object.keys(item.meta || {}).length ? `<dl class="meta-list">${Object.entries(item.meta).map(([key, value]) => `<div><dt>${text(key.replace(/_/g, ' '))}</dt><dd>${text(value)}</dd></div>`).join('')}</dl>` : ''}<a class="btn btn-primary" href="/contact.html?subject=${encodeURIComponent(item.title)}">咨询相关方案</a></div></article>`;
+    } catch { renderState(target, 'error', '该内容不存在或尚未发布。'); }
+  }
+  loadContentDetail();
+
+  const ticketForm = $('#ticketForm');
+  if (ticketForm) ticketForm.addEventListener('submit', async event => {
+    event.preventDefault(); const tip = $('#ticketTip');
+    try { const result = await fetchJSON('/api/tickets', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.fromEntries(new FormData(ticketForm).entries())) }); if (!result.ok) throw new Error(); ticketForm.reset(); tip.textContent='✓ 工单已提交，技术团队将在 1 个工作日内联系您。'; tip.className='form-tip'; tip.style.display='block'; }
+    catch { tip.textContent='提交失败，请检查联系方式后重试。'; tip.className='form-tip error'; tip.style.display='block'; }
+  });
+
   // 高亮当前导航
   const path = location.pathname.replace(/\/$/, '') || '/';
   document.querySelectorAll('.nav-links a').forEach(a => {

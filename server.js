@@ -176,6 +176,39 @@ app.post('/api/subs', (req, res) => {
   res.json({ ok: true });
 });
 
+function parseContent(item) {
+  item.meta = parseJSON(item.meta_json, {});
+  delete item.meta_json;
+  return item;
+}
+
+app.get('/api/content', (req, res) => {
+  const type = String(req.query.type || '').trim();
+  const tag = String(req.query.tag || '').trim();
+  const limit = Math.min(Number(req.query.limit) || 100, 100);
+  const clauses = ["status='published'"];
+  const values = [];
+  if (type) { clauses.push('type=?'); values.push(type); }
+  if (tag) { clauses.push('tag=?'); values.push(tag); }
+  values.push(limit);
+  res.json(db.prepare(`SELECT * FROM content_items WHERE ${clauses.join(' AND ')} ORDER BY sort, id DESC LIMIT ?`).all(...values).map(parseContent));
+});
+
+app.get('/api/content/:type/:slug', (req, res) => {
+  const item = db.prepare("SELECT * FROM content_items WHERE type=? AND slug=? AND status='published'").get(req.params.type, req.params.slug);
+  if (!item) return res.status(404).json({ error: 'not found' });
+  res.json(parseContent(item));
+});
+
+app.post('/api/tickets', (req, res) => {
+  const { name, phone, email, product, serial_no, subject, description, source } = req.body || {};
+  if (!String(name || '').trim() || (!String(phone || '').trim() && !String(email || '').trim()))
+    return res.status(400).json({ error: '请填写姓名及至少一种联系方式' });
+  db.prepare('INSERT INTO service_tickets (name,phone,email,product,serial_no,subject,description,source) VALUES (?,?,?,?,?,?,?,?)')
+    .run(name.trim(), String(phone || '').trim(), String(email || '').trim(), String(product || '').trim(), String(serial_no || '').trim(), String(subject || '').trim(), String(description || '').trim(), String(source || 'support-ticket').trim());
+  res.json({ ok: true });
+});
+
 crud('categories', ['slug', 'name', 'sort'], { required: ['slug', 'name'] });
 crud('reviews', ['source', 'title', 'excerpt', 'url', 'cover', 'logo', 'sort'], { required: ['source', 'title'] });
 crud('videos', ['title', 'source', 'url', 'cover', 'sort'], { required: ['title'] });
@@ -217,6 +250,59 @@ app.post('/api/admin/password', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/content', requireAdmin, (req, res) => {
+  const type = String(req.query.type || '').trim();
+  const sql = `SELECT * FROM content_items${type ? ' WHERE type=?' : ''} ORDER BY type, sort, id DESC`;
+  res.json((type ? db.prepare(sql).all(type) : db.prepare(sql).all()).map(parseContent));
+});
+
+app.get('/api/admin/content/:id', requireAdmin, (req, res) => {
+  const item = db.prepare('SELECT * FROM content_items WHERE id=?').get(req.params.id);
+  if (!item) return res.status(404).json({ error: 'not found' });
+  res.json(parseContent(item));
+});
+
+app.post('/api/admin/content', requireAdmin, (req, res) => {
+  const { type, slug, title, summary, body, cover, tag, meta, status, sort, published_at } = req.body || {};
+  if (!type || !slug || !title) return res.status(400).json({ error: '类型、slug 与标题必填' });
+  try {
+    const result = db.prepare(`INSERT INTO content_items (type,slug,title,summary,body,cover,tag,meta_json,status,sort,published_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,COALESCE(NULLIF(?,''),datetime('now','localtime')))`)
+      .run(type, slug, title, summary || '', body || '', cover || '', tag || '', JSON.stringify(meta || {}), status || 'published', Number(sort) || 0, published_at || '');
+    res.json({ ok: true, id: result.lastInsertRowid });
+  } catch (error) { res.status(400).json({ error: error.message }); }
+});
+
+app.put('/api/admin/content/:id', requireAdmin, (req, res) => {
+  const { type, slug, title, summary, body, cover, tag, meta, status, sort, published_at } = req.body || {};
+  if (!type || !slug || !title) return res.status(400).json({ error: '类型、slug 与标题必填' });
+  try {
+    db.prepare(`UPDATE content_items SET type=?,slug=?,title=?,summary=?,body=?,cover=?,tag=?,meta_json=?,status=?,sort=?,published_at=COALESCE(NULLIF(?,''),published_at),updated_at=datetime('now','localtime') WHERE id=?`)
+      .run(type, slug, title, summary || '', body || '', cover || '', tag || '', JSON.stringify(meta || {}), status || 'published', Number(sort) || 0, published_at || '', req.params.id);
+    res.json({ ok: true });
+  } catch (error) { res.status(400).json({ error: error.message }); }
+});
+
+app.delete('/api/admin/content/:id', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM content_items WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/tickets', requireAdmin, (req, res) => {
+  res.json(db.prepare('SELECT * FROM service_tickets ORDER BY id DESC LIMIT 200').all());
+});
+
+app.put('/api/admin/tickets/:id', requireAdmin, (req, res) => {
+  const status = String((req.body || {}).status || 'new');
+  db.prepare('UPDATE service_tickets SET status=? WHERE id=?').run(status, req.params.id);
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/tickets/:id', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM service_tickets WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
+});
+
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
   res.json({
     products: db.prepare('SELECT COUNT(*) c FROM products').get().c,
@@ -231,6 +317,8 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     reviews: db.prepare('SELECT COUNT(*) c FROM reviews').get().c,
     downloads: db.prepare('SELECT COUNT(*) c FROM downloads').get().c,
     heroes: db.prepare('SELECT COUNT(*) c FROM heroes').get().c,
+    content: db.prepare('SELECT COUNT(*) c FROM content_items').get().c,
+    tickets: db.prepare('SELECT COUNT(*) c FROM service_tickets').get().c,
   });
 });
 
