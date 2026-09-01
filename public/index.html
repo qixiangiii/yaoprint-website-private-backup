@@ -284,12 +284,13 @@
       </div>
       <div>
         <form class="subscribe-form" id="subForm">
-          <input type="email" name="email" placeholder="请输入您的邮箱" required>
+          <label class="sr-only" for="subEmail">订阅邮箱</label>
+          <input id="subEmail" type="email" name="email" placeholder="请输入您的邮箱" required>
           <button class="btn btn-primary" type="submit">订阅我们</button>
         </form>
         <div class="subscribe-check">
-          <input type="checkbox" required>
-          <span>我同意曜印 <a href="#">使用条款</a> 和 <a href="#">隐私政策</a>。</span>
+          <input id="subTerms" type="checkbox" required>
+          <label for="subTerms">我同意曜印 <a href="#">使用条款</a> 和 <a href="#">隐私政策</a>。</label>
         </div>
         <div class="form-tip" id="subTip" style="margin-top:12px"></div>
       </div>

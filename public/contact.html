@@ -25,7 +25,7 @@
     </nav>
     <div class="nav-cta">
       <a href="/contact.html" class="btn btn-primary btn-sm">联系我们</a>
-      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
     </div>
   </div>
 </header>
@@ -47,7 +47,7 @@
 
 <section class="section">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:40px">
+    <div class="contact-layout">
       <div>
         <div class="feature-card" style="margin-bottom:16px"><div class="ico">📞</div><div><h3>电话</h3><p data-setting="contact_phone">400-123-4567</p></div></div>
         <div class="feature-card" style="margin-bottom:16px"><div class="ico">📧</div><div><h3>邮箱</h3><p data-setting="contact_email">hello@yaoprint.com</p></div></div>
@@ -58,16 +58,16 @@
         <h3 style="font-size:24px;font-weight:800;margin-bottom:8px">提交您的需求</h3>
         <p style="color:var(--gray-4);margin-bottom:20px">请尽可能详细描述您的应用场景,我们将为您推荐最合适的设备。</p>
         <div class="form-row">
-          <div><label>姓名 *</label><input type="text" name="name" required></div>
-          <div><label>公司</label><input type="text" name="company"></div>
+          <div><label for="contactName">姓名 *</label><input id="contactName" type="text" name="name" required></div>
+          <div><label for="contactCompany">公司</label><input id="contactCompany" type="text" name="company"></div>
         </div>
         <div class="form-row">
-          <div><label>电话 *</label><input type="tel" name="phone" required></div>
-          <div><label>邮箱</label><input type="email" name="email"></div>
+          <div><label for="contactPhone">电话 *</label><input id="contactPhone" type="tel" name="phone" required></div>
+          <div><label for="contactEmail">邮箱</label><input id="contactEmail" type="email" name="email"></div>
         </div>
         <div class="form-row single">
-          <div><label>应用场景</label>
-            <select name="scene">
+          <div><label for="contactScene">应用场景</label>
+            <select id="contactScene" name="scene">
               <option value="个人/家庭">个人/家庭</option>
               <option value="教育">教育/STEAM</option>
               <option value="工业">工业/手板</option>
@@ -78,7 +78,7 @@
           </div>
         </div>
         <div class="form-row single">
-          <div><label>需求描述</label><textarea name="message" placeholder="请简述您的打印需求、预算、批量等"></textarea></div>
+          <div><label for="contactMessage">需求描述</label><textarea id="contactMessage" name="message" placeholder="请简述您的打印需求、预算、批量等"></textarea></div>
         </div>
         <button class="btn btn-primary btn-lg" type="submit" style="width:100%">提交需求</button>
         <div class="form-tip" id="formTip"></div>
