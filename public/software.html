@@ -31,14 +31,16 @@
 </header>
 
 <!-- 全图位 Hero -->
-<section class="hero" style="padding:64px 0 0">
-  <div class="container" style="padding:0">
-    <div class="hero-swiper" style="min-height:380px">
-      <div class="hero-slide" style="min-height:380px">
-        <img class="hero-img" src="/img/hero/x2d.jpg" alt="软件生态">
+<section class="hero hero--section">
+  <div class="container">
+    <div class="hero-swiper">
+      <div class="hero-slide">
+        <img class="hero-img" src="/img/hero/x2d.jpg" alt="曜印软件生态">
         <div class="hero-overlay">
-          <h1 style="font-size:48px">软件生态</h1>
-          <p class="hero-sub">从切片到集群管理,曜印软件让打印与控制更简单</p>
+          <span class="hero-tag">YAOPRINT SOFTWARE</span>
+          <h1>软件生态</h1>
+          <p class="hero-sub">从切片到设备协同，用更清晰的工作流完成每一次交付。</p>
+          <p class="hero-lead">Studio、Connect 与 Fleet 分别服务于模型准备、日常协作和多设备运营。</p>
         </div>
       </div>
     </div>
@@ -76,9 +78,9 @@
   </div>
 </section>
 
-<section class="section soft"><div class="container"><div class="section-head reveal"><span class="kicker">Workflow</span><h2>从设计到交付，一站完成</h2><p>Studio 负责切片，Handy 负责远程协作，Farm Manager 负责团队与设备管理。</p></div><div class="feature-grid"><div class="feature-card reveal"><div class="ico">01</div><div><h3>准备模型</h3><p>从 MakerWorld 获取模型，或导入自己的 STL、3MF 文件。</p><a href="/explore.html#makerworld">浏览模型 →</a></div></div><div class="feature-card reveal"><div class="ico">02</div><div><h3>切片打印</h3><p>使用曜印 Studio 调整参数并发送至设备，实时查看任务状态。</p><a href="/support/academy.html">学习切片 →</a></div></div><div class="feature-card reveal"><div class="ico">03</div><div><h3>远程管理</h3><p>通过 Handy 或 Farm Manager 监控多台设备，保持生产连续。</p><a href="/contact.html">获取部署建议 →</a></div></div></div></div></section>
+<section class="section soft"><div class="container"><div class="section-head reveal"><span class="kicker">Workflow</span><h2>从设计到交付，一站完成</h2><p>Studio 负责切片，Connect 负责日常协作，Fleet 负责团队与设备管理。</p></div><div class="feature-grid"><div class="feature-card reveal"><div class="ico">01</div><div><h3>准备模型</h3><p>浏览官方精选项目，或导入自己的 STL、3MF 文件。</p><a href="/explore/collections.html">浏览模型 →</a></div></div><div class="feature-card reveal"><div class="ico">02</div><div><h3>切片打印</h3><p>使用曜印 Studio 调整参数并发送至设备，建立可复用的预设。</p><a href="/support/academy.html">学习切片 →</a></div></div><div class="feature-card reveal"><div class="ico">03</div><div><h3>协同管理</h3><p>通过 Connect 或 Fleet 查看任务、设备资料与维护建议。</p><a href="/contact.html?subject=软件部署建议">获取部署建议 →</a></div></div></div></div></section>
 
-<section class="section soft" id="download">
+<section class="section" id="download">
   <div class="container">
     <div class="section-head reveal">
       <span class="kicker">Downloads</span>
@@ -111,6 +113,5 @@
 </footer>
 
 <script src="/js/main.js"></script>
-<script>new MutationObserver(() => document.querySelectorAll('[data-downloads] a').forEach(a => { if (a.getAttribute('href') === String.fromCharCode(35)) a.href = '/software.html#download'; })).observe(document.body, {subtree:true, childList:true});</script>
 </body>
 </html>

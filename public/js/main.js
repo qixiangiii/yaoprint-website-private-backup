@@ -1,5 +1,6 @@
 // 曜印 YAOPRINT — 前台交互与动态内容
 (async function () {
+  document.documentElement.classList.add('js');
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
   const escapeHTML = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
@@ -302,7 +303,8 @@
     try {
       const list = await fetchJSON('/api/downloads');
       if (!list.length) return renderState(target, 'empty', '暂时没有可下载内容。');
-      target.innerHTML = list.map(item => `<article class="media-card"><div class="source">${text(item.platform || '全平台')} · ${text(item.version || '')}</div><h4>${text(item.name)}</h4><p>大小：${text(item.size || '在线服务')}</p><a href="${text(item.url && item.url !== '#' ? item.url : 'contact.html?subject=software')}" ${item.url && item.url !== '#' ? 'target="_blank" rel="noopener"' : ''}>获取下载 →</a></article>`).join('');
+      target.className = 'download-grid';
+      target.innerHTML = list.map(item => `<article class="download-card"><div class="download-mark">↓</div><div class="download-copy"><div class="source">${text(item.platform || '全平台')}</div><h4>${text(item.name)}</h4><p>版本 ${text(item.version || '待发布')} · ${text(item.size || '在线资料')}</p></div><a class="btn btn-outline btn-sm" href="${text(item.url && item.url !== '#' ? item.url : '/downloads/index.html')}" ${item.url && item.url !== '#' ? 'target="_blank" rel="noopener"' : ''}>查看资料</a></article>`).join('');
     } catch (error) { renderState(target, 'error', '下载资源加载失败。', loadDownloads); }
   }
   loadDownloads();

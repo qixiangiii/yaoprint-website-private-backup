@@ -183,6 +183,155 @@ CREATE TABLE IF NOT EXISTS service_tickets (
   created_at TEXT DEFAULT (datetime('now','localtime'))
 );
 
+CREATE TABLE IF NOT EXISTS customers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  name TEXT DEFAULT '',
+  phone TEXT DEFAULT '',
+  status TEXT DEFAULT 'active',
+  created_at TEXT DEFAULT (datetime('now','localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS customer_addresses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  recipient TEXT NOT NULL,
+  phone TEXT DEFAULT '',
+  province TEXT DEFAULT '',
+  city TEXT DEFAULT '',
+  district TEXT DEFAULT '',
+  detail TEXT DEFAULT '',
+  is_default INTEGER DEFAULT 0,
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS catalog_skus (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER,
+  slug TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  variant TEXT DEFAULT '',
+  price TEXT DEFAULT '',
+  cover TEXT DEFAULT '',
+  status TEXT DEFAULT 'published',
+  sort INTEGER DEFAULT 0,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS carts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER UNIQUE NOT NULL,
+  updated_at TEXT DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cart_id INTEGER NOT NULL,
+  sku_id INTEGER NOT NULL,
+  quantity INTEGER DEFAULT 1,
+  FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+  FOREIGN KEY (sku_id) REFERENCES catalog_skus(id) ON DELETE CASCADE,
+  UNIQUE(cart_id, sku_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_no TEXT UNIQUE NOT NULL,
+  customer_id INTEGER NOT NULL,
+  address_id INTEGER,
+  status TEXT DEFAULT 'pending_review',
+  note TEXT DEFAULT '',
+  total_text TEXT DEFAULT '',
+  created_at TEXT DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+  FOREIGN KEY (address_id) REFERENCES customer_addresses(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id INTEGER NOT NULL,
+  sku_id INTEGER,
+  name TEXT NOT NULL,
+  variant TEXT DEFAULT '',
+  price TEXT DEFAULT '',
+  quantity INTEGER DEFAULT 1,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (sku_id) REFERENCES catalog_skus(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS devices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  serial_no TEXT UNIQUE NOT NULL,
+  product_id INTEGER,
+  product_name TEXT DEFAULT '',
+  purchase_date TEXT DEFAULT '',
+  channel TEXT DEFAULT '',
+  warranty_until TEXT DEFAULT '',
+  status TEXT DEFAULT 'active',
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS device_bindings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  device_id INTEGER NOT NULL,
+  customer_id INTEGER NOT NULL,
+  created_at TEXT DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+  UNIQUE(device_id)
+);
+
+CREATE TABLE IF NOT EXISTS after_sales (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id INTEGER NOT NULL,
+  customer_id INTEGER NOT NULL,
+  type TEXT DEFAULT 'repair',
+  reason TEXT DEFAULT '',
+  status TEXT DEFAULT 'new',
+  created_at TEXT DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS creator_submissions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  license TEXT DEFAULT '',
+  status TEXT DEFAULT 'pending',
+  admin_note TEXT DEFAULT '',
+  created_at TEXT DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS partners (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  province TEXT DEFAULT '',
+  city TEXT DEFAULT '',
+  service_type TEXT DEFAULT '',
+  phone TEXT DEFAULT '',
+  address TEXT DEFAULT '',
+  status TEXT DEFAULT 'active',
+  sort INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS partner_applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  company TEXT NOT NULL,
+  contact_name TEXT NOT NULL,
+  phone TEXT DEFAULT '',
+  email TEXT DEFAULT '',
+  application_type TEXT DEFAULT '',
+  city TEXT DEFAULT '',
+  description TEXT DEFAULT '',
+  status TEXT DEFAULT 'new',
+  created_at TEXT DEFAULT (datetime('now','localtime'))
+);
+
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
@@ -208,6 +357,9 @@ ensureColumn('products', 'card_image', "TEXT DEFAULT ''");
 ensureColumn('products', 'gallery_json', "TEXT DEFAULT '[]'");
 ensureColumn('products', 'colors_json', "TEXT DEFAULT '[]'");
 ensureColumn('products', 'kits_json', "TEXT DEFAULT '[]'");
+ensureColumn('service_tickets', 'customer_id', 'INTEGER');
+ensureColumn('service_tickets', 'device_id', 'INTEGER');
+ensureColumn('service_tickets', 'order_no', "TEXT DEFAULT ''");
 
 const defaultSettings = {
   site_name: '曜印 YAOPRINT',
@@ -278,6 +430,23 @@ if (contentCount === 0) {
     ['policy', 'warranty', '保修与维修政策', '了解设备保修范围、送修流程与非保修情形。', '保修服务以实际购买凭证、产品序列号和当地适用政策为准。提交工单时请附上设备型号、序列号、问题描述及必要的图片或日志。', '', '服务政策', '{"version":"2026.09","effective_date":"2026-09-01"}', 'published', 3]
   ];
   items.forEach(item => insertContent.run(...item));
+}
+
+const skuCount = db.prepare('SELECT COUNT(*) AS c FROM catalog_skus').get().c;
+if (skuCount === 0) {
+  const products = db.prepare("SELECT id, slug, name, price, card_image, hero_image FROM products WHERE status IN ('published','soon') ORDER BY sort, id LIMIT 6").all();
+  const insertSku = db.prepare('INSERT INTO catalog_skus (product_id,slug,name,variant,price,cover,status,sort) VALUES (?,?,?,?,?,?,?,?)');
+  products.forEach((product, index) => insertSku.run(product.id, `${product.slug}-standard`, product.name, '标准配置', product.price || '咨询报价', product.card_image || product.hero_image || '', 'published', index + 1));
+}
+
+const partnerCount = db.prepare('SELECT COUNT(*) AS c FROM partners').get().c;
+if (partnerCount === 0) {
+  const insertPartner = db.prepare('INSERT INTO partners (name,province,city,service_type,phone,address,status,sort) VALUES (?,?,?,?,?,?,?,?)');
+  [
+    ['曜印华南技术服务中心','广东省','深圳市','演示 / 维修 / 培训','400-123-4567','南山区创新大道 88 号','active',1],
+    ['曜印华东合作伙伴','上海市','上海市','教育 / 行业方案','400-123-4567','浦东新区智造路 168 号','active',2],
+    ['曜印华北服务伙伴','北京市','北京市','演示 / 维修','400-123-4567','海淀区创客街 12 号','active',3]
+  ].forEach(row => insertPartner.run(...row));
 }
 
 module.exports = db;

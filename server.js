@@ -53,6 +53,19 @@ function requireAdmin(req, res, next) {
   return res.status(401).json({ error: '未登录' });
 }
 
+function requireCustomer(req, res, next) {
+  if (req.session && req.session.customer) return next();
+  return res.status(401).json({ error: '请先登录曜印账户' });
+}
+
+function customerPublic(customer) {
+  return { id: customer.id, email: customer.email, name: customer.name, phone: customer.phone, status: customer.status, created_at: customer.created_at };
+}
+
+function orderNumber() {
+  return `YQ${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+}
+
 function parseJSON(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
 }
@@ -164,6 +177,91 @@ app.post('/api/leads', (req, res) => {
   res.json({ ok: true });
 });
 
+// ============ 消费者账户与报价订单 API ============
+app.post('/api/account/register', (req, res) => {
+  const { email, password, name, phone } = req.body || {};
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return res.status(400).json({ error: '请输入有效邮箱' });
+  if (!password || String(password).length < 6) return res.status(400).json({ error: '密码至少 6 位' });
+  try {
+    const result = db.prepare('INSERT INTO customers (email,password_hash,name,phone) VALUES (?,?,?,?)').run(String(email).trim().toLowerCase(), bcrypt.hashSync(String(password), 10), String(name || '').trim(), String(phone || '').trim());
+    const customer = db.prepare('SELECT * FROM customers WHERE id=?').get(result.lastInsertRowid);
+    req.session.customer = customerPublic(customer);
+    res.json({ ok: true, customer: req.session.customer });
+  } catch { res.status(400).json({ error: '该邮箱已注册，请直接登录' }); }
+});
+
+app.post('/api/account/login', (req, res) => {
+  const { email, password } = req.body || {};
+  const customer = db.prepare('SELECT * FROM customers WHERE email=?').get(String(email || '').trim().toLowerCase());
+  if (!customer || customer.status !== 'active' || !bcrypt.compareSync(String(password || ''), customer.password_hash)) return res.status(401).json({ error: '邮箱或密码错误' });
+  req.session.customer = customerPublic(customer);
+  res.json({ ok: true, customer: req.session.customer });
+});
+
+app.post('/api/account/logout', (req, res) => { delete req.session.customer; res.json({ ok: true }); });
+app.get('/api/account/me', (req, res) => { if (!req.session.customer) return res.status(401).json({ error: '未登录' }); res.json(req.session.customer); });
+
+app.put('/api/account/profile', requireCustomer, (req, res) => {
+  const { name, phone } = req.body || {};
+  db.prepare('UPDATE customers SET name=?,phone=? WHERE id=?').run(String(name || '').trim(), String(phone || '').trim(), req.session.customer.id);
+  const customer = db.prepare('SELECT * FROM customers WHERE id=?').get(req.session.customer.id);
+  req.session.customer = customerPublic(customer); res.json({ ok: true, customer: req.session.customer });
+});
+
+app.get('/api/account/addresses', requireCustomer, (req, res) => res.json(db.prepare('SELECT * FROM customer_addresses WHERE customer_id=? ORDER BY is_default DESC,id DESC').all(req.session.customer.id)));
+app.post('/api/account/addresses', requireCustomer, (req, res) => {
+  const { recipient, phone, province, city, district, detail, is_default } = req.body || {};
+  if (!recipient || !detail) return res.status(400).json({ error: '收件人和详细地址必填' });
+  const customerId = req.session.customer.id;
+  if (is_default) db.prepare('UPDATE customer_addresses SET is_default=0 WHERE customer_id=?').run(customerId);
+  const result = db.prepare('INSERT INTO customer_addresses (customer_id,recipient,phone,province,city,district,detail,is_default) VALUES (?,?,?,?,?,?,?,?)').run(customerId, recipient, phone || '', province || '', city || '', district || '', detail, is_default ? 1 : 0);
+  res.json({ ok: true, id: result.lastInsertRowid });
+});
+app.delete('/api/account/addresses/:id', requireCustomer, (req, res) => { db.prepare('DELETE FROM customer_addresses WHERE id=? AND customer_id=?').run(req.params.id, req.session.customer.id); res.json({ ok: true }); });
+
+app.get('/api/shop/skus', (req, res) => res.json(db.prepare("SELECT s.*,p.slug AS product_slug FROM catalog_skus s LEFT JOIN products p ON p.id=s.product_id WHERE s.status='published' ORDER BY s.sort,id").all()));
+app.get('/api/cart', requireCustomer, (req, res) => {
+  const cart = db.prepare('SELECT * FROM carts WHERE customer_id=?').get(req.session.customer.id);
+  if (!cart) return res.json([]);
+  res.json(db.prepare('SELECT i.id,i.quantity,s.id AS sku_id,s.slug,s.name,s.variant,s.price,s.cover FROM cart_items i JOIN catalog_skus s ON s.id=i.sku_id WHERE i.cart_id=? ORDER BY i.id DESC').all(cart.id));
+});
+app.post('/api/cart/items', requireCustomer, (req, res) => {
+  const skuId = Number((req.body || {}).sku_id), quantity = Math.max(1, Math.min(99, Number((req.body || {}).quantity) || 1));
+  const sku = db.prepare("SELECT id FROM catalog_skus WHERE id=? AND status='published'").get(skuId);
+  if (!sku) return res.status(404).json({ error: '选购项目不存在' });
+  const customerId = req.session.customer.id;
+  db.prepare('INSERT OR IGNORE INTO carts (customer_id) VALUES (?)').run(customerId);
+  const cart = db.prepare('SELECT * FROM carts WHERE customer_id=?').get(customerId);
+  db.prepare('INSERT INTO cart_items (cart_id,sku_id,quantity) VALUES (?,?,?) ON CONFLICT(cart_id,sku_id) DO UPDATE SET quantity=quantity+excluded.quantity').run(cart.id, skuId, quantity);
+  db.prepare("UPDATE carts SET updated_at=datetime('now','localtime') WHERE id=?").run(cart.id);
+  res.json({ ok: true });
+});
+app.put('/api/cart/items/:id', requireCustomer, (req, res) => { const q=Math.max(1,Math.min(99,Number((req.body||{}).quantity)||1)); db.prepare('UPDATE cart_items SET quantity=? WHERE id=? AND cart_id IN (SELECT id FROM carts WHERE customer_id=?)').run(q,req.params.id,req.session.customer.id); res.json({ok:true}); });
+app.delete('/api/cart/items/:id', requireCustomer, (req,res)=>{db.prepare('DELETE FROM cart_items WHERE id=? AND cart_id IN (SELECT id FROM carts WHERE customer_id=?)').run(req.params.id,req.session.customer.id);res.json({ok:true});});
+
+app.post('/api/orders', requireCustomer, (req, res) => {
+  const customerId=req.session.customer.id, { address_id, note }=req.body||{};
+  const cart=db.prepare('SELECT * FROM carts WHERE customer_id=?').get(customerId);
+  const items=cart?db.prepare('SELECT i.quantity,s.id AS sku_id,s.name,s.variant,s.price FROM cart_items i JOIN catalog_skus s ON s.id=i.sku_id WHERE i.cart_id=?').all(cart.id):[];
+  if (!items.length) return res.status(400).json({error:'购物袋为空'});
+  if (address_id && !db.prepare('SELECT id FROM customer_addresses WHERE id=? AND customer_id=?').get(address_id,customerId)) return res.status(400).json({error:'地址不属于当前账户'});
+  const no=orderNumber(), total=items.map(x=>`${x.name} × ${x.quantity}`).join('；');
+  const tx=db.transaction(()=>{const r=db.prepare('INSERT INTO orders (order_no,customer_id,address_id,note,total_text) VALUES (?,?,?,?,?)').run(no,customerId,address_id||null,String(note||''),total);items.forEach(x=>db.prepare('INSERT INTO order_items (order_id,sku_id,name,variant,price,quantity) VALUES (?,?,?,?,?,?)').run(r.lastInsertRowid,x.sku_id,x.name,x.variant,x.price,x.quantity));db.prepare('DELETE FROM cart_items WHERE cart_id=?').run(cart.id);}); tx();
+  res.json({ok:true,order_no:no});
+});
+app.get('/api/orders',requireCustomer,(req,res)=>res.json(db.prepare('SELECT * FROM orders WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id)));
+app.get('/api/orders/:no',requireCustomer,(req,res)=>{const o=db.prepare('SELECT * FROM orders WHERE order_no=? AND customer_id=?').get(req.params.no,req.session.customer.id);if(!o)return res.status(404).json({error:'订单不存在'});o.items=db.prepare('SELECT * FROM order_items WHERE order_id=?').all(o.id);res.json(o);});
+app.post('/api/after-sales',requireCustomer,(req,res)=>{const {order_no,type,reason}=req.body||{};const o=db.prepare('SELECT id FROM orders WHERE order_no=? AND customer_id=?').get(order_no,req.session.customer.id);if(!o)return res.status(404).json({error:'订单不存在'});db.prepare('INSERT INTO after_sales (order_id,customer_id,type,reason) VALUES (?,?,?,?)').run(o.id,req.session.customer.id,String(type||'repair'),String(reason||''));res.json({ok:true});});
+
+app.post('/api/devices/register', requireCustomer, (req,res)=>{const {serial_no,product_name,purchase_date,channel}=req.body||{};if(!serial_no||!product_name)return res.status(400).json({error:'序列号和设备型号必填'});let device=db.prepare('SELECT * FROM devices WHERE serial_no=?').get(String(serial_no).trim());if(device&&db.prepare('SELECT id FROM device_bindings WHERE device_id=?').get(device.id))return res.status(400).json({error:'该设备已绑定其他账户'});if(!device){const r=db.prepare("INSERT INTO devices (serial_no,product_name,purchase_date,channel,warranty_until) VALUES (?,?,?,?,date('now','+365 days'))").run(String(serial_no).trim(),String(product_name).trim(),String(purchase_date||''),String(channel||''));device=db.prepare('SELECT * FROM devices WHERE id=?').get(r.lastInsertRowid);}db.prepare('INSERT OR IGNORE INTO device_bindings (device_id,customer_id) VALUES (?,?)').run(device.id,req.session.customer.id);res.json({ok:true,device});});
+app.get('/api/devices',requireCustomer,(req,res)=>res.json(db.prepare('SELECT d.* FROM devices d JOIN device_bindings b ON b.device_id=d.id WHERE b.customer_id=? ORDER BY b.id DESC').all(req.session.customer.id)));
+app.get('/api/devices/:sn',requireCustomer,(req,res)=>{const d=db.prepare('SELECT d.* FROM devices d JOIN device_bindings b ON b.device_id=d.id WHERE d.serial_no=? AND b.customer_id=?').get(req.params.sn,req.session.customer.id);if(!d)return res.status(404).json({error:'设备不存在'});d.tickets=db.prepare('SELECT * FROM service_tickets WHERE device_id=? AND customer_id=? ORDER BY id DESC').all(d.id,req.session.customer.id);res.json(d);});
+
+app.post('/api/submissions',requireCustomer,(req,res)=>{const {title,description,license}=req.body||{};if(!title)return res.status(400).json({error:'作品标题必填'});const r=db.prepare('INSERT INTO creator_submissions (customer_id,title,description,license) VALUES (?,?,?,?)').run(req.session.customer.id,title,String(description||''),String(license||''));res.json({ok:true,id:r.lastInsertRowid});});
+app.get('/api/submissions',requireCustomer,(req,res)=>res.json(db.prepare('SELECT * FROM creator_submissions WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id)));
+app.get('/api/partners', (req,res)=>{const city=String(req.query.city||'').trim();const type=String(req.query.type||'').trim();const clauses=["status='active'"],values=[];if(city){clauses.push('(city LIKE ? OR province LIKE ?)');values.push(`%${city}%`,`%${city}%`)}if(type){clauses.push('service_type LIKE ?');values.push(`%${type}%`)}res.json(db.prepare(`SELECT * FROM partners WHERE ${clauses.join(' AND ')} ORDER BY sort,id`).all(...values));});
+app.post('/api/partner-applications',(req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(company,contact_name,phone||'',email||'',application_type||'',city||'',description||'');res.json({ok:true});});
+
 app.post('/api/subs', (req, res) => {
   const email = (req.body && req.body.email || '').trim();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
@@ -200,12 +298,21 @@ app.get('/api/content/:type/:slug', (req, res) => {
   res.json(parseContent(item));
 });
 
+app.get('/api/tickets/mine', requireCustomer, (req, res) => {
+  res.json(db.prepare('SELECT * FROM service_tickets WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id));
+});
+
 app.post('/api/tickets', (req, res) => {
-  const { name, phone, email, product, serial_no, subject, description, source } = req.body || {};
-  if (!String(name || '').trim() || (!String(phone || '').trim() && !String(email || '').trim()))
-    return res.status(400).json({ error: '请填写姓名及至少一种联系方式' });
-  db.prepare('INSERT INTO service_tickets (name,phone,email,product,serial_no,subject,description,source) VALUES (?,?,?,?,?,?,?,?)')
-    .run(name.trim(), String(phone || '').trim(), String(email || '').trim(), String(product || '').trim(), String(serial_no || '').trim(), String(subject || '').trim(), String(description || '').trim(), String(source || 'support-ticket').trim());
+  const { name, phone, email, product, serial_no, subject, description, source, order_no } = req.body || {};
+  const customer = req.session && req.session.customer;
+  const resolvedName = String(name || customer?.name || '').trim();
+  const resolvedPhone = String(phone || customer?.phone || '').trim();
+  const resolvedEmail = String(email || customer?.email || '').trim();
+  if (!resolvedName || (!resolvedPhone && !resolvedEmail)) return res.status(400).json({ error: '请填写姓名及至少一种联系方式' });
+  let deviceId = null;
+  if (customer && serial_no) deviceId = db.prepare('SELECT d.id FROM devices d JOIN device_bindings b ON b.device_id=d.id WHERE d.serial_no=? AND b.customer_id=?').get(String(serial_no).trim(), customer.id)?.id || null;
+  db.prepare('INSERT INTO service_tickets (name,phone,email,product,serial_no,subject,description,source,customer_id,device_id,order_no) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+    .run(resolvedName, resolvedPhone, resolvedEmail, String(product || '').trim(), String(serial_no || '').trim(), String(subject || '').trim(), String(description || '').trim(), String(source || 'support-ticket').trim(), customer?.id || null, deviceId, String(order_no || '').trim());
   res.json({ ok: true });
 });
 
@@ -303,6 +410,23 @@ app.delete('/api/admin/tickets/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/customers', requireAdmin, (req,res) => res.json(db.prepare('SELECT id,email,name,phone,status,created_at FROM customers ORDER BY id DESC').all()));
+app.put('/api/admin/customers/:id', requireAdmin, (req,res) => { db.prepare('UPDATE customers SET status=? WHERE id=?').run(String((req.body||{}).status||'active'),req.params.id);res.json({ok:true}); });
+app.get('/api/admin/skus', requireAdmin, (req,res) => res.json(db.prepare('SELECT s.*,p.name AS product_name FROM catalog_skus s LEFT JOIN products p ON p.id=s.product_id ORDER BY s.sort,s.id DESC').all()));
+app.post('/api/admin/skus', requireAdmin, (req,res) => { const b=req.body||{};if(!b.slug||!b.name)return res.status(400).json({error:'slug 与名称必填'});try{const r=db.prepare('INSERT INTO catalog_skus (product_id,slug,name,variant,price,cover,status,sort) VALUES (?,?,?,?,?,?,?,?)').run(b.product_id||null,b.slug,b.name,b.variant||'',b.price||'',b.cover||'',b.status||'published',Number(b.sort)||0);res.json({ok:true,id:r.lastInsertRowid});}catch(e){res.status(400).json({error:e.message});} });
+app.put('/api/admin/skus/:id', requireAdmin, (req,res) => {const b=req.body||{};db.prepare('UPDATE catalog_skus SET product_id=?,slug=?,name=?,variant=?,price=?,cover=?,status=?,sort=? WHERE id=?').run(b.product_id||null,b.slug,b.name,b.variant||'',b.price||'',b.cover||'',b.status||'published',Number(b.sort)||0,req.params.id);res.json({ok:true});});
+app.delete('/api/admin/skus/:id', requireAdmin, (req,res)=>{db.prepare('DELETE FROM catalog_skus WHERE id=?').run(req.params.id);res.json({ok:true});});
+app.get('/api/admin/orders', requireAdmin, (req,res)=>res.json(db.prepare('SELECT o.*,c.email,c.name FROM orders o JOIN customers c ON c.id=o.customer_id ORDER BY o.id DESC').all()));
+app.put('/api/admin/orders/:id', requireAdmin, (req,res)=>{db.prepare('UPDATE orders SET status=? WHERE id=?').run(String((req.body||{}).status||'pending_review'),req.params.id);res.json({ok:true});});
+app.get('/api/admin/after-sales', requireAdmin, (req,res)=>res.json(db.prepare('SELECT a.*,o.order_no,c.email,c.name FROM after_sales a JOIN orders o ON o.id=a.order_id JOIN customers c ON c.id=a.customer_id ORDER BY a.id DESC').all()));
+app.put('/api/admin/after-sales/:id', requireAdmin, (req,res)=>{db.prepare('UPDATE after_sales SET status=? WHERE id=?').run(String((req.body||{}).status||'new'),req.params.id);res.json({ok:true});});
+app.get('/api/admin/devices', requireAdmin, (req,res)=>res.json(db.prepare('SELECT d.*,c.email,c.name FROM devices d LEFT JOIN device_bindings b ON b.device_id=d.id LEFT JOIN customers c ON c.id=b.customer_id ORDER BY d.id DESC').all()));
+app.get('/api/admin/submissions', requireAdmin, (req,res)=>res.json(db.prepare('SELECT s.*,c.email,c.name FROM creator_submissions s JOIN customers c ON c.id=s.customer_id ORDER BY s.id DESC').all()));
+app.put('/api/admin/submissions/:id', requireAdmin, (req,res)=>{const b=req.body||{};db.prepare('UPDATE creator_submissions SET status=?,admin_note=? WHERE id=?').run(String(b.status||'pending'),String(b.admin_note||''),req.params.id);res.json({ok:true});});
+crud('partners', ['name','province','city','service_type','phone','address','status','sort'], {required:['name']});
+app.get('/api/admin/partner-applications', requireAdmin, (req,res)=>res.json(db.prepare('SELECT * FROM partner_applications ORDER BY id DESC').all()));
+app.put('/api/admin/partner-applications/:id', requireAdmin, (req,res)=>{db.prepare('UPDATE partner_applications SET status=? WHERE id=?').run(String((req.body||{}).status||'new'),req.params.id);res.json({ok:true});});
+
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
   res.json({
     products: db.prepare('SELECT COUNT(*) c FROM products').get().c,
@@ -319,6 +443,12 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     heroes: db.prepare('SELECT COUNT(*) c FROM heroes').get().c,
     content: db.prepare('SELECT COUNT(*) c FROM content_items').get().c,
     tickets: db.prepare('SELECT COUNT(*) c FROM service_tickets').get().c,
+    customers: db.prepare('SELECT COUNT(*) c FROM customers').get().c,
+    orders: db.prepare('SELECT COUNT(*) c FROM orders').get().c,
+    afterSales: db.prepare('SELECT COUNT(*) c FROM after_sales').get().c,
+    devices: db.prepare('SELECT COUNT(*) c FROM devices').get().c,
+    submissions: db.prepare("SELECT COUNT(*) c FROM creator_submissions WHERE status='pending'").get().c,
+    partnerApplications: db.prepare("SELECT COUNT(*) c FROM partner_applications WHERE status='new'").get().c,
   });
 });
 
