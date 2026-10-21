@@ -1,4 +1,4 @@
-// 曜印 YAOPRINT — 设备、投稿、伙伴和下载业务入口
+// 起元星启 — 设备、投稿、伙伴和下载业务入口
 (async function () {
   const main = document.querySelector('[data-static-business]');
   if (!main) return;
@@ -14,7 +14,7 @@
 
   if (view === 'register-device') {
     const me = await needLogin(); if (!me) return;
-    main.innerHTML = page('DEVICE REGISTRATION','登记你的曜印设备','登记后可在账户内查看保修资料并将服务工单关联到设备。',`<form class="form-wrap" id="deviceForm"><div class="form-row"><div><label for="deviceSn">设备序列号 *</label><input id="deviceSn" name="serial_no" required placeholder="例如 YP-2026-XXXX"></div><div><label for="deviceProduct">设备型号 *</label><input id="deviceProduct" name="product_name" required></div></div><div class="form-row"><div><label for="devicePurchase">购买日期</label><input id="devicePurchase" name="purchase_date" type="date"></div><div><label for="deviceChannel">购买渠道</label><input id="deviceChannel" name="channel" placeholder="官方、经销商或其他"></div></div><button class="btn btn-primary btn-lg" type="submit">登记设备</button>${note}</form>`);
+    main.innerHTML = page('DEVICE REGISTRATION','登记你的起元星启设备','登记后可在账户内查看保修资料并将服务工单关联到设备。',`<form class="form-wrap" id="deviceForm"><div class="form-row"><div><label for="deviceSn">设备序列号 *</label><input id="deviceSn" name="serial_no" required placeholder="例如 YP-2026-XXXX"></div><div><label for="deviceProduct">设备型号 *</label><input id="deviceProduct" name="product_name" required></div></div><div class="form-row"><div><label for="devicePurchase">购买日期</label><input id="devicePurchase" name="purchase_date" type="date"></div><div><label for="deviceChannel">购买渠道</label><input id="deviceChannel" name="channel" placeholder="官方、经销商或其他"></div></div><button class="btn btn-primary btn-lg" type="submit">登记设备</button>${note}</form>`);
     $('#deviceForm').addEventListener('submit',async e=>{e.preventDefault();try{const r=await post('/api/devices/register',Object.fromEntries(new FormData(e.currentTarget)));location.href=`/account/device.html?sn=${encodeURIComponent(r.device.serial_no)}`;}catch(err){tip(err.message,true)}}); return;
   }
   if (view === 'warranty-check') {
@@ -28,7 +28,7 @@
     $('#repairForm').addEventListener('submit',async e=>{e.preventDefault();try{const data=Object.fromEntries(new FormData(e.currentTarget));await post('/api/tickets',data);tip('✓ 服务请求已提交，可在“我的服务工单”查看进度。');e.currentTarget.reset();}catch(err){tip(err.message,true)}});return;
   }
   if (view === 'collections') {
-    main.innerHTML=page('CURATED COLLECTIONS','官方精选与主题合集','浏览曜印创作实验室持续维护的模型、项目和材料实践专题。',`<div class="content-grid" data-collections></div>`);
+    main.innerHTML=page('CURATED COLLECTIONS','官方精选与主题合集','浏览起元星启创作实验室持续维护的模型、项目和材料实践专题。',`<div class="content-grid" data-collections></div>`);
     try { const [models,projects] = await Promise.all([api('/api/content?type=model'),api('/api/content?type=project')]); const rows=[...models,...projects]; $('[data-collections]').innerHTML=rows.map(x=>`<article class="content-card"><a class="content-cover" href="/explore/model.html?slug=${encodeURIComponent(x.slug)}">${x.cover?`<img src="${esc(x.cover)}" alt="${esc(x.title)}">`:''}</a><div class="content-card-body"><span class="badge">${esc(x.tag||'官方精选')}</span><h3>${esc(x.title)}</h3><p>${esc(x.summary)}</p><a class="btn-link" href="/explore/model.html?slug=${encodeURIComponent(x.slug)}">查看项目</a></div></article>`).join('')||'<div class="empty-panel">暂无精选项目。</div>'; } catch { $('[data-collections]').innerHTML='<div class="empty-panel">加载失败。</div>'; } return;
   }
   if (view === 'model') {

@@ -646,7 +646,7 @@
     try {
       const list = await fetchJSON(`/api/content?type=${encodeURIComponent(type)}`);
       if (!list.length) return renderState(target, 'empty', '暂时没有已发布内容。');
-      target.innerHTML = list.map(item => `<article class="content-card reveal"><a class="content-cover" href="${contentHref(item)}">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : '<div class="image-fallback">曜印<br>内容中心</div>'}</a><div class="content-card-body">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h3><a href="${contentHref(item)}">${text(item.title)}</a></h3><p>${text(item.summary || '')}</p><a class="btn-link" href="${contentHref(item)}">查看详情</a></div></article>`).join('');
+      target.innerHTML = list.map(item => `<article class="content-card reveal"><a class="content-cover" href="${contentHref(item)}">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : '<div class="image-fallback">起元星启<br>内容中心</div>'}</a><div class="content-card-body">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h3><a href="${contentHref(item)}">${text(item.title)}</a></h3><p>${text(item.summary || '')}</p><a class="btn-link" href="${contentHref(item)}">查看详情</a></div></article>`).join('');
       $$('.reveal', target).forEach(element => observer.observe(element));
     } catch { renderState(target, 'error', '内容加载失败，请稍后重试。', loadContentList); }
   }
@@ -660,7 +660,7 @@
     renderState(target, 'loading');
     try {
       const item = await fetchJSON(`/api/content/${encodeURIComponent(type)}/${encodeURIComponent(slug)}`);
-      document.title = `${item.title} — 曜印 YAOPRINT`;
+      document.title = `${item.title} — 起元星启`;
       target.innerHTML = `<article class="content-detail">${item.cover ? `<img class="content-detail-cover" src="${text(item.cover)}" alt="${text(item.title)}">` : ''}<div class="content-detail-copy">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h1>${text(item.title)}</h1><p class="content-detail-summary">${text(item.summary || '')}</p><div class="content-detail-body">${text(item.body || '').split(/\n+/).filter(Boolean).map(p => `<p>${p}</p>`).join('')}</div>${Object.keys(item.meta || {}).length ? `<dl class="meta-list">${Object.entries(item.meta).map(([key, value]) => `<div><dt>${text(key.replace(/_/g, ' '))}</dt><dd>${text(value)}</dd></div>`).join('')}</dl>` : ''}<a class="btn btn-primary" href="/contact.html?subject=${encodeURIComponent(item.title)}">咨询相关方案</a></div></article>`;
     } catch { renderState(target, 'error', '该内容不存在或尚未发布。'); }
   }

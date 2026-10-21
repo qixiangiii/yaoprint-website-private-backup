@@ -56,7 +56,7 @@ function requireAdmin(req, res, next) {
 
 function requireCustomer(req, res, next) {
   if (req.session && req.session.customer) return next();
-  return res.status(401).json({ error: '请先登录曜印账户' });
+  return res.status(401).json({ error: '请先登录起元星启账户' });
 }
 
 function customerPublic(customer) {

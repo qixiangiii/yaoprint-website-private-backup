@@ -1,4 +1,4 @@
-// 曜印 YAOPRINT — 初始数据 (产品/新闻/评测/视频/场景/学社/下载/设置)
+// 起元星启 — 初始数据 (产品/新闻/评测/视频/场景/学社/下载/设置)
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 
@@ -36,45 +36,45 @@ const insProd = db.prepare(`INSERT INTO products
 
 const products = [
   {
-    slug: 'r1', name: '曜印 R1', subtitle: '万千想象 一点灵光', tag: '新品', price: '¥?',
+    slug: 'r1', name: '起元星启 R1', subtitle: '万千想象 一点灵光', tag: '新品', price: '¥?',
     cat: 'fdm', desc: '全新发布的桌面级迷你打印机,体积小巧但性能毫不妥协,将于 2026 年 9 月正式发布。',
     spec: { 技术: 'FDM 熔融沉积', 尺寸: '200×200×200 mm', 精度: '±0.1 mm', 速度: '500 mm/s' },
     hero: '/img/hero/r1.jpg', card: '/img/hero/r1.jpg', sort: 1
   },
   {
-    slug: 'a2l', name: '曜印 A2L', subtitle: '创意无限大', tag: '新品', price: '¥3,499 起', cat: 'fdm',
+    slug: 'a2l', name: '起元星启 A2L', subtitle: '创意无限大', tag: '新品', price: '¥3,499 起', cat: 'fdm',
     desc: '彩色触控大屏 + 全自动调平,2026 全新 A 系列旗舰,让多色打印成为日常。',
     spec: { 技术: 'FDM 多色', 尺寸: '256×256×256 mm', 精度: '±0.08 mm', 速度: '600 mm/s' },
     hero: '/img/hero/a2l.jpg', card: '/img/hero/a2l.jpg', sort: 2
   },
   {
-    slug: 'x2d', name: '曜印 X2D', subtitle: '轻松出大作', tag: '新品', price: '¥5,999 起', cat: 'fdm',
+    slug: 'x2d', name: '起元星启 X2D', subtitle: '轻松出大作', tag: '新品', price: '¥5,999 起', cat: 'fdm',
     desc: '12 色料盒与超大幅面,大尺寸创意作品也能一气呵成,支持高速、高质量双模式。',
     spec: { 技术: 'FDM 多色 12 色', 尺寸: '350×350×350 mm', 精度: '±0.05 mm', 速度: '600 mm/s' },
     hero: '/img/hero/x2d.jpg', card: '/img/hero/x2d.jpg', sort: 3
   },
   {
-    slug: 'h2c', name: '曜印 H2C', subtitle: '出色,无需妥协', tag: '新品', price: '¥9,999 起', cat: 'pro',
+    slug: 'h2c', name: '起元星启 H2C', subtitle: '出色,无需妥协', tag: '新品', price: '¥9,999 起', cat: 'pro',
     desc: 'Vortek 多材料系统与工程级精度,让工业级手板验证与多材料打印变得触手可得。',
     spec: { 技术: 'FDM 工程级', 尺寸: '325×320×325 mm', 精度: '±0.04 mm', 速度: '1000 mm/s' },
     hero: '/img/hero/h2c.jpg', card: '/img/hero/h2c.jpg', sort: 4,
     gallery: ['/img/detail/h2c/banner.jpg', '/img/detail/h2c/h1.png', '/img/detail/h2c/h2.png', '/img/detail/h2c/h3.png', '/img/detail/h2c/h4.png', '/img/detail/h2c/h5.png', '/img/detail/h2c/h6.png', '/img/detail/h2c/h7.png']
   },
   {
-    slug: 'p2s', name: '曜印 P2S', subtitle: '再一次,成为经典', tag: '新品', price: '¥3,999 起', cat: 'resin',
+    slug: 'p2s', name: '起元星启 P2S', subtitle: '再一次,成为经典', tag: '新品', price: '¥3,999 起', cat: 'resin',
     desc: '8K 单色液晶屏,矢量光引擎,超高细节让手办、牙科、珠宝建模栩栩如生。',
     spec: { 技术: 'MSLA 光固化', 尺寸: '228×128×230 mm', 精度: '±0.01 mm', 速度: '60 mm/h' },
     hero: '/img/hero/p2s.jpg', card: '/img/hero/p2s.jpg', sort: 5,
     gallery: ['/img/detail/p2s/banner.jpg', '/img/detail/p2s/h1.jpg', '/img/detail/p2s/h2.jpg', '/img/detail/p2s/h3.jpg', '/img/detail/p2s/h4.jpg', '/img/detail/p2s/h5.jpg', '/img/detail/p2s/h6.jpg', '/img/detail/p2s/h7.jpg', '/img/detail/p2s/h8.jpg', '/img/detail/p2s/h9.jpg', '/img/detail/p2s/m1.jpg', '/img/detail/p2s/m2.jpg', '/img/detail/p2s/m3.jpg']
   },
   {
-    slug: 'h2s', name: '曜印 H2S', subtitle: '你的个人智造中心', tag: '新品', price: '¥7,999 起', cat: 'pro',
+    slug: 'h2s', name: '起元星启 H2S', subtitle: '你的个人智造中心', tag: '新品', price: '¥7,999 起', cat: 'pro',
     desc: '集成 3D 打印、激光雕刻、刀切与笔绘的多功能智造中心,一台设备,无限可能。',
     spec: { 技术: 'FDM 多功能', 尺寸: '325×320×325 mm', 精度: '±0.05 mm', 速度: '600 mm/s' },
     hero: '/img/hero/h2s.jpg', card: '/img/hero/h2s.jpg', sort: 6
   },
   {
-    slug: 'h2d', name: '曜印 H2D', subtitle: '重新定义个人智造', tag: '新品', price: '¥11,999 起', cat: 'pro',
+    slug: 'h2d', name: '起元星启 H2D', subtitle: '重新定义个人智造', tag: '新品', price: '¥11,999 起', cat: 'pro',
     desc: '融合 3D 打印、激光切割、笔绘、刀切与贴纸模切于一身,你的瑞士军刀智造中心。',
     spec: { 技术: 'FDM 多功能 5 合 1', 尺寸: '325×320×325 mm', 精度: '±0.05 mm', 速度: '600 mm/s' },
     hero: '/img/hero/h2d.jpg', card: '/img/hero/h2d.jpg', sort: 7,
@@ -86,26 +86,26 @@ const products = [
       { name: '曜金', hex: '#c8a96a' }
     ],
     kits: [
-      { name: '标准版', price: '¥11,999', desc: '曜印 H2D 主机 + 基础切片软件 + 12 个月质保' },
+      { name: '标准版', price: '¥11,999', desc: '起元星启 H2D 主机 + 基础切片软件 + 12 个月质保' },
       { name: '创作套装', price: '¥13,999', desc: '标准版 + AMS 多色料盒 + 4 卷 PLA + 收纳包' },
       { name: '工坊套装', price: '¥19,999', desc: '创作套装 + 激光模组 + 笔绘模组 + 刀切模组' }
     ]
   },
   {
-    slug: 'a1', name: '曜印 A1', subtitle: '让多色打印成为标配', tag: '性价比', price: '¥2,499 起', cat: 'fdm',
+    slug: 'a1', name: '起元星启 A1', subtitle: '让多色打印成为标配', tag: '性价比', price: '¥2,499 起', cat: 'fdm',
     desc: '入门级全彩 FDM 打印机,4 色 AMS lite 色彩管理,易上手、好玩、不贵。',
     spec: { 技术: 'FDM 多色', 尺寸: '256×256×256 mm', 精度: '±0.1 mm', 速度: '500 mm/s' },
     hero: '/img/hero/a1.jpg', card: '/img/hero/a1.jpg', sort: 8,
     gallery: ['/img/detail/a1/banner.jpg', '/img/detail/a1/h1.jpg', '/img/detail/a1/h2.jpg', '/img/detail/a1/h3.jpg', '/img/detail/a1/h4.jpg', '/img/detail/a1/h5.jpg', '/img/detail/a1/h6.jpg', '/img/detail/a1/h7.jpg', '/img/detail/a1/comment1.jpg', '/img/detail/a1/comment2.jpg']
   },
   {
-    slug: 'a1-mini', name: '曜印 A1 mini', subtitle: '3D 打印入门小钢炮', tag: '热销', price: '¥1,599 起', cat: 'fdm',
+    slug: 'a1-mini', name: '起元星启 A1 mini', subtitle: '3D 打印入门小钢炮', tag: '热销', price: '¥1,599 起', cat: 'fdm',
     desc: '极致紧凑的桌面尺寸,开学、租房、家用皆合适,小身板,大作为。',
     spec: { 技术: 'FDM 单色', 尺寸: '180×180×180 mm', 精度: '±0.1 mm', 速度: '500 mm/s' },
     hero: '/img/hero/a1mini.jpg', card: '/img/hero/a1mini.jpg', sort: 9
   },
   {
-    slug: 'p1s', name: '曜印 P1S', subtitle: '全能生产力 3D 打印机', tag: '热销', price: '¥5,499 起', cat: 'pro',
+    slug: 'p1s', name: '起元星启 P1S', subtitle: '全能生产力 3D 打印机', tag: '热销', price: '¥5,499 起', cat: 'pro',
     desc: '全封闭腔体 + AMS 多色支持 + 高速打印,被全球创作者称为全能生产力工具。',
     spec: { 技术: 'FDM 多色', 尺寸: '256×256×256 mm', 精度: '±0.05 mm', 速度: '500 mm/s' },
     hero: '/img/hero/p1s.jpg', card: '/img/hero/p1s.jpg', sort: 10,
@@ -184,15 +184,15 @@ const news = [
     d: '该开源项目让更多行动不便儿童获得个性化辅具,展示社区如何用 3D 打印改变生活。',
     b: '我们与社区伙伴一起,共同推动 3D 打印在公益领域的应用。MakeGood 团队发布的儿童移动训练椅,采用模块化设计,家长与治疗师可以根据孩子的成长调整尺寸,而所有打印文件均免费开放下载。',
     c: '/img/scenes/diy.jpg', tag: '社区', sort: 1 },
-  { s: 'h2c-vortek', t: '曜印 H2C:多材料 Vortek 系统与工程精度的全新结合',
+  { s: 'h2c-vortek', t: '起元星启 H2C:多材料 Vortek 系统与工程精度的全新结合',
     d: '全新多材料 Vortek 系统支持 8 种工程材料热切换,大幅减少更换耗材的时间损耗。',
     b: 'H2C 重新定义了多材料打印的可能性,从前需要 30 分钟的换料动作,现在只需 5 秒即可完成。',
     c: '/img/hero/h2c.jpg', tag: '产品', sort: 2 },
-  { s: 'seagrass', t: '曜印支持英国初创团队建造海草收割机,助力修复海底生态',
+  { s: 'seagrass', t: '起元星启支持英国初创团队建造海草收割机,助力修复海底生态',
     d: '为环保团队提供设备与技术支持,3D 打印正在成为环保科技的重要工具。',
     b: '海草床是海洋生态系统的重要基础,但全球海草正以惊人速度消失。该项目通过 3D 打印定制零件,大幅降低了海草修复装置的研发与制造成本。',
     c: '/img/scenes/utility.jpg', tag: '环保', sort: 3 },
-  { s: 'farm-manager', t: '本地集群管理:曜印 Farm Manager 让工坊效率翻倍',
+  { s: 'farm-manager', t: '本地集群管理:起元星启 Farm Manager 让工坊效率翻倍',
     d: '在断网环境下统一管理 50 台设备,任务队列、切片、远程监控一站式完成。',
     b: 'Farm Manager 是面向工坊与教室的集群管理工具,支持断网环境下的本地部署。',
     c: '/img/quick/printer.jpg', tag: '软件', sort: 4 },
@@ -206,15 +206,15 @@ console.log(`  ✔ 写入 ${news.length} 条新闻`);
 // 媒体评测
 const insRv = db.prepare('INSERT INTO reviews (source,title,excerpt,url,cover,sort) VALUES (?,?,?,?,?,?)');
 [
-  ['The Verge', '曜印 H2D 不只是一台更大的 3D 打印机,它还是激光切割、笔绘和 Cricut 的对手',
-    '曜印 H2D 把 3D 打印、激光雕刻、刀切和笔绘四合一,是你自己的个人制造中心。',
+  ['The Verge', '起元星启 H2D 不只是一台更大的 3D 打印机,它还是激光切割、笔绘和 Cricut 的对手',
+    '起元星启 H2D 把 3D 打印、激光雕刻、刀切和笔绘四合一,是你自己的个人制造中心。',
     'https://www.theverge.com/', '/img/hero/h2d.jpg', 1],
-  ['The Independent', '曜印 H2D 3D 打印机评测:你自己的个人制造中心',
+  ['The Independent', '起元星启 H2D 3D 打印机评测:你自己的个人制造中心',
     '将创作者们喜爱的 3D 打印、激光雕刻、刀切与笔绘集于一体,堪称个人智造的瑞士军刀。',
     'https://www.independent.co.uk/', '/img/hero/h2d.jpg', 2],
-  ['TechRadar', '曜印 H2S 3D 打印机评测:大尺寸单喷头的全新高度',
+  ['TechRadar', '起元星启 H2S 3D 打印机评测:大尺寸单喷头的全新高度',
     '封闭腔体让它能打印工程材料,而不只是 PLA。', 'https://www.techradar.com/', '/img/hero/h2s.jpg', 3],
-  ["Tom's Hardware", '曜印 P2S 评测:经典再次进化', '上手简单、设置容易,无论新手还是农场主都值得拥有。',
+  ["Tom's Hardware", '起元星启 P2S 评测:经典再次进化', '上手简单、设置容易,无论新手还是农场主都值得拥有。',
     'https://www.tomshardware.com/', '/img/hero/p2s.jpg', 4],
 ].forEach(r => insRv.run(...r));
 console.log('  ✔ 写入 4 条媒体评测');
@@ -222,14 +222,14 @@ console.log('  ✔ 写入 4 条媒体评测');
 // 视频评测
 const insV = db.prepare('INSERT INTO videos (title,source,url,cover,sort) VALUES (?,?,?,?,?)');
 const vids = [
-  ['I Tested the 曜印 H2D – And It’s More Than I Expected', 'YouTube', '#', '/img/videos/c1.jpg', 1],
-  ['My Thoughts on the 曜印 H2C After 500 Hours of Testing', 'YouTube', '#', '/img/videos/c2.jpg', 2],
-  ['The 曜印 H2C Changes Everything - For Better or Worse', 'YouTube', '#', '/img/videos/c3.jpg', 3],
-  ['曜印 P2S | Der beste 3D-Drucker jetzt noch BESSER?!', 'YouTube', '#', '/img/videos/c4.jpg', 4],
-  ['Is 曜印’s H2S truly a H2D Lite or just a bigger X1C?', 'YouTube', '#', '/img/videos/c5.jpg', 5],
-  ['曜印Lab H2C Full In-Depth Review: Extensive Tests vs SnapMaker U1, Prusa XL', 'YouTube', '#', '/img/videos/c6.jpg', 6],
-  ['曜印 CUTTER & PLOTTER Review - The Secret Reason This Upgrade Is Genius', 'YouTube', '#', '/img/videos/c7.jpg', 7],
-  ['Is 曜印’s NEW H2C Tool-Changer printer a REAL game-changer?', 'YouTube', '#', '/img/videos/c8.jpg', 8],
+  ['I Tested the 起元星启 H2D – And It’s More Than I Expected', 'YouTube', '#', '/img/videos/c1.jpg', 1],
+  ['My Thoughts on the 起元星启 H2C After 500 Hours of Testing', 'YouTube', '#', '/img/videos/c2.jpg', 2],
+  ['The 起元星启 H2C Changes Everything - For Better or Worse', 'YouTube', '#', '/img/videos/c3.jpg', 3],
+  ['起元星启 P2S | Der beste 3D-Drucker jetzt noch BESSER?!', 'YouTube', '#', '/img/videos/c4.jpg', 4],
+  ['Is 起元星启’s H2S truly a H2D Lite or just a bigger X1C?', 'YouTube', '#', '/img/videos/c5.jpg', 5],
+  ['起元星启Lab H2C Full In-Depth Review: Extensive Tests vs SnapMaker U1, Prusa XL', 'YouTube', '#', '/img/videos/c6.jpg', 6],
+  ['起元星启 CUTTER & PLOTTER Review - The Secret Reason This Upgrade Is Genius', 'YouTube', '#', '/img/videos/c7.jpg', 7],
+  ['Is 起元星启’s NEW H2C Tool-Changer printer a REAL game-changer?', 'YouTube', '#', '/img/videos/c8.jpg', 8],
 ];
 vids.forEach(v => insV.run(...v));
 console.log('  ✔ 写入 8 条视频');
@@ -256,25 +256,25 @@ console.log('  ✔ 写入 3 个学社卡片');
 // 下载
 const insDl = db.prepare('INSERT INTO downloads (name,platform,size,version,url,sort) VALUES (?,?,?,?,?,?)');
 [
-  ['曜印 Studio (Windows)', 'Windows', '180 MB', 'v2.1.0', '#', 1],
-  ['曜印 Studio (macOS)', 'macOS', '190 MB', 'v2.1.0', '#', 2],
-  ['曜印 Studio (Linux)', 'Linux', '170 MB', 'v2.1.0', '#', 3],
-  ['曜印 Handy (iOS)', 'iOS', '85 MB', 'v3.0.2', '#', 4],
-  ['曜印 Handy (Android)', 'Android', '60 MB', 'v3.0.2', '#', 5],
-  ['曜印 Suite', '全平台', '在线服务', 'v1.0', '#', 6],
+  ['起元星启 Studio (Windows)', 'Windows', '180 MB', 'v2.1.0', '#', 1],
+  ['起元星启 Studio (macOS)', 'macOS', '190 MB', 'v2.1.0', '#', 2],
+  ['起元星启 Studio (Linux)', 'Linux', '170 MB', 'v2.1.0', '#', 3],
+  ['起元星启 Handy (iOS)', 'iOS', '85 MB', 'v3.0.2', '#', 4],
+  ['起元星启 Handy (Android)', 'Android', '60 MB', 'v3.0.2', '#', 5],
+  ['起元星启 Suite', '全平台', '在线服务', 'v1.0', '#', 6],
 ].forEach(d => insDl.run(...d));
 console.log('  ✔ 写入 6 个下载');
 
 // 设置
 const insSt = db.prepare('INSERT INTO settings (key,value) VALUES (?,?)');
 const settings = {
-  site_name: '曜印 YAOPRINT',
+  site_name: '起元星启',
   site_tagline: '让每一个创意即刻成为实物',
-  contact_email: 'hello@yaoprint.com',
+  contact_email: 'hello@qiyuanxingqi.com',
   contact_phone: '400-123-4567',
   contact_address: '深圳市南山区高新南一道 88 号',
   icp: '粤ICP备2021138226号-2',
-  copyright: '© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有',
+  copyright: '© 2026 起元星启科技有限公司 · 起元星启 版权所有',
   social_wechat: '#',
   social_weibo: '#',
   social_bilibili: '#',
