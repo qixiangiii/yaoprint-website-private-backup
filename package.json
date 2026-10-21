@@ -1,14 +1,22 @@
 {
   "name": "yaoprint-site",
   "version": "1.0.0",
-  "description": "曜印 YAOPRINT 3D 打印机官网 (前端 + 后台)",
+  "description": "起元星启官网与内容管理后台（初高中 3D 建模、3D 打印与学校创客课程）",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "check": "node tools/site-check.js",
+    "check:syntax": "node --check server.js && node --check db.js && node --check public/js/main.js && node --check public/js/education.js && node --check public/js/competition-data.js && node --check public/js/competition.js"
   },
-  "keywords": ["3d-print", "yaoprint", "cms"],
-  "author": "YAOPRINT",
+  "keywords": [
+    "3d-print",
+    "education",
+    "3d-modeling",
+    "qiyuan-xingqi",
+    "cms"
+  ],
+  "author": "桂林起元星启科技有限公司",
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^11.3.0",

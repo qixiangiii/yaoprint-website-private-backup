@@ -1,4 +1,4 @@
-// 曜印 YAOPRINT — Express 后台与 API
+// 起元星启 — 课程、设备参考与教育运营 API
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
@@ -12,7 +12,8 @@ const db = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_PROD = process.env.NODE_ENV === 'production';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'yaoprint-secret-key-change-me';
+const SESSION_SECRET = process.env.SESSION_SECRET || (IS_PROD ? '' : 'qiyuan-xingqi-development-secret-change-me');
+if (IS_PROD && !SESSION_SECRET) throw new Error('生产环境必须配置 SESSION_SECRET');
 
 app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -27,8 +28,8 @@ app.use(session({
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml']);
-const ALLOWED_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg']);
+const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const ALLOWED_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
 
 const storage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, uploadDir),
@@ -44,7 +45,7 @@ const upload = multer({
   fileFilter: (_, file, cb) => {
     const ext = path.extname(file.originalname || '').toLowerCase();
     if (ALLOWED_MIME.has(file.mimetype) && ALLOWED_EXT.has(ext)) return cb(null, true);
-    cb(new Error('仅支持 jpg / png / webp / gif / svg 图片，且不超过 5MB'));
+    cb(new Error('仅支持 jpg / png / webp / gif 图片，且不超过 5MB'));
   }
 });
 
@@ -75,15 +76,27 @@ function parseProduct(product) {
   product.gallery = parseJSON(product.gallery_json, []);
   product.colors = parseJSON(product.colors_json, []);
   product.kits = parseJSON(product.kits_json, []);
+  product.features = parseJSON(product.feature_json, []);
   delete product.spec_json;
   delete product.gallery_json;
   delete product.colors_json;
   delete product.kits_json;
+  delete product.feature_json;
   return product;
 }
 
+function safeLink(value = '') {
+  const url = String(value || '').trim();
+  if (!url) return '';
+  if (url.startsWith('/') && !url.startsWith('//')) return url;
+  try { return new URL(url).protocol === 'https:' ? url : ''; } catch { return ''; }
+}
+
+function isExternal(url = '') { return /^https:\/\//i.test(url); }
+
 function crud(table, fields, options = {}) {
   const required = options.required || [];
+  const validate = options.validate || (() => null);
   const publicOrder = options.publicOrder || 'sort, id';
   const publicWhere = options.publicWhere || '';
   const adminOrder = options.adminOrder || 'sort, id DESC';
@@ -109,6 +122,8 @@ function crud(table, fields, options = {}) {
     for (const key of required) {
       if (!String(body[key] || '').trim()) return res.status(400).json({ error: `${key} 必填` });
     }
+    const validationError = validate(body);
+    if (validationError) return res.status(400).json({ error: validationError });
     const cols = fields.join(',');
     const placeholders = fields.map(() => '?').join(',');
     const values = fields.map(f => body[f] == null ? '' : body[f]);
@@ -120,6 +135,8 @@ function crud(table, fields, options = {}) {
 
   app.put(`/api/admin/${table}/:id`, requireAdmin, (req, res) => {
     const body = req.body || {};
+    const validationError = validate(body);
+    if (validationError) return res.status(400).json({ error: validationError });
     const sets = fields.map(f => `${f}=?`).join(',');
     const values = fields.map(f => body[f] == null ? '' : body[f]);
     db.prepare(`UPDATE ${table} SET ${sets} WHERE id=?`).run(...values, req.params.id);
@@ -134,7 +151,7 @@ function crud(table, fields, options = {}) {
 
 // ============ 前台 API ============
 app.get('/api/products', (req, res) => {
-  const rows = db.prepare(`SELECT p.id, p.slug, p.name, p.subtitle, p.tag, p.price, p.description, p.image_svg, p.hero_image, p.card_image, p.spec_json, p.gallery_json, p.colors_json, p.kits_json, p.status, p.sort, c.slug AS cat_slug, c.name AS cat_name
+  const rows = db.prepare(`SELECT p.id, p.slug, p.name, p.subtitle, p.tag, p.price, p.description, p.image_svg, p.hero_image, p.card_image, p.spec_json, p.gallery_json, p.colors_json, p.kits_json, p.feature_json, p.relationship, p.official_url, p.source_label, p.relationship_disclaimer, p.spec_source, p.spec_verified_at, p.featured_home, p.status, p.sort, c.slug AS cat_slug, c.name AS cat_name
     FROM products p LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.status IN ('published','soon') ORDER BY p.sort, p.id`).all().map(parseProduct);
   res.json(rows);
@@ -148,21 +165,93 @@ app.get('/api/products/:slug', (req, res) => {
   res.json(parseProduct(p));
 });
 
-app.get('/api/news', (req, res) => {
-  const limit = Number(req.query.limit) || 20;
-  res.json(db.prepare("SELECT * FROM news WHERE status='published' ORDER BY sort, id DESC LIMIT ?").all(limit));
-});
+	const TEACHING_NEWS_TAGS = ['行业动态', '课堂方法', '学生教学', '软件选型'];
+	const teachingNewsPlaceholders = TEACHING_NEWS_TAGS.map(() => '?').join(',');
+	const newsOrderSql = `CASE WHEN tag='行业动态' THEN 0 ELSE 1 END, datetime(published_at) DESC, id DESC`;
 
-app.get('/api/news/:slug', (req, res) => {
-  const n = db.prepare('SELECT * FROM news WHERE slug = ?').get(req.params.slug);
-  if (!n) return res.status(404).json({ error: 'not found' });
-  res.json(n);
-});
+	app.get('/api/news', (req, res) => {
+	  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 50);
+	  const tag = String(req.query.tag || '').trim();
+	  const tags = TEACHING_NEWS_TAGS.includes(tag) ? [tag] : TEACHING_NEWS_TAGS;
+	  const placeholders = tags.map(() => '?').join(',');
+	  res.json(db.prepare(`SELECT * FROM news WHERE status='published' AND tag IN (${placeholders}) ORDER BY ${newsOrderSql} LIMIT ?`).all(...tags, limit));
+	});
+
+	app.get('/api/news/:slug', (req, res) => {
+	  const n = db.prepare(`SELECT * FROM news WHERE slug = ? AND status='published' AND tag IN (${teachingNewsPlaceholders})`).get(req.params.slug, ...TEACHING_NEWS_TAGS);
+	  if (!n) return res.status(404).json({ error: 'not found' });
+	  res.json(n);
+	});
 
 app.get('/api/settings', (req, res) => {
   const obj = {};
   db.prepare('SELECT * FROM settings').all().forEach(r => { obj[r.key] = r.value; });
   res.json(obj);
+});
+
+app.get('/api/ecosystem-platforms', (req, res) => {
+  res.json(db.prepare("SELECT * FROM ecosystem_platforms WHERE status='published' ORDER BY sort,id").all().map(item => ({ ...item, url: safeLink(item.url) })).filter(item => item.url));
+});
+
+function competitionLink(value = '') {
+  const url = String(value || '').trim();
+  if (!url) return '';
+  try { return new URL(url).protocol === 'https:' ? url : ''; } catch { return ''; }
+}
+
+function publicCompetition(row) {
+  return {
+    ...row,
+    official_url: competitionLink(row.official_url),
+    registration_url: competitionLink(row.registration_url),
+    notice_url: competitionLink(row.notice_url)
+  };
+}
+
+app.get('/api/competitions', (req, res) => {
+  const rows = db.prepare("SELECT * FROM competitions WHERE visibility='published' ORDER BY sort,id").all();
+  res.json(rows.map(publicCompetition).filter(row => row.official_url));
+});
+
+app.get('/api/competitions/:slug', (req, res) => {
+  const row = db.prepare("SELECT * FROM competitions WHERE slug=? AND visibility='published'").get(req.params.slug);
+  if (!row) return res.status(404).json({ error: '竞赛入口不存在或尚未发布' });
+  res.json(publicCompetition(row));
+});
+
+function courseCatalogIsPublic() {
+  return db.prepare("SELECT value FROM settings WHERE key='course_catalog_visibility'").get()?.value === 'public';
+}
+
+app.get('/api/courses', (req, res) => {
+  if (!courseCatalogIsPublic()) return res.json([]);
+  const category = String(req.query.category || '').trim();
+  const rows = db.prepare(`SELECT * FROM courses WHERE status='published'${category ? ' AND category=?' : ''} ORDER BY sort,id`).all(...(category ? [category] : []));
+  res.json(rows.map(course => ({ ...course, syllabus: parseJSON(course.syllabus_json, []), outcomes: parseJSON(course.outcomes_json, []), gallery: parseJSON(course.gallery_json, []) })));
+});
+
+app.get('/api/courses/:slug', (req, res) => {
+  if (!courseCatalogIsPublic()) return res.status(404).json({ error: '课程方案正在完善，暂未公开' });
+  const course = db.prepare("SELECT * FROM courses WHERE slug=? AND status='published'").get(req.params.slug);
+  if (!course) return res.status(404).json({ error: '课程不存在或尚未发布' });
+  course.syllabus = parseJSON(course.syllabus_json, []);
+  course.outcomes = parseJSON(course.outcomes_json, []);
+  course.gallery = parseJSON(course.gallery_json, []);
+  course.sessions = db.prepare("SELECT * FROM course_sessions WHERE course_id=? AND status IN ('open','draft') ORDER BY sort,id").all(course.id);
+  res.json(course);
+});
+
+app.get('/api/teachers', (req, res) => res.json(db.prepare("SELECT * FROM teachers WHERE status='published' ORDER BY sort,id").all().map(t => ({ ...t, specialties: parseJSON(t.specialties_json, []), grade_bands: parseJSON(t.grade_bands_json, []) }))));
+app.get('/api/campuses', (req, res) => res.json(db.prepare("SELECT * FROM campuses WHERE status='published' ORDER BY sort,id").all().map(c => ({ ...c, facilities: parseJSON(c.facilities_json, []) }))));
+app.get('/api/education-cases', (req, res) => res.json(db.prepare("SELECT * FROM education_cases WHERE status='published' AND visibility='public' ORDER BY sort,id").all().map(c => ({ ...c, outcomes: parseJSON(c.outcomes_json, []), gallery: parseJSON(c.gallery_json, []) }))));
+
+app.post('/api/enrollment-inquiries', (req, res) => {
+  const { lead_type, parent_name, parent_phone, parent_wechat, student_grade, course_id, campus_id, preferred_time, experience_level, message, privacy_consent, privacy_version } = req.body || {};
+  if (!parent_name || !parent_phone) return res.status(400).json({ error: '请填写监护人姓名和联系电话' });
+  if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
+  const result = db.prepare(`INSERT INTO enrollment_inquiries (lead_type,parent_name,parent_phone,parent_wechat,student_grade,course_id,campus_id,preferred_time,experience_level,message,privacy_consent,privacy_version,consent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))`)
+    .run(String(lead_type || 'trial'), String(parent_name).trim(), String(parent_phone).trim(), String(parent_wechat || '').trim(), String(student_grade || '').trim(), Number(course_id) || null, Number(campus_id) || null, String(preferred_time || '').trim(), String(experience_level || '').trim(), String(message || '').trim(), 1, String(privacy_version || '2026.09').trim());
+  res.json({ ok: true, id: result.lastInsertRowid });
 });
 
 app.get('/api/heroes', (req, res) => {
@@ -316,6 +405,23 @@ app.post('/api/tickets', (req, res) => {
   res.json({ ok: true });
 });
 
+crud('ecosystem_platforms', ['slug','name','platform_type','brand_owner','description','url','cover','relationship','disclaimer','link_label','last_verified_at','status','sort'], { required: ['slug','name','url'], publicWhere: "status='published'", publicOrder: 'sort,id', validate: body => safeLink(body.url) ? null : '生态平台链接仅支持 HTTPS 官方链接或站内路径' });
+crud('competitions', ['slug','title','category','organizer','fit','region','group_text','competition_status','official_url','registration_url','notice_url','source_label','cover','image_type','image_alt','image_source','screenshot_taken_at','verified_at','visibility','sort'], {
+  required: ['slug', 'title', 'official_url'],
+  publicWhere: "visibility='published'",
+  publicOrder: 'sort,id',
+  validate: body => {
+    if (!competitionLink(body.official_url)) return '官网链接必须是 HTTPS 地址';
+    if (body.registration_url && !competitionLink(body.registration_url)) return '报名链接必须是 HTTPS 地址';
+    if (body.notice_url && !competitionLink(body.notice_url)) return '官方通知链接必须是 HTTPS 地址';
+    return null;
+  }
+});
+crud('courses', ['code','slug','title','subtitle','category','grade_min','grade_max','target_audience','level','delivery_mode','total_sessions','total_hours','price_text','description','syllabus_json','outcomes_json','cover','gallery_json','status','sort','seo_title','seo_description'], { required: ['code','slug','title'], publicWhere: "status='published'", publicOrder: 'sort,id' });
+crud('teachers', ['slug','name','role','avatar','bio','specialties_json','grade_bands_json','status','sort'], { required: ['slug','name'], publicWhere: "status='published'", publicOrder: 'sort,id' });
+crud('campuses', ['name','city','district','address','transport','opening_hours','phone','cover','facilities_json','status','sort'], { required: ['name'], publicWhere: "status='published'", publicOrder: 'sort,id' });
+crud('course_sessions', ['course_id','campus_id','teacher_id','title','start_date','end_date','schedule_text','registration_deadline','capacity','trial_available','status','sort'], { required: ['course_id','title'], publicWhere: "status='open'", publicOrder: 'sort,id' });
+crud('education_cases', ['slug','title','case_kind','grade_band','student_count','duration_text','challenge','solution','outcomes_json','cover','gallery_json','visibility','status','sort'], { required: ['slug','title'], publicWhere: "status='published' AND visibility='public'", publicOrder: 'sort,id' });
 crud('categories', ['slug', 'name', 'sort'], { required: ['slug', 'name'] });
 crud('reviews', ['source', 'title', 'excerpt', 'url', 'cover', 'logo', 'sort'], { required: ['source', 'title'] });
 crud('videos', ['title', 'source', 'url', 'cover', 'sort'], { required: ['title'] });
@@ -410,6 +516,10 @@ app.delete('/api/admin/tickets/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/admin/enrollment-inquiries', requireAdmin, (req,res) => res.json(db.prepare(`SELECT e.*,c.title AS course_title,p.name AS campus_name FROM enrollment_inquiries e LEFT JOIN courses c ON c.id=e.course_id LEFT JOIN campuses p ON p.id=e.campus_id ORDER BY e.id DESC`).all()));
+app.put('/api/admin/enrollment-inquiries/:id', requireAdmin, (req,res) => { const body=req.body||{}; db.prepare('UPDATE enrollment_inquiries SET status=?,follow_up_note=? WHERE id=?').run(String(body.status||'new'),String(body.follow_up_note||''),req.params.id); res.json({ok:true}); });
+app.delete('/api/admin/enrollment-inquiries/:id', requireAdmin, (req,res) => { db.prepare('DELETE FROM enrollment_inquiries WHERE id=?').run(req.params.id); res.json({ok:true}); });
+
 app.get('/api/admin/customers', requireAdmin, (req,res) => res.json(db.prepare('SELECT id,email,name,phone,status,created_at FROM customers ORDER BY id DESC').all()));
 app.put('/api/admin/customers/:id', requireAdmin, (req,res) => { db.prepare('UPDATE customers SET status=? WHERE id=?').run(String((req.body||{}).status||'active'),req.params.id);res.json({ok:true}); });
 app.get('/api/admin/skus', requireAdmin, (req,res) => res.json(db.prepare('SELECT s.*,p.name AS product_name FROM catalog_skus s LEFT JOIN products p ON p.id=s.product_id ORDER BY s.sort,s.id DESC').all()));
@@ -449,6 +559,8 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     devices: db.prepare('SELECT COUNT(*) c FROM devices').get().c,
     submissions: db.prepare("SELECT COUNT(*) c FROM creator_submissions WHERE status='pending'").get().c,
     partnerApplications: db.prepare("SELECT COUNT(*) c FROM partner_applications WHERE status='new'").get().c,
+    enrollmentInquiries: db.prepare("SELECT COUNT(*) c FROM enrollment_inquiries WHERE status='new'").get().c,
+    courses: db.prepare('SELECT COUNT(*) c FROM courses').get().c,
   });
 });
 
@@ -477,7 +589,7 @@ app.delete('/api/admin/subs/:id', requireAdmin, (req, res) => {
 });
 
 app.get('/api/admin/products', requireAdmin, (req, res) => {
-  res.json(db.prepare(`SELECT p.id, p.slug, p.name, p.subtitle, p.category_id, p.tag, p.price, p.description, p.spec_json, p.image_svg, p.hero_image, p.card_image, p.gallery_json, p.colors_json, p.kits_json, p.status, p.sort, c.name AS cat_name FROM products p
+  res.json(db.prepare(`SELECT p.id, p.slug, p.name, p.subtitle, p.category_id, p.tag, p.price, p.description, p.spec_json, p.image_svg, p.hero_image, p.card_image, p.gallery_json, p.colors_json, p.kits_json, p.feature_json, p.relationship, p.official_url, p.source_label, p.relationship_disclaimer, p.spec_source, p.spec_verified_at, p.featured_home, p.status, p.sort, c.name AS cat_name FROM products p
     LEFT JOIN categories c ON p.category_id=c.id ORDER BY p.sort, p.id DESC`).all());
 });
 
@@ -488,21 +600,21 @@ app.get('/api/admin/products/:id', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/products', requireAdmin, (req, res) => {
-  const { slug, name, subtitle, category_id, tag, price, description, spec, image_svg, hero_image, card_image, gallery, colors, kits, status, sort } = req.body || {};
+  const { slug, name, subtitle, category_id, tag, price, description, spec, image_svg, hero_image, card_image, gallery, colors, kits, features, relationship, official_url, source_label, relationship_disclaimer, spec_source, spec_verified_at, featured_home, status, sort } = req.body || {};
   if (!slug || !name) return res.status(400).json({ error: 'slug 与名称必填' });
   try {
-    const r = db.prepare(`INSERT INTO products (slug,name,subtitle,category_id,tag,price,description,spec_json,image_svg,hero_image,card_image,gallery_json,colors_json,kits_json,status,sort)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(slug, name, subtitle||'', category_id||null, tag||'', price||'',
-      description||'', JSON.stringify(spec||{}), image_svg||'', hero_image||'', card_image||'', JSON.stringify(gallery||[]), JSON.stringify(colors||[]), JSON.stringify(kits||[]), status||'published', sort||0);
+    const r = db.prepare(`INSERT INTO products (slug,name,subtitle,category_id,tag,price,description,spec_json,image_svg,hero_image,card_image,gallery_json,colors_json,kits_json,feature_json,relationship,official_url,source_label,relationship_disclaimer,spec_source,spec_verified_at,featured_home,status,sort)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(slug, name, subtitle||'', category_id||null, tag||'', price||'',
+      description||'', JSON.stringify(spec||{}), image_svg||'', hero_image||'', card_image||'', JSON.stringify(gallery||[]), JSON.stringify(colors||[]), JSON.stringify(kits||[]), JSON.stringify(features||[]), relationship||'training_reference', safeLink(official_url), source_label||'', relationship_disclaimer||'', spec_source||'', spec_verified_at||'', featured_home ? 1 : 0, status||'published', sort||0);
     res.json({ ok: true, id: r.lastInsertRowid });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
 
 app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
-  const { slug, name, subtitle, category_id, tag, price, description, spec, image_svg, hero_image, card_image, gallery, colors, kits, status, sort } = req.body || {};
-  db.prepare(`UPDATE products SET slug=?, name=?, subtitle=?, category_id=?, tag=?, price=?, description=?, spec_json=?, image_svg=?, hero_image=?, card_image=?, gallery_json=?, colors_json=?, kits_json=?, status=?, sort=?, updated_at=datetime('now','localtime') WHERE id=?`)
+  const { slug, name, subtitle, category_id, tag, price, description, spec, image_svg, hero_image, card_image, gallery, colors, kits, features, relationship, official_url, source_label, relationship_disclaimer, spec_source, spec_verified_at, featured_home, status, sort } = req.body || {};
+  db.prepare(`UPDATE products SET slug=?, name=?, subtitle=?, category_id=?, tag=?, price=?, description=?, spec_json=?, image_svg=?, hero_image=?, card_image=?, gallery_json=?, colors_json=?, kits_json=?, feature_json=?, relationship=?, official_url=?, source_label=?, relationship_disclaimer=?, spec_source=?, spec_verified_at=?, featured_home=?, status=?, sort=?, updated_at=datetime('now','localtime') WHERE id=?`)
     .run(slug, name, subtitle||'', category_id||null, tag||'', price||'', description||'',
-      JSON.stringify(spec||{}), image_svg||'', hero_image||'', card_image||'', JSON.stringify(gallery||[]), JSON.stringify(colors||[]), JSON.stringify(kits||[]), status||'published', sort||0, req.params.id);
+      JSON.stringify(spec||{}), image_svg||'', hero_image||'', card_image||'', JSON.stringify(gallery||[]), JSON.stringify(colors||[]), JSON.stringify(kits||[]), JSON.stringify(features||[]), relationship||'training_reference', safeLink(official_url), source_label||'', relationship_disclaimer||'', spec_source||'', spec_verified_at||'', featured_home ? 1 : 0, status||'published', sort||0, req.params.id);
   res.json({ ok: true });
 });
 
@@ -548,13 +660,15 @@ app.put('/api/admin/settings', requireAdmin, (req, res) => {
 app.post('/api/admin/upload', requireAdmin, (req, res) => {
   upload.single('file')(req, res, err => {
     if (err) return res.status(400).json({ error: err.message || '上传失败' });
-    if (!req.file) return res.status(400).json({ error: '请选择图片文件（jpg/png/webp/gif/svg，最大 5MB）' });
+    if (!req.file) return res.status(400).json({ error: '请选择图片文件（jpg/png/webp/gif，最大 5MB）' });
     res.json({ ok: true, url: '/uploads/' + req.file.filename });
   });
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname)));
+
+// 使用品牌 Logo 作为轻量站点图标，避免浏览器在教育页发起 favicon 404 请求。
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'img', 'logo.svg')));
 
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html')));
 app.get('/admin/*', (req, res) => {
@@ -566,7 +680,7 @@ app.get('/admin/*', (req, res) => {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.listen(PORT, () => {
-  console.log(`🟢 曜印 YAOPRINT 站点已启动: http://localhost:${PORT}`);
+  console.log(`🟢 起元星启网站已启动: http://localhost:${PORT}`);
   console.log(`   后台管理: http://localhost:${PORT}/admin`);
   if (!IS_PROD) console.log('   开发环境默认账号见 README（首次请立即修改密码）');
 });

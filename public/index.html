@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>曜印 YAOPRINT — 3D 打印机 | 让每一个创意即刻成为实物</title>
-<meta name="description" content="曜印 YAOPRINT 专注高精度 3D 打印机研发制造,产品覆盖桌面 FDM、工业级高速、光固化与原厂耗材,服务教育、工业、医疗、文创。">
+<title>起元星启｜3D 建模与打印学习平台</title>
+<meta name="description" content="桂林起元星启科技有限公司，提供简单入门到项目挑战的 3D 建模、3D 打印、科创项目与学校创客课程支持。">
+<link rel="icon" href="/img/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,19 +22,26 @@
         <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/>
         <path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/>
       </svg>
-      曜印<span class="en">YAOPRINT</span>
+起元星启<span class="en">QIYUAN XINGQI</span>
     </a>
     <nav class="nav-links" id="navLinks">
-      <a href="products.html">产品</a>
-      <a href="filament.html">耗材</a>
-      <a href="explore.html">探索</a>
-      <a href="solutions.html">行业应用</a>
-      <a href="software.html">软件</a>
-      <a href="support.html">支持</a>
-      <a href="about.html">关于</a>
+      <div class="nav-platform-menu" data-platform-menu>
+        <button type="button" class="nav-ecosystem" aria-haspopup="true" aria-expanded="false" aria-controls="platformMenu">模型社区 <span aria-hidden="true">▾</span></button>
+        <div class="platform-dropdown" id="platformMenu" hidden aria-label="模型生态平台">
+          <div class="platform-dropdown-head"><span>模型生态平台</span><small>第三方官方入口</small></div>
+          <div class="platform-dropdown-list" data-platform-dropdown></div>
+          <a class="platform-dropdown-all" href="explore/ecosystem.html">查看模型生态集合 <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <a href="courses/index.html">课程体系</a>
+      <a href="knowledge.html">学习中心</a>
+      <a href="works.html">作品展厅</a>
+      <a href="competition.html">竞赛成长</a>
+      <a href="news.html">新闻活动</a>
+      <a href="solutions/school.html">学校合作</a>
     </nav>
     <div class="nav-cta">
-      <a href="contact.html" class="btn btn-primary btn-sm">立即咨询</a>
+      <a href="trial.html" class="btn btn-primary btn-sm">预约试听</a>
       <button class="menu-toggle" id="menuToggle" aria-label="打开菜单">
         <span></span><span></span><span></span>
       </button>
@@ -42,234 +50,149 @@
 </header>
 
 <!-- Hero 轮播 — 全图位(参考拓竹官网) -->
-<section class="hero">
+<section class="hero hero--home hero--education">
   <div class="container">
     <div class="hero-swiper" data-cms-heroes>
-      <div class="hero-slide" data-img="/img/hero/r1.jpg">
-        <img class="hero-img" src="/img/hero/r1.jpg" alt="曜印 R1">
+      <div class="hero-slide">
+        <div class="hero-media"><img class="hero-img" src="/img/education/hero-makerspace.webp" alt="学生在创客空间进行3D建模与打印"></div>
         <div class="hero-overlay">
-          <span class="hero-tag">2026 新品</span>
-          <h1>万千想象<br><span class="green">一点灵光</span></h1>
-          <p class="hero-sub">曜印 R1</p>
-          <p class="hero-lead">超紧凑桌面级 3D 打印机,小巧机身却拥有不妥协的打印性能。2026 年 9 月,敬请期待。</p>
-          <div class="hero-actions">
-            <a href="product.html?slug=r1" class="btn btn-light btn-lg">了解更多</a>
-            <a href="contact.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">预约试用</a>
-          </div>
+          <span class="hero-tag">学生 3D 建模与打印学习平台</span>
+          <h1>把脑海里的创意<br><span class="green">变成拿得出的作品</span></h1>
+          <p class="hero-sub">建模 → 打印 → 作品 → 竞赛</p>
+          <p class="hero-lead">从第一个数字模型开始，完成真实问题、实体原型、项目记录与公开表达。</p>
+          <div class="hero-actions"><a href="trial.html" class="btn btn-light btn-lg">预约体验课</a><a href="works.html" class="btn hero-secondary btn-lg">看看学生作品</a></div>
         </div>
       </div>
-
-      <div class="hero-slide" data-img="/img/hero/a2l.jpg" style="display:none">
-        <img class="hero-img" src="/img/hero/a2l.jpg" alt="曜印 A2L">
-        <div class="hero-overlay">
-          <span class="hero-tag new">新品</span>
-          <h1>创意无限大</h1>
-          <p class="hero-sub">曜印 A2L</p>
-          <p class="hero-lead">彩色触控大屏 + 全自动调平,2026 全新 A 系列旗舰,让多色打印成为日常。</p>
-          <div class="hero-actions">
-            <a href="product.html?slug=a2l" class="btn btn-light btn-lg">立即购买</a>
-            <a href="product.html?slug=a2l" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">了解更多</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-slide" data-img="/img/hero/h2d.jpg" style="display:none">
-        <img class="hero-img" src="/img/hero/h2d.jpg" alt="曜印 H2D">
-        <div class="hero-overlay">
-          <span class="hero-tag new">新品</span>
-          <h1>重新定义<br><span class="green">个人智造</span></h1>
-          <p class="hero-sub">曜印 H2D</p>
-          <p class="hero-lead">3D 打印、激光雕刻、笔绘、刀切、贴纸模切五合一,你的瑞士军刀智造中心。</p>
-          <div class="hero-actions">
-            <a href="product.html?slug=h2d" class="btn btn-light btn-lg">立即购买</a>
-            <a href="compare.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">参数对比</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-slide" data-img="/img/hero/letsmakeit.jpg" style="display:none">
-        <img class="hero-img" src="/img/hero/letsmakeit.jpg" alt="Let's Make It 创造基金">
-        <div class="hero-overlay">
-          <span class="hero-tag eco">激励计划</span>
-          <h1>Let's Make It<br><span class="green">创造基金</span></h1>
-          <p class="hero-sub">最高 $300,000 激励,让伟大创造成真</p>
-          <p class="hero-lead">面向全球创作者的资助计划,寻找用 3D 打印改变世界的你。</p>
-          <div class="hero-actions">
-            <a href="news.html?slug=letsmakeit" class="btn btn-light btn-lg">了解详情</a>
-            <a href="contact.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">提交申请</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-slide" data-img="/img/hero/h2c.jpg" style="display:none">
-        <img class="hero-img" src="/img/hero/h2c.jpg" alt="曜印 H2C">
-        <div class="hero-overlay">
-          <span class="hero-tag new">新品</span>
-          <h1>出色,无需妥协</h1>
-          <p class="hero-sub">曜印 H2C · Vortek 多材料系统</p>
-          <p class="hero-lead">全新多材料 Vortek 系统支持 8 种工程材料热切换,大幅减少换料时间。</p>
-          <div class="hero-actions">
-            <a href="product.html?slug=h2c" class="btn btn-light btn-lg">立即购买</a>
-            <a href="product.html?slug=h2c" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">了解更多</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-slide" data-img="/img/hero/p2s.jpg" style="display:none">
-        <img class="hero-img" src="/img/hero/p2s.jpg" alt="曜印 P2S">
-        <div class="hero-overlay">
-          <span class="hero-tag new">新品</span>
-          <h1>再一次,成为经典</h1>
-          <p class="hero-sub">曜印 P2S · 8K 单色光固化</p>
-          <p class="hero-lead">8K 单色液晶屏,矢量光引擎,超高细节让手办、牙科、珠宝建模栩栩如生。</p>
-          <div class="hero-actions">
-            <a href="product.html?slug=p2s" class="btn btn-light btn-lg">立即购买</a>
-            <a href="product.html?slug=p2s" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">了解更多</a>
-          </div>
-        </div>
-      </div>
-
       <div class="hero-pagination"></div>
     </div>
   </div>
 </section>
 
-<!-- 数据信任条 -->
-<section class="stats-band">
+<!-- 学生任务入口 -->
+<section class="section section--pathways">
   <div class="container">
-    <div class="stat" data-stat="1"><b><span data-setting="stat1_value">1.5</span><i data-setting="stat1_unit">M+</i></b><span data-setting="stat1_label">全球累计出货(台)</span></div>
-    <div class="stat" data-stat="2"><b><span data-setting="stat2_value">0.01</span><i data-setting="stat2_unit">mm</i></b><span data-setting="stat2_label">最高打印精度</span></div>
-    <div class="stat" data-stat="3"><b><span data-setting="stat3_value">100</span><i data-setting="stat3_unit">+</i></b><span data-setting="stat3_label">国家与地区</span></div>
-    <div class="stat" data-stat="4"><b><span data-setting="stat4_value">300</span><i data-setting="stat4_unit">+</i></b><span data-setting="stat4_label">授权专利技术</span></div>
-  </div>
-</section>
-
-<!-- 产品展示 -->
-<section class="section" id="products">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">3D Printers</span>
-      <h2>明星产品系列</h2>
-      <p>从入门到量产,曜印为每一个阶段提供合适的设备。</p>
+    <div class="section-head section-head--left reveal">
+      <span class="kicker">Start where you are</span>
+      <h2>先选一个你想完成的任务</h2>
+      <p>不需要先懂软件。告诉我们你想做什么，课程会从合适的第一个项目开始。</p>
     </div>
-    <div class="product-grid" data-products></div>
-  </div>
-</section>
-
-<!-- 三大品类(图卡,拓竹风格) -->
-<section class="section soft">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">Categories</span>
-      <h2>全场景覆盖</h2>
-      <p>无论你是入门创客、工业用户,还是珠宝牙科专业人士,曜印都有匹配方案。</p>
-    </div>
-    <div class="quick-grid">
-      <a href="products.html" class="quick-card">
-        <img src="/img/quick/printer.jpg" alt="3D 打印机">
-        <div class="quick-overlay">
-          <h3>3D 打印机</h3>
-          <p>创客的生产力工具</p>
-          <div class="quick-actions">
-            <span class="btn btn-light btn-sm">立即购买</span>
-            <span class="btn btn-link btn-sm" style="color:#fff">产品对比 →</span>
-          </div>
-        </div>
-      </a>
-      <a href="filament.html" class="quick-card">
-        <img src="/img/quick/filament.jpg" alt="耗材">
-        <div class="quick-overlay">
-          <h3>耗材</h3>
-          <p>高质量 3D 打印耗材</p>
-          <div class="quick-actions">
-            <span class="btn btn-light btn-sm">立即购买</span>
-            <span class="btn btn-link btn-sm" style="color:#fff">了解更多 →</span>
-          </div>
-        </div>
-      </a>
-      <a href="software.html" class="quick-card">
-        <img src="/img/quick/makerworld.jpg" alt="MakerWorld">
-        <div class="quick-overlay">
-          <h3>MakerWorld</h3>
-          <p>下载免费优质模型</p>
-          <div class="quick-actions">
-            <span class="btn btn-light btn-sm">了解更多</span>
-          </div>
-        </div>
-      </a>
-      <a href="products.html" class="quick-card">
-        <img src="/img/quick/maker.jpg" alt="创客宝库">
-        <div class="quick-overlay">
-          <h3>创客宝库</h3>
-          <p>用非 3D 打印配件丰富模型</p>
-          <div class="quick-actions">
-            <span class="btn btn-light btn-sm">立即购买</span>
-          </div>
-        </div>
-      </a>
+    <div class="pathway-grid">
+      <a class="pathway-card pathway-card--green" href="courses/index.html?category=基础入门"><span class="pathway-number">01</span><h3>我从未学过建模</h3><p>从姓名牌、徽章和桌面小件开始，先看见第一件作品。</p><span class="pathway-link">从基础开始 →</span></a>
+      <a class="pathway-card pathway-card--dark" href="works.html"><span class="pathway-number">02</span><h3>我想打印自己的作品</h3><p>把草图变成可以切片、打印、测试和带走的实体模型。</p><span class="pathway-link">浏览作品展厅 →</span></a>
+      <a class="pathway-card pathway-card--orange" href="competition.html"><span class="pathway-number">03</span><h3>我想准备项目或竞赛</h3><p>学习如何选题、留证据、做两轮原型并完成项目表达。</p><span class="pathway-link">查看成长路线 →</span></a>
+      <a class="pathway-card pathway-card--blue" href="solutions/school.html"><span class="pathway-number">04</span><h3>我是家长或老师</h3><p>了解课程目标、安全管理、作品归档和学校合作方式。</p><span class="pathway-link">查看合作方案 →</span></a>
     </div>
   </div>
 </section>
 
-<!-- 3D 打印能做什么 -->
-<section class="section">
+<!-- 成长路径 -->
+<section class="section soft section--journey">
   <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">3D Printing Inspirations</span>
-      <h2>3D 打印能做什么</h2>
-      <p>从手办到工装夹具,从一个想法到一件实物,3D 打印正在改变创造的方式。</p>
+    <div class="section-head section-head--left reveal">
+      <span class="kicker">From idea to evidence</span>
+      <h2>一条看得见的学习成长路径</h2>
+      <p>每一步都有可检查的产出，学生不只是“学过软件”，而是能说明自己怎样做、怎样改、怎样验证。</p>
     </div>
-    <div class="scene-grid" data-scenes></div>
+    <div class="journey-track" aria-label="建模到竞赛的五步成长路径">
+      <article class="journey-step"><span>01</span><div><b>建模</b><h3>把想法放进三维空间</h3><p>从基本体、尺寸和草图开始，完成可编辑的数字模型。</p></div></article>
+      <article class="journey-step"><span>02</span><div><b>打印</b><h3>让模型接受真实测试</h3><p>理解切片、层高、填充、支撑和材料，记录首版结果。</p></div></article>
+      <article class="journey-step"><span>03</span><div><b>作品</b><h3>改进成能使用的原型</h3><p>围绕强度、配合、外观或使用体验，完成第二版迭代。</p></div></article>
+      <article class="journey-step"><span>04</span><div><b>表达</b><h3>整理一份自己的项目档案</h3><p>留下草图、参数、测试照片、失败记录和修改理由。</p></div></article>
+      <article class="journey-step journey-step--last"><span>05</span><div><b>竞赛</b><h3>选择适合的公开展示机会</h3><p>按照主办方当年规则准备报名材料、展板和答辩。</p></div></article>
+    </div>
   </div>
 </section>
 
-<!-- 学社 -->
-<section class="section soft">
+<!-- 创作者视频 -->
+<section class="section section--creator-videos">
   <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">Get Started</span>
-      <h2>新手入门?从这里启航</h2>
-      <p>从 0 到 1 进阶 3D 打印,免费课程、海量模型、专业耗材一站直达。</p>
+    <div class="section-head section-head--left reveal">
+      <span class="kicker">Creator Studio</span>
+      <h2>看见作品如何被做出来</h2>
+      <p>从建模、切片到实体打印，观看真实创作过程，了解一个作品如何在测试和修改中逐步完成。</p>
     </div>
-    <div class="scene-grid" data-academy></div>
+    <div class="video-grid" data-videos aria-live="polite"></div>
+    <div class="text-center mt-4"><a class="btn btn-outline" href="/explore/creators.html">查看创作者内容</a></div>
   </div>
 </section>
 
-<!-- KOL 视频 -->
-<section class="section">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">Pro Reviews</span>
-      <h2>看看专业用户怎么说</h2>
-      <p>来自全球科技 KOL 与专业媒体的真实评测。</p>
+<!-- 体验课 -->
+<section class="section section--trial-preview">
+  <div class="container trial-preview">
+    <div class="trial-preview-copy">
+      <span class="kicker">60–90 minute studio class</span>
+      <h2>一节体验课，完成一次小型项目闭环</h2>
+      <p>认识设备、完成基础建模、看懂切片、观察打印，再用一句话讲清自己的设计决定。体验课是入口，不等同于竞赛承诺。</p>
+      <div class="hero-actions"><a class="btn btn-primary" href="trial.html">预约体验课</a><a class="btn btn-outline" href="knowledge.html">先看学习内容</a></div>
     </div>
-    <div class="video-grid" data-videos></div>
+    <div class="trial-checklist">
+      <div><span>01</span><b>认识</b><p>知道喷头、平台和材料各自做什么。</p></div>
+      <div><span>02</span><b>建模</b><p>完成一个可编辑、可导出的基础模型。</p></div>
+      <div><span>03</span><b>观察</b><p>看到数字模型如何一层层变成实体。</p></div>
+      <div><span>04</span><b>带走</b><p>获得作品或项目记录，知道下一步学什么。</p></div>
+    </div>
   </div>
 </section>
 
-<!-- 媒体评价 -->
-<section class="section soft">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">Media Reviews</span>
-      <h2>获奖/媒体评价</h2>
-      <p>The Verge、TechRadar、Tom's Hardware 等国际媒体的客观评价。</p>
+<!-- 竞赛与作品集 -->
+<section class="section dark section--competition-preview">
+  <div class="container competition-preview">
+    <div>
+      <span class="kicker">Project & competition</span>
+      <h2>证书不是起点，作品和证据才是</h2>
+      <p>一个简单模型可以继续发展为校园问题解决、工程设计、数字创作或创客实践项目。课程训练选题、原型、测试、记录和答辩，不承诺报名即获证或参赛即获奖。</p>
+      <a class="btn btn-primary" href="competition.html">查看竞赛成长说明</a>
     </div>
-    <div class="media-grid" data-reviews></div>
+    <div class="evidence-stack">
+      <div><span>01</span><b>问题</b><small>为什么要做？谁会使用？</small></div>
+      <div><span>02</span><b>过程</b><small>草图、模型、参数和版本。</small></div>
+      <div><span>03</span><b>证据</b><small>测试数据、失败和修改。</small></div>
+      <div><span>04</span><b>表达</b><small>作品集、展板和答辩。</small></div>
+    </div>
   </div>
 </section>
 
-<!-- 品牌新闻 -->
+<!-- 三件代表模型 -->
+<section class="section soft section--works-preview">
+  <div class="container">
+    <div class="section-head section-head--left reveal">
+      <span class="kicker">Starter models</span>
+      <h2>从一个小模型开始，做出自己的作品</h2>
+      <p>先完成简单、可解释的模型，再决定是否继续做功能测试或项目迭代。下列均为课堂教学示例，不把数字检查写成实体打印成功。</p>
+    </div>
+    <div class="works-preview-grid">
+      <a class="works-preview-card" href="works.html?model=campus-badge"><img src="/media/first-print.jpg" alt="校园文创徽章的打印过程示意" loading="lazy"><div><span>简单模型</span><h3>校园文创徽章</h3><p>文字、圆角、薄板厚度</p></div></a>
+      <a class="works-preview-card" href="works.html?model=phone-stand"><img src="/media/slicing-basics.jpg" alt="手机支架的切片与结构示意" loading="lazy"><div><span>功能模型</span><h3>手机支架</h3><p>尺寸、受力、首次改版</p></div></a>
+      <a class="works-preview-card" href="works.html?model=bridge-structure"><img src="/img/education/robotic-fair-01.webp" alt="桥梁承重结构项目展示示意" loading="lazy"><div><span>项目模型</span><h3>桥梁承重结构</h3><p>结构、载荷与测试记录</p></div></a>
+    </div>
+    <div class="works-preview-footer"><p>每个模型都提供难度、时间、建模步骤、打印建议、失败位置和改进挑战。</p><a class="btn btn-outline" href="works.html">查看全部模型</a></div>
+  </div>
+</section>
+
+<!-- 课程与活动动态 -->
 <section class="news-block">
   <div class="container">
     <div class="section-head reveal">
-      <span class="kicker" style="color:#1aaf5d">Brand News</span>
-      <h2>品牌新闻</h2>
-      <p>产品发布、社区故事、行业洞察第一时间送达。</p>
+      <span class="kicker">Articles &amp; News</span>
+      <h2>教学文章与行业动态</h2>
+      <p>近期 3D 打印公开事件的课堂解读，以及安全、出件、建模方法原文。可在文章页阅读全文。</p>
     </div>
     <div class="news-list">
-      <div class="news-featured reveal" data-news-featured></div>
-      <div class="news-side" data-news-list></div>
+      <a class="news-featured" data-news-featured href="news.html">
+        <div class="cover" style="background-image:url('/media/first-print.jpg')"></div>
+        <div class="news-featured-content">
+          <div class="tag">预约试听</div>
+          <h3>先从一次课程沟通开始</h3>
+          <p>根据学生年级、兴趣方向和建模基础，安排合适的课程与试听建议。</p>
+          <span class="btn btn-light btn-sm">预约试听</span>
+        </div>
+      </a>
+      <div class="news-side" data-news-list>
+        <a href="solutions/school.html" class="news-item">
+          <div class="thumb" style="background-image:url('/img/education/makerspace-commons.webp')"></div>
+          <div><h4>让设备、课程和师资共同服务教学目标</h4><div class="date">学校合作</div></div>
+        </a>
+      </div>
     </div>
   </div>
 </section>
@@ -279,8 +202,8 @@
   <div class="container">
     <div class="subscribe-inner">
       <div>
-        <h3>第一时间获得最新的产品动态、促销和免费试用信息</h3>
-        <p class="mt-2" style="color:var(--gray-4)">订阅曜印周报,精彩内容不容错过。</p>
+        <h3>第一时间获得课程、公开课与三维创作活动信息</h3>
+        <p class="mt-2">订阅起元星启课程动态，及时了解试听与学校合作活动。</p>
       </div>
       <div>
         <form class="subscribe-form" id="subForm">
@@ -290,7 +213,7 @@
         </form>
         <div class="subscribe-check">
           <input id="subTerms" type="checkbox" required>
-          <label for="subTerms">我同意曜印 <a href="/content.html?type=policy&slug=terms">使用条款</a> 和 <a href="/content.html?type=policy&slug=privacy">隐私政策</a>。</label>
+          <label for="subTerms">我同意起元星启 <a href="/content.html?type=policy&slug=terms">使用条款</a> 和 <a href="/content.html?type=policy&slug=privacy">隐私说明</a>。</label>
         </div>
         <div class="form-tip" id="subTip" style="margin-top:12px"></div>
       </div>
@@ -301,11 +224,11 @@
 <!-- CTA -->
 <section class="cta-band cta--brand">
   <div class="container">
-    <h2>准备好开始打印了吗?</h2>
-    <p>告诉我们您的应用场景,曜印顾问将在 1 个工作日内为您提供选型建议与报价。</p>
-    <div class="hero-actions" style="justify-content:center">
-      <a href="contact.html" class="btn btn-lg">免费获取选型方案</a>
-      <a href="products.html" class="btn btn-outline btn-lg">浏览全部产品</a>
+    <h2>从一次试听开始了解三维创作</h2>
+    <p>留下监护人联系信息，课程顾问将按学生年级、兴趣与课程方向安排沟通。</p>
+    <div class="hero-actions">
+      <a href="trial.html" class="btn btn-lg">预约试听</a>
+      <a href="solutions/school.html" class="btn btn-outline btn-lg">学校合作咨询</a>
     </div>
   </div>
 </section>
@@ -321,9 +244,9 @@
             <path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/>
             <path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/>
           </svg>
-          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
+          起元星启<span class="en">QIYUAN XINGQI</span>
         </a>
-        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造,让每一个创意即刻成为实物。</p>
+        <p data-setting="business_scope">面向学生与学校的 3D 建模、3D 打印、科创项目服务。</p>
         <div class="social-row">
           <a href="#" data-social="wechat" aria-label="微信"><svg viewBox="0 0 24 24"><path d="M9.5 4C5.9 4 3 6.5 3 9.6c0 1.8 1 3.4 2.5 4.4l-.7 2.2 2.4-1.2c.7.2 1.5.3 2.3.3h.4A5.5 5.5 0 0 1 9.5 4Z"/></svg></a>
           <a href="#" data-social="weibo" aria-label="微博"><svg viewBox="0 0 24 24"><path d="M10 8.5c-3.9.4-7 2.8-7 5.9 0 3.3 3.6 5.6 8 5.6 4.5 0 8-2.5 8-5.8 0-2.7-2.6-4.6-5.6-4.9Z"/></svg></a>
@@ -332,45 +255,46 @@
         </div>
       </div>
       <div>
-        <h4>打印机</h4>
+        <h4>教学</h4>
         <ul>
-          <li><a href="products.html">3D 打印机</a></li>
-          <li><a href="filament.html">打印耗材</a></li>
-          <li><a href="products.html">配件</a></li>
-          <li><a href="products.html">备用零件</a></li>
+          <li><a href="courses/index.html">课程中心</a></li>
+          <li><a href="knowledge.html">知识中心</a></li>
+          <li><a href="news.html">教学文章</a></li>
+          <li><a href="software.html">学生软件</a></li>
+          <li><a href="trial.html">预约试听</a></li>
         </ul>
       </div>
       <div>
-        <h4>软件</h4>
+        <h4>设备与工具</h4>
         <ul>
-          <li><a href="software.html">曜印 Studio</a></li>
-          <li><a href="software.html">曜印 Handy</a></li>
-          <li><a href="software.html">Farm Manager</a></li>
-          <li><a href="/software/status.html">系统状态</a></li>
+          <li><a href="products.html">教学设备参考</a></li>
+          <li><a href="explore/ecosystem.html">模型生态集合</a></li>
+          <li><a href="software.html">学生软件</a></li>
+          <li><a href="image-credits.html">图片来源</a></li>
         </ul>
       </div>
       <div>
-        <h4>支持</h4>
+        <h4>学校合作</h4>
         <ul>
-          <li><a href="support.html">技术支持</a></li>
-          <li><a href="support.html">曜印学院</a></li>
-          <li><a href="filament.html">耗材指南</a></li>
-          <li><a href="/support/knowledge-base.html">官方 Wiki</a></li>
+          <li><a href="solutions/school.html">校本课程</a></li>
+          <li><a href="solutions/school.html">创客社团</a></li>
+          <li><a href="solutions/school.html">教师培训</a></li>
+          <li><a href="contact.html?subject=学校合作">合作咨询</a></li>
         </ul>
       </div>
       <div>
         <h4>公司</h4>
         <ul>
-          <li><a href="about.html">关于我们</a></li>
-          <li><a href="news.html">博客</a></li>
-          <li><a href="contact.html">联系我们</a></li>
-          <li><a href="contact.html">渠道合作</a></li>
+          <li><a href="about.html">关于起元星启</a></li>
+          <li><a href="works.html">教学成果</a></li>
+          <li><a href="contact.html">课程咨询</a></li>
+          <li><a href="trial.html">预约试听</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <span data-setting="copyright">© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
-      <span data-setting="icp">粤ICP备XXXXXXXX号-1</span>
+      <span data-setting="copyright">© 2026 桂林起元星启科技有限公司 版权所有</span>
+      <span data-setting="icp"></span>
     </div>
   </div>
 </footer>

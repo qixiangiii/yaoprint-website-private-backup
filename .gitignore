@@ -21,3 +21,16 @@ public/uploads/
 
 # Local editor and task metadata
 .zcode/
+
+# Local working artifacts (not part of the website)
+.playwright-cli/
+.zcodeignore
+output/
+ppt_build/
+ppt_delivery_40/
+ppt_demo_retract/
+ppt_lecture/
+教学资料/
+*.pptx
+*.docx
+.~*

@@ -1,118 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>关于我们 — 曜印 YAOPRINT</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关于起元星启｜3D 建模与打印学习平台</title>
+<meta name="description" content="桂林起元星启科技有限公司，专注简单入门到项目挑战的 3D 建模、3D 打印、科创项目与学校创客课程支持。">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<header class="navbar">
-  <div class="container">
-    <a href="/index.html" class="logo">
-      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
-      曜印<span class="en">YAOPRINT</span>
-    </a>
-    <nav class="nav-links" id="navLinks">
-      <a href="/products.html">产品</a>
-      <a href="/filament.html">耗材</a>
-      <a href="/explore.html">探索</a>
-      <a href="/solutions.html">行业应用</a>
-      <a href="/software.html">软件</a>
-      <a href="/support.html">支持</a>
-      <a href="/about.html" class="active">关于</a>
-    </nav>
-    <div class="nav-cta">
-      <a href="/contact.html" class="btn btn-primary btn-sm">联系我们</a>
-      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
-    </div>
+<header class="navbar"><div class="container"><a href="/index.html" class="logo"><svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/></svg>起元星启<span class="en">QIYUAN XINGQI</span></a><nav class="nav-links" id="navLinks"><div class="nav-platform-menu" data-platform-menu>
+  <button type="button" class="nav-ecosystem" aria-haspopup="true" aria-expanded="false" aria-controls="platformMenu">模型社区 <span aria-hidden="true">▾</span></button>
+  <div class="platform-dropdown" id="platformMenu" hidden aria-label="模型生态平台">
+    <div class="platform-dropdown-head"><span>模型生态平台</span><small>第三方官方入口</small></div>
+    <div class="platform-dropdown-list" data-platform-dropdown></div>
+    <a class="platform-dropdown-all" href="/explore/ecosystem.html">查看模型生态集合 <span aria-hidden="true">→</span></a>
   </div>
-</header>
-
-<!-- 全图位 Hero -->
-<section class="hero" style="padding:64px 0 0">
-  <div class="container" style="padding:0">
-    <div class="hero-swiper" style="min-height:380px">
-      <div class="hero-slide" style="min-height:380px">
-        <img class="hero-img" src="/img/hero/h2d.jpg" alt="关于曜印">
-        <div class="hero-overlay">
-          <h1 style="font-size:48px">关于曜印</h1>
-          <p class="hero-sub">让每一个创意即刻成为实物</p>
-          <p class="hero-lead">这是曜印创立的初心,也是我们不懈追求的使命。</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center">
-    <div>
-      <span class="kicker">Our Story</span>
-      <h2 style="font-size:36px;font-weight:800;margin-bottom:20px">重新定义个人智造</h2>
-      <p style="color:var(--gray-4);font-size:16px;line-height:1.8">曜印科技成立于 2020 年,总部位于深圳南山,是一支由资深工程师、设计师与创客组成的全球化团队。我们相信,3D 打印将像个人电脑一样走进千家万户,而我们要做的,就是让这一天的到来更早一些。</p>
-      <p style="color:var(--gray-4);font-size:16px;line-height:1.8;margin-top:16px">从 A 系列到 H 系列,从 200 美元到 1 万美元,从消费级到工业级,曜印用 5 年时间,完成了从初创公司到全球出货 150 万台品牌的跨越。</p>
-    </div>
-    <div style="border-radius:16px;overflow:hidden;aspect-ratio:1">
-      <img src="/img/hero/h2c.jpg" alt="曜印团队" style="width:100%;height:100%;object-fit:cover">
-    </div>
-  </div>
-</section>
-
-<section class="section soft">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">Milestones</span>
-      <h2>发展历程</h2>
-    </div>
-    <div class="quick-grid">
-      <div class="quick-card" style="aspect-ratio: 3/2"><img src="/img/hero/r1.jpg" alt=""><div class="quick-overlay"><em style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:6px">2020</em><h3>品牌诞生</h3><p>曜印科技在深圳南山成立,首款桌面打印机 X1 立项。</p></div></div>
-      <div class="quick-card" style="aspect-ratio: 3/2"><img src="/img/hero/a1.jpg" alt=""><div class="quick-overlay"><em style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:6px">2021</em><h3>X1 首发</h3><p>首款产品 X1 在 Indiegogo 众筹破千万美金,创造 3D 打印众筹纪录。</p></div></div>
-      <div class="quick-card" style="aspect-ratio: 3/2"><img src="/img/hero/p1s.jpg" alt=""><div class="quick-overlay"><em style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:6px">2022</em><h3>出海全球</h3><p>产品销往 60+ 国家,出货量突破 50 万台。</p></div></div>
-      <div class="quick-card" style="aspect-ratio: 3/2"><img src="/img/hero/h2d.jpg" alt=""><div class="quick-overlay"><em style="background:rgba(0,0,0,.3);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:6px">2023</em><h3>工业突破</h3><p>H2D 多功能智造中心发布,首次融合 3D 打印与激光刀切。</p></div></div>
-    </div>
-  </div>
-</section>
-
-<section class="stats-band">
-  <div class="container">
-    <div class="stat"><b>1.5<i>M+</i></b><span>全球累计出货(台)</span></div>
-    <div class="stat"><b>100<i>+</i></b><span>国家与地区</span></div>
-    <div class="stat"><b>300<i>+</i></b><span>授权专利</span></div>
-    <div class="stat"><b>800<i>+</i></b><span>员工总数</span></div>
-  </div>
-</section>
-
-<section class="cta-band">
-  <div class="container">
-    <h2>加入曜印,共创未来</h2>
-    <p>我们正在全球范围内招聘产品研发、设计、销售等岗位。</p>
-    <a href="/contact.html" class="btn btn-lg">查看职位</a>
-  </div>
-</section>
-
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="/index.html" class="logo">
-          <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
-          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
-        </a>
-        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造。</p>
-      </div>
-      <div><h4>产品</h4><ul><li><a href="/products.html">3D 打印机</a></li><li><a href="/filament.html">耗材</a></li></ul></div>
-      <div><h4>支持</h4><ul><li><a href="/support/academy.html">曜印学院</a></li><li><a href="/support.html">技术支持</a></li><li><a href="/contact.html">联系我们</a></li></ul></div>
-      <div><h4>公司</h4><ul><li><a href="/about.html">关于</a></li><li><a href="/news.html">新闻</a></li><li><a href="/about/partners.html">渠道合作</a></li></ul></div>
-    </div>
-    <div class="footer-bottom">
-      <span data-setting="copyright">© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
-      <span data-setting="icp">粤ICP备XXXXXXXX号-1</span>
-    </div>
-  </div>
-</footer>
-
-<script src="/js/main.js"></script>
-</body>
-</html>
+</div><a href="/courses/index.html">课程中心</a><a href="/news.html">教学文章</a><a href="/knowledge.html">知识中心</a><a href="/products.html">教学设备</a><a href="/solutions/school.html">学校合作</a><a href="/teachers.html">师资教研</a><a href="/works.html">作品成果</a><a href="/about.html" class="active">关于我们</a></nav><div class="nav-cta"><a href="/trial.html" class="btn btn-primary btn-sm">预约试听</a><button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button></div></div></header>
+<main>
+<section class="page-hero"><div class="container"><span class="kicker">ABOUT QIYUAN XINGQI</span><h1>让三维创意成为学习成果</h1><p><span data-setting="company_legal_name">桂林起元星启科技有限公司</span>面向基础入门、普通进阶学生与学校，提供 3D 建模、3D 打印、科创项目和创客课程支持。</p></div></section>
+<section class="section"><div class="container contact-layout"><div><span class="kicker">Our Focus</span><h2 style="font-size:clamp(30px,3.5vw,46px);line-height:1.12">把抽象想法变成可展示的作品</h2><p class="mt-3" style="color:var(--text-secondary);font-size:16px;line-height:1.85">我们相信三维创作不只是学习一项软件技能，更是观察问题、表达想法、动手验证和完成项目的过程。课程围绕学生的年龄、基础和兴趣，用建模、打印、迭代与展示连接课堂和真实创作。</p><p class="mt-2" style="color:var(--text-secondary);font-size:16px;line-height:1.85">课程、班期、师资、校区、合作学校和公开成果会由后台持续维护；涉及学生与学校的内容仅在取得授权或完成匿名处理后公开展示。</p></div><div class="detail-panel"><span class="badge">教育服务范围</span><h3>学生三维创作教育</h3><div class="trial-points"><article><b>01</b><div><h4>学生课程</h4><p>基础入门基础建模、普通进阶工程创新与假期主题项目。</p></div></article><article><b>02</b><div><h4>学校合作</h4><p>校本课程、创客社团、课后服务、教师培训与成果展示。</p></div></article><article><b>03</b><div><h4>设备实践</h4><p>以课程目标为先，提供第三方教学设备参考、材料与打印实践建议。</p></div></article></div></div></div></section>
+<section class="section soft"><div class="container"><div class="section-head"><span class="kicker">Teaching Method</span><h2>从兴趣到项目的学习路径</h2><p>每个阶段都以学生可完成的作品和可表达的过程为目标。</p></div><div class="course-grid"><article class="course-card"><div class="course-card-meta"><span>基础阶段</span></div><h3>看见空间</h3><p class="course-subtitle">从观察、草图到基础几何体建模。</p><p>建立三维坐标、尺寸、组合与结构的基础理解，让学生完成第一件可打印作品。</p></article><article class="course-card"><div class="course-card-meta"><span>实践阶段</span></div><h3>完成作品</h3><p class="course-subtitle">从切片、打印到调整与展示。</p><p>体验模型如何变成实物，在一次次迭代中理解材料、精度与结构之间的关系。</p></article><article class="course-card"><div class="course-card-meta"><span>进阶阶段</span></div><h3>解决问题</h3><p class="course-subtitle">用工程思维完成科创项目表达。</p><p>围绕真实主题进行需求拆解、参数化设计、原型验证和项目展示。</p></article><article class="course-card"><div class="course-card-meta"><span>学校合作</span></div><h3>形成课程</h3><p class="course-subtitle">让设备、课程和师资共同服务教学目标。</p><p>支持校本课程、社团、课后服务和创客空间的持续运营。</p></article></div></div></section>
+<section class="cta-band"><div class="container"><h2>从一次试听开始了解课程</h2><p>留下监护人联系信息，课程顾问将按学生年级与兴趣方向安排沟通。</p><div class="hero-actions" style="justify-content:center"><a href="/trial.html" class="btn btn-primary btn-lg">预约试听</a><a href="/solutions/school.html" class="btn btn-outline btn-lg">学校合作咨询</a></div></div></section>
+</main>
+<footer class="site-footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="/index.html" class="logo">起元星启<span class="en">QIYUAN XINGQI</span></a><p data-setting="business_scope">面向学生与学校的 3D 建模、3D 打印、科创项目服务</p></div><div><h4>课程</h4><ul><li><a href="/courses/index.html">课程中心</a></li><li><a href="/trial.html">预约试听</a></li><li><a href="/teachers.html">师资教研</a></li></ul></div><div><h4>学校合作</h4><ul><li><a href="/solutions/school.html">校本课程</a></li><li><a href="/solutions/school.html">创客社团</a></li></ul></div><div><h4>资源</h4><ul><li><a href="/news.html">教学文章</a></li><li><a href="/knowledge.html">知识中心</a></li><li><a href="/software.html">学生软件</a></li><li><a href="/explore/ecosystem.html">模型生态集合</a></li></ul></div><div><h4>联系</h4><ul><li><a href="/contact.html">课程咨询</a></li><li><a href="/content.html?type=policy&slug=privacy">隐私说明</a></li></ul></div></div><div class="footer-bottom"><span data-setting="copyright">© 2026 桂林起元星启科技有限公司 版权所有</span><span data-setting="icp"></span></div></div></footer>
+<script src="/js/main.js"></script></body></html>

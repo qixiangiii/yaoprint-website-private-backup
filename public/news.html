@@ -1,119 +1,113 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>新闻 — 曜印 YAOPRINT</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>教学文章与行业动态｜起元星启</title>
+<meta name="description" content="起元星启原创教学文章与近期 3D 打印行业动态简报：课堂安全、出件方法，以及展会、工装、耗材干燥与 AI 出模的课堂解读。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<header class="navbar">
-  <div class="container">
-    <a href="/index.html" class="logo">
-      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
-      曜印<span class="en">YAOPRINT</span>
-    </a>
-    <nav class="nav-links" id="navLinks">
-      <a href="/products.html">产品</a>
-      <a href="/filament.html">耗材</a>
-      <a href="/explore.html">探索</a>
-      <a href="/solutions.html">行业应用</a>
-      <a href="/software.html">软件</a>
-      <a href="/support.html">支持</a>
-      <a href="/about.html">关于</a>
-    </nav>
-    <div class="nav-cta">
-      <a href="/contact.html" class="btn btn-primary btn-sm">联系我们</a>
-      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
-    </div>
+<header class="navbar"><div class="container"><a href="/index.html" class="logo"><svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/></svg>起元星启<span class="en">QIYUAN XINGQI</span></a><nav class="nav-links" id="navLinks"><div class="nav-platform-menu" data-platform-menu>
+  <button type="button" class="nav-ecosystem" aria-haspopup="true" aria-expanded="false" aria-controls="platformMenu">模型社区 <span aria-hidden="true">▾</span></button>
+  <div class="platform-dropdown" id="platformMenu" hidden aria-label="模型生态平台">
+    <div class="platform-dropdown-head"><span>模型生态平台</span><small>第三方官方入口</small></div>
+    <div class="platform-dropdown-list" data-platform-dropdown></div>
+    <a class="platform-dropdown-all" href="/explore/ecosystem.html">查看模型生态集合 <span aria-hidden="true">→</span></a>
   </div>
-</header>
-
-<!-- 全图位 Hero -->
-<section class="hero" style="padding:64px 0 0">
-  <div class="container" style="padding:0">
-    <div class="hero-swiper" style="min-height:380px">
-      <div class="hero-slide" style="min-height:380px">
-        <img class="hero-img" id="newsHeroImg" src="/img/hero/letsmakeit.jpg" alt="品牌新闻">
-        <div class="hero-overlay">
-          <h1 style="font-size:48px" id="newsTitle">品牌新闻</h1>
-          <p class="hero-sub" id="newsSummary">产品发布、社区故事、行业洞察第一时间送达</p>
-        </div>
-      </div>
-    </div>
+</div><a href="/courses/index.html">课程中心</a><a href="/news.html" class="active">教学文章</a><a href="/knowledge.html">知识中心</a><a href="/products.html">教学设备</a><a href="/solutions/school.html">学校合作</a><a href="/teachers.html">师资教研</a><a href="/works.html">作品成果</a><a href="/about.html">关于我们</a></nav><div class="nav-cta"><a href="/trial.html" class="btn btn-primary btn-sm">预约试听</a><button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button></div></div></header>
+<main>
+<section class="page-hero">
+  <div class="container">
+    <span class="kicker">ARTICLES &amp; NEWS</span>
+    <h1 id="pageHeroTitle">教学文章与行业动态</h1>
+    <p id="pageHeroLead">课堂方法原文，加上近期 3D 打印公开事件的课堂解读。文案为起元星启原创，供教师、家长和学生阅读。</p>
   </div>
 </section>
-
-<section class="section" id="newsBody" style="display:none">
-  <div class="container">
-    <div class="form-wrap" style="max-width:800px;padding:40px">
-      <div class="mb-2" style="color:var(--brand);font-weight:600" id="newsTag"></div>
-      <h2 id="newsH2" style="font-size:32px;font-weight:800;margin-bottom:20px"></h2>
-      <p id="newsMeta" style="color:var(--gray-3);font-size:13px;margin-bottom:20px"></p>
-      <p id="newsContent" style="font-size:16px;line-height:1.9;color:var(--gray-5)"></p>
-      <div class="mt-4">
-        <a href="/news.html" class="btn btn-outline">← 返回新闻列表</a>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="section" id="newsList">
   <div class="container">
-    <div class="section-head reveal">
-      <span class="kicker">Brand News</span>
-      <h2>品牌新闻</h2>
-      <p>产品发布、社区故事、行业洞察第一时间送达。</p>
+    <div class="news-filter" id="newsFilter" role="tablist" aria-label="文章分类">
+      <button type="button" class="active" data-tag="">全部</button>
+      <button type="button" data-tag="行业动态">行业动态</button>
+      <button type="button" data-tag="课堂方法">课堂方法</button>
+      <button type="button" data-tag="学生教学">学生教学</button>
+      <button type="button" data-tag="软件选型">软件选型</button>
     </div>
-    <div class="case-grid" id="newsGrid"></div>
+    <div class="course-grid" id="newsGrid"></div>
+    <p class="curriculum-note">教学文章与行业动态均为起元星启原创。行业简报依据公开事实改写，不转载第三方稿件。第三方品牌、展会、软件与模型平台的商标归其权利人所有；本站不镜像其课包或模型，也不宣称官方合作。</p>
   </div>
 </section>
-
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="/index.html" class="logo">
-          <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
-          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
-        </a>
-        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造。</p>
+<section class="section" id="newsBody" hidden>
+  <div class="container article-layout">
+    <article class="article-card">
+      <p class="article-meta"><span id="newsTag"></span><span id="newsMeta"></span></p>
+      <h2 id="newsH2"></h2>
+      <p class="article-summary" id="newsSummary"></p>
+      <img id="newsCover" class="article-cover" alt="" hidden>
+      <div class="article-body" id="newsContent"></div>
+      <p class="curriculum-note" id="newsDisclaimer">本文为起元星启原创。第三方商标归其权利人所有；课堂软件与模型平台仅作跳转参考，也不宣称官方合作。</p>
+      <div class="hero-actions">
+        <a href="/news.html" class="btn btn-outline">← 返回文章列表</a>
+        <a href="/knowledge.html" class="btn btn-outline">知识中心</a>
+        <a href="/trial.html" class="btn btn-primary">预约试听</a>
       </div>
-      <div><h4>产品</h4><ul><li><a href="/products.html">3D 打印机</a></li><li><a href="/filament.html">耗材</a></li></ul></div>
-      <div><h4>支持</h4><ul><li><a href="/support/academy.html">曜印学院</a></li><li><a href="/support.html">技术支持</a></li><li><a href="/contact.html">联系我们</a></li></ul></div>
-      <div><h4>公司</h4><ul><li><a href="/about.html">关于</a></li><li><a href="/news.html">新闻</a></li><li><a href="/about/partners.html">渠道合作</a></li></ul></div>
-    </div>
-    <div class="footer-bottom">
-      <span data-setting="copyright">© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
-      <span data-setting="icp">粤ICP备XXXXXXXX号-1</span>
-    </div>
+    </article>
   </div>
-</footer>
-
+</section>
+</main>
+<footer class="site-footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="/index.html" class="logo">起元星启<span class="en">QIYUAN XINGQI</span></a><p data-setting="business_scope">面向学生与学校的 3D 建模、3D 打印、科创项目服务</p></div><div><h4>课程</h4><ul><li><a href="/courses/index.html">课程中心</a></li><li><a href="/trial.html">预约试听</a></li><li><a href="/teachers.html">师资教研</a></li></ul></div><div><h4>学校合作</h4><ul><li><a href="/solutions/school.html">校本课程</a></li><li><a href="/solutions/school.html">创客社团</a></li><li><a href="/solutions/school.html">教师培训</a></li></ul></div><div><h4>资源</h4><ul><li><a href="/news.html">教学文章</a></li><li><a href="/knowledge.html">知识中心</a></li><li><a href="/software.html">学生软件</a></li><li><a href="/explore/ecosystem.html">模型生态集合</a></li></ul></div><div><h4>联系</h4><ul><li><a href="/contact.html">课程咨询</a></li><li><a href="/about.html">关于起元星启</a></li><li><a href="/content.html?type=policy&slug=privacy">隐私说明</a></li></ul></div></div><div class="footer-bottom"><span data-setting="copyright">© 2026 桂林起元星启科技有限公司 版权所有</span><span data-setting="icp"></span></div></div></footer>
 <script src="/js/main.js"></script>
 <script>
-const slug = new URLSearchParams(location.search).get('slug');
-if (slug) {
-  fetch('/api/news/' + encodeURIComponent(slug)).then(r => { if (!r.ok) throw new Error('新闻不存在'); return r.json(); }).then(n => {
-    document.getElementById('newsList').style.display = 'none';
-    document.getElementById('newsBody').style.display = '';
-    document.title = n.title + ' — 曜印 YAOPRINT';
-    if (n.cover) document.getElementById('newsHeroImg').src = n.cover;
-    document.getElementById('newsTag').textContent = n.tag || '新闻';
-    document.getElementById('newsH2').textContent = n.title;
-    document.getElementById('newsMeta').textContent = '发布于 ' + (n.published_at || '').slice(0, 10);
-    document.getElementById('newsContent').textContent = n.body || n.summary || '';
-  }).catch(() => { location.href = '/news.html'; });
-} else {
-  fetch('/api/news?limit=20').then(r => { if (!r.ok) throw new Error('加载失败'); return r.json(); }).then(list => {
-    const colors = ['c1', 'c2', 'c3'];
-    document.getElementById('newsGrid').innerHTML = list.map((n, i) => `
-      <a class="case-card ${colors[i % 3]}" href="news.html?slug=${n.slug}" style="background-image:url('${n.cover || '/img/scenes/diy.jpg'}');background-size:cover;background-position:center">
-        <div><em>${n.tag || '新闻'}</em><h3>${n.title}</h3><p>${n.summary || ''}</p></div>
-      </a>`).join('') || '<div class="media-card"><h4>暂时没有新闻</h4><p>欢迎浏览产品、探索创作场景，或订阅后续动态。</p><a href="/explore.html">去探索 →</a></div>';
-  }).catch(() => { document.getElementById('newsGrid').innerHTML = '<div class="media-card"><h4>新闻加载失败</h4><p>请稍后重试，或通过联系我们获取最新动态。</p><a href="/contact.html">联系我们 →</a></div>'; });
-}
+(function () {
+  const esc = (v = '') => String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const renderBody = (text = '') => String(text).trim().split(/\n\s*\n/).filter(Boolean)
+    .map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('') || '<p>正文整理中。</p>';
+  const slug = new URLSearchParams(location.search).get('slug');
+  const listEl = document.getElementById('newsList');
+  const bodyEl = document.getElementById('newsBody');
+  if (slug) {
+    fetch('/api/news/' + encodeURIComponent(slug)).then(r => { if (!r.ok) throw new Error('not found'); return r.json(); }).then(n => {
+      listEl.hidden = true;
+      bodyEl.hidden = false;
+      document.title = n.title + '｜起元星启';
+      document.getElementById('pageHeroTitle').textContent = n.title;
+      document.getElementById('pageHeroLead').textContent = n.summary || '起元星启原创文章。';
+      document.getElementById('newsTag').textContent = n.tag || '学生教学';
+      document.getElementById('newsH2').textContent = n.title;
+      document.getElementById('newsSummary').textContent = n.summary || '';
+      document.getElementById('newsMeta').textContent = n.published_at ? ('发布于 ' + String(n.published_at).slice(0, 10)) : '';
+      const cover = document.getElementById('newsCover');
+      if (n.cover) { cover.src = n.cover; cover.alt = n.title; cover.hidden = false; }
+      document.getElementById('newsContent').innerHTML = renderBody(n.body || n.summary || '');
+      const disclaimer = document.getElementById('newsDisclaimer');
+      disclaimer.textContent = n.tag === '行业动态'
+        ? '本文为起元星启原创行业动态简报，依据公开事实改写，不转载第三方稿件。文中企业、展会、设备与软件名称及商标归其权利人所有；本站不镜像其产品或模型，也不宣称官方合作。'
+        : '本文为起元星启原创教学文章。第三方商标归其权利人所有；课堂软件与模型平台仅作跳转参考，也不宣称官方合作。';
+    }).catch(() => { location.href = '/news.html'; });
+    return;
+  }
+  const grid = document.getElementById('newsGrid');
+  const filter = document.getElementById('newsFilter');
+  const cardKind = (tag) => tag === '行业动态' ? '行业动态' : '教学文章';
+  const renderList = (list, tag = '') => {
+    const rows = tag ? list.filter(n => n.tag === tag) : list;
+    grid.innerHTML = rows.map(n => `<article class="course-card course-card--media">${n.cover ? `<img class="course-card-cover" src="${esc(n.cover)}" alt="${esc(n.title)}" loading="lazy">` : ''}<div class="course-card-content"><div class="course-card-meta"><span>${esc(n.tag || '学生教学')}</span><span>${esc((n.published_at || '').slice(0, 10))}</span></div><h3>${esc(n.title)}</h3><p>${esc(n.summary || '')}</p><div class="course-card-footer"><span>${esc(cardKind(n.tag))}</span><a class="btn btn-outline btn-sm" href="/news.html?slug=${encodeURIComponent(n.slug)}">阅读全文</a></div></div></article>`).join('') || '<div class="empty-panel">当前分类暂无已发布文章。</div>';
+  };
+  fetch('/api/news?limit=50').then(r => { if (!r.ok) throw new Error('加载失败'); return r.json(); }).then(list => {
+    renderList(list);
+    filter.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-tag]');
+      if (!button) return;
+      filter.querySelectorAll('button').forEach(item => item.classList.toggle('active', item === button));
+      renderList(list, button.dataset.tag || '');
+    });
+  }).catch(() => {
+    grid.innerHTML = '<div class="empty-panel">文章加载失败，请稍后重试。</div>';
+  });
+})();
 </script>
 </body>
 </html>

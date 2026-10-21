@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="pageTitle">产品详情 — 曜印 YAOPRINT</title>
+<title id="pageTitle">教学设备参考｜起元星启</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
@@ -49,7 +49,7 @@
   <div class="container">
     <a href="index.html" class="logo">
       <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
-      曜印<span class="en">YAOPRINT</span>
+      起元星启<span class="en">QIYUAN XINGQI</span>
     </a>
     <nav class="nav-links" id="navLinks">
       <a href="products.html" class="active">产品</a>
@@ -61,7 +61,7 @@
       <a href="about.html">关于</a>
     </nav>
     <div class="nav-cta">
-      <a href="contact.html" class="btn btn-primary btn-sm">立即咨询</a>
+      <a href="trial.html" class="btn btn-primary btn-sm">预约试听</a>
       <button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -85,17 +85,17 @@
       <div class="footer-brand">
         <a href="index.html" class="logo">
           <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/><path d="M9 18.5l7 4 7-4" stroke="#00ae42" stroke-width="2"/></svg>
-          曜印<span class="en" style="color:#9e9e9e">YAOPRINT</span>
+          起元星启<span class="en" style="color:#9e9e9e">QIYUAN XINGQI</span>
         </a>
-        <p>曜印 YAOPRINT 专注高精度 3D 打印设备的研发与制造。</p>
+        <p data-setting="business_scope">面向学生与学校的 3D 建模、3D 打印、科创项目服务。</p>
       </div>
       <div><h4>产品</h4><ul><li><a href="products.html">3D 打印机</a></li><li><a href="filament.html">耗材</a></li></ul></div>
       <div><h4>支持</h4><ul><li><a href="support.html">技术支持</a></li><li><a href="contact.html">联系我们</a></li></ul></div>
       <div><h4>公司</h4><ul><li><a href="about.html">关于</a></li><li><a href="contact.html">渠道合作</a></li></ul></div>
     </div>
     <div class="footer-bottom">
-      <span data-setting="copyright">© 2026 曜印科技有限公司 · 曜印 YAOPRINT 版权所有</span>
-      <span data-setting="icp">粤ICP备XXXXXXXX号-1</span>
+      <span data-setting="copyright">© 2026 桂林起元星启科技有限公司 版权所有</span>
+      <span data-setting="icp"></span>
     </div>
   </div>
 </footer>
@@ -103,10 +103,13 @@
 <script src="/js/main.js"></script>
 <script>
 const params = new URLSearchParams(location.search);
-const slug = params.get('slug') || 'r1';
-fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p => {
-  document.getElementById('pageTitle').textContent = `${p.name} — 曜印 YAOPRINT`;
-  const hero = p.hero_image || '/img/hero/r1.jpg';
+const slug = params.get('slug') || 'bambu-lab-a1';
+fetch('/api/products/' + encodeURIComponent(slug)).then(response => {
+  if (!response.ok) throw new Error('设备信息暂不可用');
+  return response.json();
+}).then(p => {
+  document.getElementById('pageTitle').textContent = `${p.name}｜起元星启教学设备参考`;
+  const hero = p.hero_image || p.card_image || '/img/scenes/education.jpg';
   const gallery = p.gallery || [];
   const specs = Object.entries(p.spec || {}).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
 
@@ -120,14 +123,14 @@ fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p =>
         <div class="hero-slide" style="min-height:560px;height:70vh;max-height:700px">
           <img class="hero-img" src="${hero}" alt="${p.name}">
           <div class="hero-overlay">
-            <span class="hero-tag">${p.tag || ''}</span>
+            <span class="hero-tag">${p.tag || '教学设备参考'}</span>
             <h1>${p.name}</h1>
             <p class="hero-sub">${p.subtitle || ''}</p>
             <p class="hero-lead">${p.description || ''}</p>
-            <p style="color:#fff;font-size:22px;font-weight:700;margin-bottom:16px">${p.price || ''}</p>
+            <p class="hero-lead" style="font-size:13px">${p.relationship_disclaimer || '第三方品牌信息，仅供课程设备选型与教学参考；参数与服务请以官方渠道为准。'}</p>
             <div class="hero-actions">
-              <a href="contact.html" data-product-consult class="btn btn-light btn-lg">立即咨询</a>
-              <a href="compare.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">参数对比</a>
+              <a href="trial.html?subject=${encodeURIComponent(p.name)}" data-product-consult class="btn btn-light btn-lg">课程设备咨询</a>
+              ${p.official_url ? `<a href="${p.official_url}" target="_blank" rel="noopener noreferrer external" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">访问官方信息 ↗</a>` : `<a href="compare.html" class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff">设备对比</a>`}
             </div>
           </div>
         </div>
@@ -151,17 +154,17 @@ fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p =>
     </div>
   </section>`;
 
-  // 3. 次特性(左文右图)
+  // 3. 次特性（只在有独立资料图时展示，避免复用固定制造商文案）
   if (gallery[1]) html += `
   <section class="detail-section soft">
     <div class="container">
       <div class="detail-split">
         <div>
-          <span class="kicker">Highlight 02</span>
-          <h2>工程级精度与可靠性</h2>
-          <p>从核心传动结构到振动补偿算法,曜印自研的高速运动系统,确保在 600mm/s 的极速下依然保持 0.05mm 级的打印精度,小批量生产与手板验证的效率利器。</p>
+          <span class="kicker">Teaching Reference</span>
+          <h2>面向课程项目的设备参考</h2>
+          <p>${p.source_label || '设备信息与课程适配建议将随资料核验持续完善。'}</p>
         </div>
-        <div class="img-box"><img src="${gallery[1]}" alt="次特性"></div>
+        <div class="img-box"><img src="${gallery[1]}" alt="设备参考资料"></div>
       </div>
     </div>
   </section>`;
@@ -183,19 +186,12 @@ fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p =>
     </div>
   </section>`;
 
-  // 5. 三特性卡
-  if (gallery.length >= 5) html += `
+  // 5. 数据驱动的教学参考特性
+  if (p.features && p.features.length) html += `
   <section class="detail-section soft">
     <div class="container">
-      <div class="section-head">
-        <span class="kicker">Features</span>
-        <h2>核心特性</h2>
-      </div>
-      <div class="feature-grid-3">
-        <div class="feature-cell"><div class="img"><img src="${gallery[5] || hero}" alt=""></div><div class="body"><h3>极速打印</h3><p>自研运动系统实现 600mm/s 稳定输出,大幅缩短交付周期。</p></div></div>
-        <div class="feature-cell"><div class="img"><img src="${gallery[6] || hero}" alt=""></div><div class="body"><h3>智能调平</h3><p>全自动调平 + AI 首层监测,新手 15 分钟开箱出件。</p></div></div>
-        <div class="feature-cell"><div class="img"><img src="${gallery[0]}" alt=""></div><div class="body"><h3>丰富生态</h3><p>开放切片、社区模型、官方课程,创作无门槛。</p></div></div>
-      </div>
+      <div class="section-head"><span class="kicker">Teaching Notes</span><h2>课程设备参考说明</h2></div>
+      <div class="feature-grid-3">${p.features.map((f,i) => `<div class="feature-cell"><div class="img">${f.image ? `<img src="${f.image}" alt="">` : `<img src="${gallery[i] || hero}" alt="">`}</div><div class="body"><h3>${f.title || ''}</h3><p>${f.body || ''}</p></div></div>`).join('')}</div>
     </div>
   </section>`;
 
@@ -253,45 +249,13 @@ fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p =>
     </div>
   </section>`;
 
-  // 7. 用户评价
-  html += `
-  <section class="detail-section soft">
-    <div class="container">
-      <div class="section-head">
-        <span class="kicker">User Reviews</span>
-        <h2>用户怎么说</h2>
-        <p>来自全球创作者的真实使用反馈。</p>
-      </div>
-      <div class="user-review-grid">
-        <div class="user-review-card">
-          <div class="stars">★★★★★</div>
-          <h4>"速度与精度的完美平衡"</h4>
-          <p>用 ${p.name} 打印了一周的工业手板,精度完全符合需求,600mm/s 模式下表面依旧光滑,AI 首层监测救了我无数次。</p>
-          <div class="author">
-            <div class="avatar">M</div>
-            <div><div class="name">Mike · 工业设计师</div><div class="title">深圳某硬件公司</div></div>
-          </div>
-        </div>
-        <div class="user-review-card">
-          <div class="stars">★★★★★</div>
-          <h4>"新手也能 15 分钟开箱即印"</h4>
-          <p>从开箱到第一件成品只用了 12 分钟,自动调平超方便,班级管理后台让我们 30 台集群部署变得轻松。</p>
-          <div class="author">
-            <div class="avatar">L</div>
-            <div><div class="name">李老师 · 创客空间</div><div class="title">省重点中学</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>`;
-
-  // 7. CTA
+  // 7. 课程选型 CTA
   html += `
   <section class="cta-band">
     <div class="container">
-      <h2>立即拥有 ${p.name}</h2>
-      <p>曜印顾问将在 1 个工作日内为您提供选型建议与报价。</p>
-      <a href="contact.html" class="btn btn-lg">免费咨询</a>
+      <h2>让设备服务于学生的创意项目</h2>
+      <p>${p.relationship_disclaimer || '第三方设备信息仅供教学选型参考，课程顾问可根据年级、项目和课堂人数提供建议。'}</p>
+      <a href="trial.html?subject=${encodeURIComponent(p.name)}" class="btn btn-lg">课程设备咨询</a>
     </div>
   </section>`;
 
@@ -304,8 +268,8 @@ fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p =>
     const color = document.querySelector('.color-swatch.active .name')?.textContent || '';
     const kit = document.querySelector('.kit-card.selected h3')?.textContent || '';
     document.querySelectorAll('[data-product-consult]').forEach(link => {
-      const params = new URLSearchParams({ product: p.name, color, kit });
-      link.href = `contact.html?${params.toString()}`;
+      const params = new URLSearchParams({ subject: `${p.name}${color ? ' · ' + color : ''}${kit ? ' · ' + kit : ''}` });
+      link.href = `trial.html?${params.toString()}`;
     });
   };
   colorButtons.forEach(button => {
@@ -329,6 +293,8 @@ fetch('/api/products/' + encodeURIComponent(slug)).then(r => r.json()).then(p =>
   });
   updateConsultLinks();
   document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+}).catch(() => {
+  document.getElementById('productBox').innerHTML = `<section class="section"><div class="container content-state error"><h1>设备信息暂不可用</h1><p>该设备资料可能已下线或正在核验，请返回教学设备参考页查看当前内容。</p><a class="btn btn-primary" href="products.html">返回教学设备</a></div></section>`;
 });
 </script>
 </body>
