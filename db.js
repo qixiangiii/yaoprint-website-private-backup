@@ -1005,3 +1005,44 @@ if (partnerCount === 0) {
 }
 
 module.exports = db;
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS printers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  brand TEXT,
+  category TEXT DEFAULT 'FDM 桌面级',
+  tagline TEXT,
+  image TEXT,
+  price_text TEXT,
+  price_num REAL DEFAULT 0,
+  build_volume TEXT,
+  build_volume_l REAL DEFAULT 0,
+  max_speed REAL DEFAULT 0,
+  max_accel REAL DEFAULT 0,
+  nozzle_temp REAL DEFAULT 0,
+  bed_temp REAL DEFAULT 0,
+  min_layer REAL DEFAULT 0,
+  filament_diameter TEXT DEFAULT '1.75mm',
+  materials TEXT,
+  bed_type TEXT,
+  leveling TEXT,
+  connectivity TEXT,
+  screen TEXT,
+  camera TEXT DEFAULT '0',
+  multi_color TEXT DEFAULT '0',
+  noise TEXT,
+  weight TEXT,
+  slicer TEXT,
+  highlights_json TEXT,
+  specs_json TEXT,
+  official_url TEXT,
+  source_label TEXT,
+  verified_at TEXT,
+  relationship TEXT,
+  featured INTEGER DEFAULT 0,
+  sort INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'published'
+);
+`);

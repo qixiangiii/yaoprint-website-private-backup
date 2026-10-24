@@ -428,6 +428,7 @@ crud('videos', ['title', 'source', 'url', 'cover', 'sort'], { required: ['title'
 crud('scenes', ['title', 'desc', 'icon', 'link', 'cover', 'sort'], { required: ['title'] });
 crud('academy', ['title', 'desc', 'icon', 'link', 'cover', 'sort'], { required: ['title'] });
 crud('downloads', ['name', 'platform', 'size', 'version', 'url', 'sort'], { required: ['name'] });
+crud('printers', ['slug','name','brand','category','tagline','image','price_text','price_num','build_volume','build_volume_l','max_speed','max_accel','nozzle_temp','bed_temp','min_layer','filament_diameter','materials','bed_type','leveling','connectivity','screen','camera','multi_color','noise','weight','slicer','highlights_json','specs_json','official_url','source_label','verified_at','relationship','featured','sort','status'], { required: ['slug','name'], publicWhere: "status='published'", publicOrder: 'sort,id' });
 crud('heroes', ['title', 'highlight', 'subtitle', 'lead', 'tag', 'image', 'link', 'link_text', 'link2', 'link2_text', 'sort', 'status'], {
   required: ['title'],
   publicWhere: "status='published'",

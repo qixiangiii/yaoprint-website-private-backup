@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>起元星启｜3D 打印设备选型与参数对比</title><meta name="description" content="市面主流教育与桌面 3D 打印机详细参数、优缺点与勾选对比，帮助学校、老师与家庭做选型决策。"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<header class="navbar">
+  <div class="container">
+    <a href="/index.html" class="logo">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2 30 10v12L16 30 2 22V10L16 2Z" stroke="#00ae42" stroke-width="2"/><path d="M16 8l7 4-7 4-7-4 7-4Z" fill="#00ae42"/></svg>
+      起元星启<span class="en">QIYUAN XINGQI</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <div class="nav-platform-menu" data-platform-menu>
+        <button type="button" class="nav-ecosystem" aria-haspopup="true" aria-expanded="false" aria-controls="platformMenu">模型社区 <span class="nav-caret" aria-hidden="true"></span></button>
+        <div class="platform-dropdown" id="platformMenu" hidden aria-label="模型生态平台">
+          <div class="platform-dropdown-head"><span>模型生态平台</span><small>第三方官方入口</small></div>
+          <div class="platform-dropdown-list" data-platform-dropdown></div>
+          <a class="platform-dropdown-all" href="/explore/ecosystem.html">查看模型生态集合 <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+  <a href="/courses/index.html">课程中心</a>
+  <a href="/news.html">教学文章</a>
+  <a href="/knowledge.html">知识中心</a>
+  <a href="/printers.html" class="active" aria-current="page">设备对比</a>
+  <a href="/solutions/school.html">学校合作</a>
+  <a href="/teachers.html">师资教研</a>
+  <a href="/works.html">作品成果</a>
+  <a href="/about.html">关于我们</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="/trial.html" class="btn btn-primary btn-sm">预约试听</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <span class="kicker">Printer Guide</span>
+      <h1>主流 3D 打印设备选型参考</h1>
+      <p>汇总市面主流教育与桌面 3D 打印机的详细参数，支持勾选对比。数据来自各品牌官方页面（见每台设备标注），用于教学选型参考，采购前请以厂商最新官方参数为准。</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+
+      <div class="printer-toolbar">
+        <div class="filter-bar" id="catFilters"></div>
+        <div class="printer-sort">
+          <label for="sortSel">排序</label>
+          <select id="sortSel">
+            <option value="sort">推荐排序</option>
+            <option value="price_num-asc">价格从低到高</option>
+            <option value="price_num-desc">价格从高到低</option>
+            <option value="max_speed-desc">速度最快</option>
+            <option value="build_volume_l-desc">成型空间最大</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="compare-bar" id="compareBar" hidden>
+        <div class="compare-bar-info">已选 <b id="compareCount">0</b> / 3 台设备</div>
+        <div class="compare-bar-actions">
+          <button class="btn btn-outline btn-sm" id="clearCompare" type="button">清空</button>
+          <button class="btn btn-primary btn-sm" id="goCompare" type="button">查看参数对比 ↓</button>
+        </div>
+      </div>
+
+      <div class="printer-grid" id="printerGrid" aria-live="polite"></div>
+      <p class="printer-empty" id="printerEmpty" hidden>该分类下暂无设备。</p>
+
+    </div>
+  </section>
+
+  <section class="section soft" id="compareSection" style="display:none">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">Side by side</span>
+        <h2>参数对比</h2>
+        <p>绿色高亮为该轮对比中的最优值；「—」表示官方未标注或该原理下不适用。光固化设备与 FDM 设备成型原理不同，速度与温度类参数请分开理解。</p>
+      </div>
+      <p class="compare-scroll-note">← 左右滑动表格可查看其余设备 →</p>
+      <div class="compare-table-wrap" id="compareTableWrap"></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="note-panel">
+        <b>数据说明与免责：</b>本页参数整理自各品牌官方产品页（每台设备已标注来源与核验日期），价格均为发布时参考价，实际以购买渠道为准。起元星启与列表中第三方品牌无隶属关系，仅作教学选型参考；校内批量采购建议结合耗材体系、售后响应与课程目标综合评估。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<dialog class="printer-modal" id="printerModal" aria-labelledby="pmName">
+  <div class="printer-modal-card">
+    <button class="printer-modal-close" id="pmClose" aria-label="关闭">×</button>
+    <div id="pmBody"></div>
+  </div>
+</dialog>
+
+<footer class="site-footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><a href="/index.html" class="logo">起元星启<span class="en">QIYUAN XINGQI</span></a><p data-setting="business_scope">面向学生与学校的 3D 建模、3D 打印、科创项目服务</p></div><div><h4>课程</h4><ul><li><a href="/courses/index.html">课程中心</a></li><li><a href="/trial.html">预约试听</a></li><li><a href="/teachers.html">师资教研</a></li></ul></div><div><h4>学校合作</h4><ul><li><a href="/solutions/school.html">校本课程</a></li><li><a href="/solutions/school.html">创客社团</a></li><li><a href="/solutions/school.html">教师培训</a></li></ul></div><div><h4>资源</h4><ul><li><a href="/news.html">教学文章</a></li><li><a href="/knowledge.html">知识中心</a></li><li><a href="/software.html">学生软件</a></li><li><a href="/printers.html">设备对比</a></li></ul></div><div><h4>联系</h4><ul><li><a href="/contact.html">课程咨询</a></li><li><a href="/about.html">关于起元星启</a></li><li><a href="/content.html?type=policy&slug=privacy">隐私说明</a></li></ul></div></div><div class="footer-bottom"><span data-setting="copyright">© 2026 桂林起元星启科技有限公司 版权所有</span><span data-setting="icp"></span></div></div></footer>
+<script src="/js/main.js"></script>
+<script>
+(function () {
+  'use strict';
+  const grid = document.getElementById('printerGrid');
+  const emptyTip = document.getElementById('printerEmpty');
+  const catFilters = document.getElementById('catFilters');
+  const sortSel = document.getElementById('sortSel');
+  const compareBar = document.getElementById('compareBar');
+  const compareCount = document.getElementById('compareCount');
+  const compareSection = document.getElementById('compareSection');
+  const compareTableWrap = document.getElementById('compareTableWrap');
+  const modal = document.getElementById('printerModal');
+  const pmBody = document.getElementById('pmBody');
+
+  let all = [];
+  let cat = '全部';
+  const qSel = new URLSearchParams(location.search).get('compare');
+  let selected = qSel ? qSel.split(',').map(Number).filter(Boolean).slice(0, 3) : JSON.parse(localStorage.getItem('yq-printer-compare') || '[]');
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const jparse = (s, fb) => { try { return s ? JSON.parse(s) : fb; } catch (e) { return fb; } };
+  const num = v => (typeof v === 'number' && isFinite(v)) ? v : 0;
+  const hasVal = p => p !== '' && p != null && p !== 0;
+
+  // 对比维度：label, 取值, 是否数值, 最优方向
+  const DIMS = [
+    { key: 'price', label: '参考价', get: p => num(p.price_num), num: true, best: 'min', fmt: v => v ? '¥' + v.toLocaleString() : esc(all.find(x => x.id === v) || '') },
+    { key: 'build_volume', label: '成型尺寸', get: p => p.build_volume, num: false },
+    { key: 'build_volume_l', label: '成型容积', get: p => num(p.build_volume_l), num: true, best: 'max', unit: ' L' },
+    { key: 'max_speed', label: '最高速度', get: p => num(p.max_speed), num: true, best: 'max', unit: ' mm/s' },
+    { key: 'max_accel', label: '最大加速度', get: p => num(p.max_accel), num: true, best: 'max', unit: ' mm/s²' },
+    { key: 'nozzle_temp', label: '最高喷头温度', get: p => num(p.nozzle_temp), num: true, best: 'max', unit: ' ℃' },
+    { key: 'bed_temp', label: '最高热床温度', get: p => num(p.bed_temp), num: true, best: 'max', unit: ' ℃' },
+    { key: 'min_layer', label: '最小层高', get: p => num(p.min_layer), num: true, best: 'min', unit: ' mm' },
+    { key: 'filament_diameter', label: '线材 / 树脂', get: p => p.filament_diameter, num: false },
+    { key: 'materials', label: '支持材料', get: p => p.materials, num: false },
+    { key: 'bed_type', label: '平台类型', get: p => p.bed_type, num: false },
+    { key: 'leveling', label: '调平方式', get: p => p.leveling, num: false },
+    { key: 'connectivity', label: '连接方式', get: p => p.connectivity, num: false },
+    { key: 'screen', label: '屏幕', get: p => p.screen, num: false },
+    { key: 'camera', label: '摄像头', get: p => p.camera === '1' ? '有' : '—', num: false },
+    { key: 'multi_color', label: '多色方案', get: p => p.multi_color || '—', num: false },
+    { key: 'noise', label: '噪音', get: p => p.noise, num: false },
+    { key: 'weight', label: '重量', get: p => p.weight, num: false },
+    { key: 'slicer', label: '切片软件', get: p => p.slicer, num: false }
+  ];
+
+  function priceText(p) { return p.price_text || (num(p.price_num) ? '约 ¥' + num(p.price_num).toLocaleString() : '价格详询'); }
+
+  function renderFilters() {
+    const cats = ['全部', ...new Set(all.map(p => p.category).filter(Boolean))];
+    catFilters.innerHTML = cats.map(c => `<button type="button" class="${c === cat ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+    catFilters.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { cat = b.dataset.cat; renderFilters(); renderGrid(); }));
+  }
+
+  function visible() {
+    let rows = cat === '全部' ? all.slice() : all.filter(p => p.category === cat);
+    const [k, dir] = sortSel.value.split('-');
+    if (dir) rows.sort((a, b) => (num(a[k]) - num(b[k])) * (dir === 'asc' ? 1 : -1));
+    else rows.sort((a, b) => num(a.sort) - num(b.sort));
+    return rows;
+  }
+
+  function renderGrid() {
+    const rows = visible();
+    emptyTip.hidden = rows.length > 0;
+    grid.innerHTML = rows.map(p => {
+      const sel = selected.includes(p.id);
+      const hl = jparse(p.highlights_json, []);
+      return `<article class="printer-card ${sel ? 'selected' : ''}">
+        <div class="printer-card-media"><img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">
+          ${num(p.featured) ? '<span class="printer-badge">推荐</span>' : ''}
+          <label class="printer-compare-check"><input type="checkbox" data-compare="${p.id}" ${sel ? 'checked' : ''}><span>对比</span></label>
+        </div>
+        <div class="printer-card-body">
+          <div class="printer-card-title"><h3>${esc(p.name)}</h3><span class="printer-brand">${esc(p.brand)}</span></div>
+          <p class="printer-tagline">${esc(p.tagline)}</p>
+          <div class="printer-chips">
+            <span>${esc(p.build_volume || '—')}</span>
+            <span>${num(p.max_speed) ? num(p.max_speed) + ' mm/s' : '—'}</span>
+            <span class="chip-price">${esc(priceText(p))}</span>
+          </div>
+          <ul class="printer-highlights">${hl.slice(0, 3).map(h => `<li>${esc(h)}</li>`).join('')}</ul>
+          <div class="printer-card-actions">
+            <button type="button" class="btn btn-outline btn-sm" data-detail="${p.id}">详细参数</button>
+            ${p.official_url ? `<a class="btn btn-text btn-sm" href="${esc(p.official_url)}" target="_blank" rel="noopener">官网 ↗</a>` : ''}
+          </div>
+        </div>
+      </article>`;
+    }).join('');
+    syncCompareUI();
+  }
+
+  function syncCompareUI() {
+    compareBar.hidden = selected.length === 0;
+    compareCount.textContent = selected.length;
+    if (selected.length >= 2) { renderCompare(); compareSection.style.display = ''; }
+    else { compareSection.style.display = 'none'; }
+  }
+
+  function bestIds(dim, rows) {
+    if (!dim.num) return new Set();
+    const vals = rows.map(p => ({ p, v: dim.get(p) }));
+    if (vals.every(x => !hasVal(x.v))) return new Set();
+    const valid = vals.filter(x => hasVal(x.v));
+    const target = dim.best === 'min' ? Math.min(...valid.map(x => x.v)) : Math.max(...valid.map(x => x.v));
+    return new Set(valid.filter(x => x.v === target).map(x => x.p.id));
+  }
+
+  function renderCompare() {
+    const rows = selected.map(id => all.find(p => p.id === id)).filter(Boolean);
+    if (rows.length < 2) return;
+    const specKeys = [...new Set(rows.flatMap(p => Object.keys(jparse(p.specs_json, {}))))];
+    const head = `<tr><th class="dim-col">参数</th>${rows.map(p => `<th><div class="cmp-head"><img src="${esc(p.image)}" alt=""><div><b>${esc(p.name)}</b><small>${esc(p.brand)}</small></div></div></th>`).join('')}</tr>`;
+    const body = DIMS.map(dim => {
+      const best = bestIds(dim, rows);
+      const cells = rows.map(p => {
+        const v = dim.get(p);
+        const isBest = best.has(p.id);
+        const shown = (dim.num && !hasVal(v)) ? '—' : (dim.num ? v.toLocaleString() + (dim.unit || '') : esc(v || '—'));
+        return `<td class="${isBest ? 'best' : ''}">${shown}${isBest ? ' <span class="best-tag">最优</span>' : ''}</td>`;
+      }).join('');
+      return `<tr><td class="dim-col">${dim.label}</td>${cells}</tr>`;
+    }).join('');
+    const extra = specKeys.length ? `<tr class="dim-group"><td class="dim-col" colspan="${rows.length + 1}">扩展参数</td></tr>` + specKeys.map(k =>
+      `<tr><td class="dim-col">${esc(k)}</td>${rows.map(p => `<td>${esc(jparse(p.specs_json, {})[k] || '—')}</td>`).join('')}</tr>`
+    ).join('') : '';
+    const foot = `<tr><td class="dim-col">参数来源</td>${rows.map(p => `<td class="cmp-source">${esc(p.source_label || '—')}${p.verified_at ? ' · ' + esc(p.verified_at) : ''}</td>`).join('')}</tr>`;
+    compareTableWrap.innerHTML = `<table class="compare-table">${head}${body}${extra}${foot}</table>`;
+  }
+
+  function openDetail(id) {
+    const p = all.find(x => x.id === id);
+    if (!p) return;
+    const hl = jparse(p.highlights_json, []);
+    const specs = jparse(p.specs_json, {});
+    pmBody.innerHTML = `
+      <div class="pm-hero"><img src="${esc(p.image)}" alt="${esc(p.name)}"><div>
+        <span class="kicker">${esc(p.category)}</span>
+        <h2 id="pmName">${esc(p.brand)} ${esc(p.name)}</h2>
+        <p>${esc(p.tagline)}</p>
+        <div class="pm-price">${esc(priceText(p))}</div>
+      </div></div>
+      <div class="pm-grid">${DIMS.filter(d => !['price'].includes(d.key)).map(d => {
+        const v = d.get(p);
+        const shown = (d.num && !hasVal(v)) ? '—' : (d.num ? v + (d.unit || '') : esc(v || '—'));
+        return `<div class="pm-item"><small>${d.label}</small><b>${shown}</b></div>`;
+      }).join('')}</div>
+      ${hl.length ? `<h3 class="pm-h">亮点</h3><ul class="pm-hl">${hl.map(h => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
+      ${Object.keys(specs).length ? `<h3 class="pm-h">其他参数</h3><div class="pm-specs">${Object.entries(specs).map(([k, v]) => `<div class="pm-item"><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join('')}</div>` : ''}
+      <p class="pm-meta">参数来源：${esc(p.source_label || '—')} ${p.verified_at ? '· 核验于 ' + esc(p.verified_at) : ''}　关系说明：${esc(p.relationship || '第三方品牌，仅作教学选型参考')}</p>
+      ${p.official_url ? `<div class="pm-actions"><a class="btn btn-primary" href="${esc(p.official_url)}" target="_blank" rel="noopener">访问官网 ↗</a></div>` : ''}`;
+    modal.showModal();
+  }
+
+  grid.addEventListener('change', e => {
+    const cb = e.target.closest('[data-compare]');
+    if (!cb) return;
+    const id = Number(cb.dataset.compare);
+    if (cb.checked) {
+      if (selected.length >= 3) { cb.checked = false; alert('最多同时对比 3 台设备'); return; }
+      if (!selected.includes(id)) selected.push(id);
+    } else selected = selected.filter(x => x !== id);
+    localStorage.setItem('yq-printer-compare', JSON.stringify(selected));
+    cb.closest('.printer-card').classList.toggle('selected', cb.checked);
+    syncCompareUI();
+  });
+  grid.addEventListener('click', e => {
+    const btn = e.target.closest('[data-detail]');
+    if (btn) openDetail(Number(btn.dataset.detail));
+  });
+  sortSel.addEventListener('change', renderGrid);
+  document.getElementById('clearCompare').addEventListener('click', () => {
+    selected = [];
+    localStorage.removeItem('yq-printer-compare');
+    renderGrid();
+  });
+  document.getElementById('goCompare').addEventListener('click', () => compareSection.scrollIntoView({ behavior: 'smooth' }));
+  document.getElementById('pmClose').addEventListener('click', () => modal.close());
+  modal.addEventListener('click', e => { if (e.target === modal) modal.close(); });
+
+  fetch('/api/printers').then(r => r.json()).then(rows => {
+    all = rows;
+    selected = selected.filter(id => all.some(p => p.id === id));
+    renderFilters(); renderGrid();
+  }).catch(() => { emptyTip.hidden = false; emptyTip.textContent = '设备数据加载失败，请稍后重试。'; });
+})();
+</script>
+</body>
+</html>
