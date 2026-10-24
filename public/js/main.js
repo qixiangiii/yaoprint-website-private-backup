@@ -8,67 +8,45 @@
   })[char]);
   const text = (value = '') => escapeHTML(value);
 
-  // 教育品牌页统一为学生任务导航，保留旧业务页面的路由兼容。
+  // 课程目录未公开时用于隐藏课程入口。
   let courseCatalogPublic = false;
 
-  function normalizeEducationNavigation(showCourses = false) {
-    const logo = $('.navbar .logo');
-    const links = $('#navLinks');
-    if (!logo || !links || !logo.textContent.includes('起元星启')) return;
-    const path = location.pathname;
-    const educationRoutes = [
-      '/', '/index.html', '/course.html', '/courses/', '/education-template.html',
-      '/competition.html', '/learning.html', '/knowledge.html', '/materials.html',
-      '/printer-types.html', '/software.html', '/works.html', '/news.html',
-      '/trial.html', '/teachers.html', '/about.html', '/contact.html',
-      '/products.html', '/image-credits.html', '/explore/ecosystem.html',
-      '/solutions/school.html'
-    ];
-    const isEducationPage = document.body.classList.contains('education-page')
-      || Boolean(document.querySelector('[data-education-view], .hero--education'))
-      || educationRoutes.some(route => {
-        if (route === '/') return path === '/' || path === '/index.html';
-        return route.endsWith('/') ? path.startsWith(route) : path === route;
-      });
-    if (!isEducationPage) return;
-    const active = key => {
-      const matchers = {
-        home: path === '/' || (path.endsWith('/index.html') && !path.includes('/courses/')),
-        courses: path.includes('/courses/') || path.endsWith('/course.html'),
-        learning: ['/learning.html', '/knowledge.html', '/materials.html', '/printer-types.html', '/software.html', '/explore/ecosystem.html'].some(item => path.endsWith(item)),
-        works: path.endsWith('/works.html'),
-        competition: path.endsWith('/competition.html'),
-        news: path.endsWith('/news.html'),
-        school: path.endsWith('/solutions/school.html')
-      };
-      return matchers[key] ? ' class="active" aria-current="page"' : '';
-    };
-    const courseNavigation = showCourses ? `
-      <div class="education-nav-group" data-nav-group>
-        <a href="/courses/index.html"${active('courses')}>课程体系</a>
-        <button type="button" class="education-nav-trigger" aria-expanded="false" aria-label="展开课程体系菜单"><span aria-hidden="true">▾</span></button>
-        <div class="education-nav-panel" hidden><a href="/trial.html">零基础体验课</a><a href="/courses/index.html?category=${encodeURIComponent('基础入门')}">简单入门</a><a href="/courses/index.html?category=${encodeURIComponent('普通进阶')}">普通进阶</a><a href="/courses/index.html?category=${encodeURIComponent('项目进阶')}">结构与项目</a><a href="/competition.html">竞赛项目培养</a></div>
-      </div>` : '';
-    links.innerHTML = `
-      <a href="/index.html"${active('home')}>首页</a>
-      ${courseNavigation}
-      <div class="education-nav-group" data-nav-group>
-        <a href="/learning.html"${active('learning')}>学习中心</a>
-        <button type="button" class="education-nav-trigger" aria-expanded="false" aria-label="展开学习中心菜单"><span aria-hidden="true">▾</span></button>
-        <div class="education-nav-panel" hidden><a href="/knowledge.html">入门知识</a><a href="/software.html">建模软件</a><a href="/explore/ecosystem.html" class="nav-community-link">模型社区与创作资源</a><a href="/learning.html">打印视频与讲解</a><a href="/materials.html">材料与切片</a><a href="/printer-types.html">打印机知识</a><a href="/products.html">教学设备参考</a><a href="/knowledge.html#lab">耗材与打印机知识</a></div>
-      </div>
-      <a href="/works.html"${active('works')}>作品展厅</a>
-      <a href="/competition.html"${active('competition')}>竞赛成长</a>
-      <a href="/news.html"${active('news')}>新闻活动</a>
-      <a href="/solutions/school.html"${active('school')}>学校合作</a>`;
+  // 全站导航已在各页面 HTML 里静态写为同一套：模型社区 / 课程中心 / 教学文章 /
+  // 知识中心 / 设备对比 / 学校合作 / 师资教研 / 作品成果 / 关于我们。
+  // 这里只做兜底：老页面若残留旧 CTA 文案、或页面缺少高亮，按路径补齐，不再重写结构。
+  function normalizeEducationNavigation() {
     const cta = $('.nav-cta .btn');
     if (cta) {
-      cta.href = '/trial.html';
-      cta.textContent = '预约体验课';
+      if (cta.getAttribute('href') !== '/trial.html') cta.setAttribute('href', '/trial.html');
+      if (cta.textContent.trim() !== '预约试听') cta.textContent = '预约试听';
+    }
+    const links = $('#navLinks');
+    if (!links || links.querySelector('a.active') || links.querySelector('.nav-ecosystem.active')) return;
+    const path = location.pathname;
+    const tail = value => path.endsWith(value);
+    const rules = [
+      ['/explore/ecosystem.html', () => tail('/explore/ecosystem.html')],
+      ['/courses/index.html', () => path.includes('/courses/') || tail('/course.html')],
+      ['/news.html', () => tail('/news.html')],
+      ['/knowledge.html', () => ['/knowledge.html', '/learning.html', '/materials.html', '/printer-types.html', '/support.html', '/software.html'].some(tail)
+        || path.startsWith('/support/') || path.startsWith('/downloads/')],
+      ['/printers.html', () => ['/printers.html', '/products.html', '/product.html', '/compare.html'].some(tail)
+        || path.startsWith('/products/') || path.startsWith('/filament')],
+      ['/solutions/school.html', () => path.startsWith('/solutions/')],
+      ['/teachers.html', () => tail('/teachers.html')],
+      ['/works.html', () => ['/works.html', '/competition.html'].some(tail) || path.startsWith('/explore/')],
+      ['/about.html', () => ['/about.html', '/contact.html'].some(tail) || path.startsWith('/about/') || path.startsWith('/partners/')]
+    ];
+    const hit = rules.find(([, test]) => test());
+    if (!hit) return;
+    const link = links.querySelector(`a[href="${hit[0]}"]`);
+    if (link) {
+      link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
     }
   }
   // 课程未定稿时先按隐藏状态渲染，避免公开入口闪现。
-  normalizeEducationNavigation(false);
+  normalizeEducationNavigation();
 
   // 旧页面仍可能保留按学段编写的静态片段。教育品牌前台统一按学习基础
   // 表达，且只处理文本节点，不改动链接、接口参数或后台数据字段。
@@ -114,6 +92,8 @@
       let path = '';
       try { path = new URL(link.href, location.href).pathname; } catch { return; }
       if (!path.startsWith('/courses/') && path !== '/course.html') return;
+      // 顶部导航是统一后的固定入口，不参与课程入口隐藏。
+      if (link.closest('#navLinks')) return;
       const listItem = link.closest('li');
       if (listItem && listItem.querySelectorAll('a').length === 1) {
         listItem.remove();
@@ -292,6 +272,8 @@
     let timer = null;
     let paused = reduceMotion;
 
+    // 各条轮播文案行数不同，锁定已出现的最大高度，避免切换时下方内容跳动。
+    let lockedHeight = 0;
     const go = next => {
       if (!slides.length) return;
       index = (next + slides.length) % slides.length;
@@ -300,6 +282,11 @@
         slide.hidden = !active;
         slide.setAttribute('aria-hidden', String(!active));
       });
+      const activeSlide = slides[index];
+      if (activeSlide) {
+        lockedHeight = Math.max(lockedHeight, activeSlide.offsetHeight);
+        if (lockedHeight) swiper.style.minHeight = `${lockedHeight}px`;
+      }
       $$('.dot', dotsWrap || document).forEach((dot, i) => {
         const active = i === index;
         dot.classList.toggle('active', active);
@@ -335,6 +322,19 @@
       });
       dotsWrap.appendChild(control);
     }
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        swiper.style.minHeight = '';
+        lockedHeight = 0;
+        const activeSlide = slides[index];
+        if (activeSlide) {
+          lockedHeight = activeSlide.offsetHeight;
+          swiper.style.minHeight = `${lockedHeight}px`;
+        }
+      }, 180);
+    });
     swiper.tabIndex = 0;
     swiper.setAttribute('role', 'region');
     swiper.setAttribute('aria-label', '精选产品轮播');
@@ -673,12 +673,4 @@
     catch { tip.textContent='提交失败，请检查联系方式后重试。'; tip.className='form-tip error'; tip.style.display='block'; }
   });
 
-  // 高亮当前导航
-  const path = location.pathname.replace(/\/$/, '') || '/';
-  document.querySelectorAll('.nav-links a').forEach(a => {
-    const href = a.getAttribute('href');
-    if (!href || href === '#' || href.startsWith('http')) return;
-    const target = href.replace(/^.*\//, '');
-    if (path.endsWith(target)) a.classList.add('active');
-  });
 })();

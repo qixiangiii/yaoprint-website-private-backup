@@ -34,6 +34,7 @@
   if (view === 'model') {
     const slug=new URLSearchParams(location.search).get('slug');
     main.innerHTML=page('MODEL DETAILS','模型与项目详情','查看官方精选项目的材料建议、许可与打印参数。',`<div data-model-detail></div>`);
+    if(!slug){$('[data-model-detail]').innerHTML=`<div class="empty-panel">请先从模型集合中选择一个模型或项目。</div><p class="form-note"><a class="btn btn-primary" href="/explore/models.html">浏览模型集合</a></p>`;return;}
     try { let item; try { item=await api(`/api/content/model/${encodeURIComponent(slug)}`); } catch { item=await api(`/api/content/project/${encodeURIComponent(slug)}`); } $('[data-model-detail]').innerHTML=`<article class="content-detail">${item.cover?`<img class="content-detail-cover" src="${esc(item.cover)}" alt="${esc(item.title)}">`:''}<div class="content-detail-copy"><span class="badge">${esc(item.tag||'官方精选')}</span><h1>${esc(item.title)}</h1><p class="content-detail-summary">${esc(item.summary)}</p><div class="content-detail-body">${esc(item.body).split(/\n+/).map(p=>`<p>${p}</p>`).join('')}</div><dl class="meta-list">${Object.entries(item.meta||{}).map(([k,v])=>`<div><dt>${esc(k.replace(/_/g,' '))}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><p class="form-note">此页展示官方精选与项目信息。模型文件下载将在完成审核和许可确认后提供。</p></div></article>`;} catch(e){$('[data-model-detail]').innerHTML=`<div class="empty-panel">${esc(e.message)}</div>`;} return;
   }
   if (view === 'submit') {
