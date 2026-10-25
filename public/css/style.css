@@ -862,13 +862,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .mt-0 { margin-top: 0; } .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; } .mt-3 { margin-top: 24px; } .mt-4 { margin-top: 32px; }
 .mb-0 { margin-bottom: 0; } .mb-1 { margin-bottom: 8px; } .mb-2 { margin-bottom: 16px; } .mb-3 { margin-bottom: 24px; } .mb-4 { margin-bottom: 32px; }
 .flex { display: flex; } .flex-center { display: flex; align-items: center; justify-content: center; } .gap-1 { gap: 8px; } .gap-2 { gap: 16px; } .gap-3 { gap: 24px; }
-.badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border: 1px solid #b9e7c7; background: var(--brand-soft); color: var(--brand-text); border-radius: 999px; font-size: 11px; font-weight: 750; letter-spacing: .02em; }
+.badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border: 1px solid #B4DDF4; background: var(--brand-soft); color: var(--brand-text); border-radius: 999px; font-size: 11px; font-weight: 750; letter-spacing: .02em; }
 .badge.dark { border-color: var(--ink-2); background: var(--ink-2); color: #fff; }
 .badge.gray { border-color: var(--line); background: var(--gray-1); color: var(--text-secondary); }
 
-/* 滚动入场：默认保持可见，脚本启用后才渐入，避免加载失败时留下空白。 */
-.js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
-.js .reveal.visible { opacity: 1; transform: none; }
+/* 滚动入场：默认保持可见，脚本启用后才渐入，避免加载失败时留下空白。
+   位移用独立的 translate 属性，与卡片 hover 的 transform 各走各的，
+   否则 .visible 的 transform: none 会把悬停位移一并吃掉。 */
+.js .reveal { opacity: 0; translate: 0 20px; transition: opacity .6s cubic-bezier(.22,.68,.24,1), translate .6s cubic-bezier(.22,.68,.24,1); }
+.js .reveal.visible { opacity: 1; translate: 0 0; }
 
 /* 响应式 */
 @media (max-width: 1360px) {
@@ -1374,17 +1376,17 @@ body:has([data-products]) .cta-band {
 
 /* 产品卡是设备档案，不需要 4:3 的大面积留白。 */
 body:has([data-products]) .product-grid { gap: 18px; }
-body:has([data-products]) .product-card.reveal { opacity: 1; transform: none; }
+body:has([data-products]) .product-card.reveal { opacity: 1; translate: none; }
 body:has([data-products]) .product-card {
   border-radius: var(--edu-radius-md);
-  box-shadow: 0 1px 0 rgba(16, 22, 20, .02);
+  box-shadow: 0 1px 0 rgba(16,26,36,.02);
 }
 body:has([data-products]) .product-card:hover {
   box-shadow: var(--edu-card-shadow);
 }
 body:has([data-products]) .product-visual {
   aspect-ratio: 16 / 9;
-  background: #eaf0eb;
+  background: #E3F2FC;
 }
 body:has([data-products]) .product-body {
   padding: 20px;
@@ -1754,40 +1756,59 @@ main > .section.section-alt { background: var(--brand-mist); }
   border: 1px solid var(--line);
 }
 .form-row input, .form-row select, .form-row textarea {
-  border-radius: 12px; background: #fbfdfc;
+  border-radius: 12px; background: #FAFDFF;
   transition: border-color .2s, box-shadow .2s;
 }
 .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
-  border-color: var(--brand); box-shadow: 0 0 0 4px rgba(12,180,97,.13); outline: none;
+  border-color: var(--brand); box-shadow: 0 0 0 4px rgba(18,135,198,.13); outline: none;
 }
 
 /* ---------- 13. 表格柔化 ---------- */
 .spec-wrap { border: 1px solid var(--line); }
-.spec-wrap th { background: #eff7f1; }
+.spec-wrap th { background: #EFF8FE; }
 .spec-wrap tbody tr { transition: background .18s ease; }
-.spec-wrap tbody tr:hover { background: #f3faf5; }
+.spec-wrap tbody tr:hover { background: #F5FAFE; }
 
 /* ---------- 14. 深色区与 CTA：深林绿 + 光晕 + 点阵 ---------- */
 .section.dark, .stats-band {
   background:
-    radial-gradient(880px 420px at 6% -12%, rgba(12,180,97,.2), transparent 60%),
-    radial-gradient(660px 360px at 98% 112%, rgba(110,240,165,.09), transparent 55%),
-    radial-gradient(rgba(110,240,165,.05) 1.2px, transparent 1.3px) 0 0 / 24px 24px,
-    linear-gradient(165deg, #0d1712 0%, #14231a 100%);
+    radial-gradient(880px 420px at 6% -12%, rgba(18,135,198,.2), transparent 60%),
+    radial-gradient(660px 360px at 98% 112%, rgba(143,202,239,.09), transparent 55%),
+    radial-gradient(rgba(143,202,239,.05) 1.2px, transparent 1.3px) 0 0 / 24px 24px,
+    linear-gradient(165deg, #101A24 0%, #101A24 100%);
 }
 .section--competition-preview {
   background:
-    radial-gradient(900px 400px at 88% -12%, rgba(12,180,97,.24), transparent 60%),
-    radial-gradient(rgba(110,240,165,.05) 1.2px, transparent 1.3px) 0 0 / 24px 24px,
-    linear-gradient(160deg, #0e1512 0%, #16211a 100%);
+    radial-gradient(900px 400px at 88% -12%, rgba(18,135,198,.24), transparent 60%),
+    radial-gradient(rgba(143,202,239,.05) 1.2px, transparent 1.3px) 0 0 / 24px 24px,
+    linear-gradient(160deg, #101A24 0%, #101A24 100%);
 }
 .cta-band { border-radius: 30px; }
 .cta-band.cta--brand {
   background:
-    radial-gradient(720px 320px at 88% -32%, rgba(255,255,255,.2), transparent 55%),
-    radial-gradient(rgba(255,255,255,.06) 1.2px, transparent 1.3px) 0 0 / 22px 22px,
-    radial-gradient(520px 280px at 6% 124%, rgba(6,70,34,.55), transparent 60%),
-    linear-gradient(120deg, #0aa14f 0%, #0a9b4f 55%, #12c065 100%);
+    radial-gradient(680px 320px at 86% -26%, rgba(30,155,224,.20), transparent 60%),
+    radial-gradient(rgba(18,135,198,.06) 1.2px, transparent 1.3px) 0 0 / 22px 22px,
+    radial-gradient(520px 280px at 4% 128%, rgba(143,202,239,.30), transparent 62%),
+    linear-gradient(128deg, #E1F3FE 0%, #D2EBFB 54%, #C3E4F8 100%);
+  border: 1px solid #C6E4F7;
+  color: var(--text-primary);
+}
+.cta-band.cta--brand h2 { color: var(--text-primary); }
+.cta-band.cta--brand p { color: var(--text-secondary); }
+.cta-band.cta--brand .btn:not(.btn-outline) {
+  background: linear-gradient(135deg, #1E9BE0 0%, #1287C6 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(18,135,198,.30), inset 0 1px 0 rgba(255,255,255,.24);
+}
+.cta-band.cta--brand .btn:not(.btn-outline):hover {
+  background: linear-gradient(135deg, #1E9BE0 0%, #0E7EB8 100%);
+  color: #fff;
+}
+.cta-band.cta--brand .btn-outline {
+  background: #fff; color: var(--brand-text); border-color: #B4DDF4;
+}
+.cta-band.cta--brand .btn-outline:hover {
+  background: var(--brand-soft); color: var(--brand-text); border-color: var(--brand);
 }
 @media (min-width: 900px) { .cta-band { margin-inline: clamp(12px, 3vw, 44px); } }
 @media (max-width: 720px) { .cta-band { margin-inline: 12px; border-radius: 22px; } }
@@ -2065,57 +2086,66 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
 .printer-toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin-bottom: 22px; }
 .printer-sort { display: flex; align-items: center; gap: 8px; color: var(--text-secondary, #55605a); font-size: 13px; }
 .printer-sort select {
-  font: inherit; color: var(--text-primary, #141a16);
-  padding: 9px 14px; border-radius: 999px; border: 1px solid #dbe7de; background: #fff;
+  font: inherit; color: var(--text-primary, #101A24);
+  padding: 9px 14px; border-radius: 999px; border: 1px solid #CFE9F9; background: #fff;
   cursor: pointer; transition: border-color .2s, box-shadow .2s;
 }
-.printer-sort select:focus { outline: none; border-color: var(--brand, #0cb461); box-shadow: 0 0 0 4px rgba(12,180,97,.13); }
+.printer-sort select:focus { outline: none; border-color: var(--brand, #1287C6); box-shadow: 0 0 0 4px rgba(18,135,198,.13); }
 
-/* ---- 3. 对比操作条 ---- */
+/* ---- 3. 对比操作条（浅色版） ---- */
 .compare-bar {
-  position: sticky; top: 86px; z-index: 40;
+  position: sticky; top: 96px; z-index: 40;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 18px; margin-bottom: 20px;
-  background: rgba(16,22,19,.92); color: #fff;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-radius: 999px; box-shadow: 0 12px 30px rgba(16,26,19,.22);
+  padding: 10px 10px 10px 20px; margin-bottom: 20px;
+  background: #fff; color: var(--text-primary, #101A24);
+  border: 1px solid #CFE9F9;
+  backdrop-filter: blur(10px) saturate(1.35); -webkit-backdrop-filter: blur(10px) saturate(1.35);
+  border-radius: 999px;
+  box-shadow: 0 2px 5px rgba(16,26,36,.05), 0 14px 30px -14px rgba(16,26,36,.28);
   animation: yqFadeUp .3s both;
 }
-.compare-bar-info b { color: #6ff0a5; }
+.compare-bar-info { font-size: 13.5px; color: #1E9BE0; white-space: nowrap; }
+.compare-bar-info b {
+  color: #0E7EB8; font-size: 16px; font-weight: 800; margin: 0 2px;
+  font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+}
 .compare-bar-actions { display: flex; gap: 8px; }
-.compare-bar .btn-outline { border-color: rgba(255,255,255,.35); color: #fff; }
-.compare-bar .btn-outline:hover { background: rgba(255,255,255,.12); border-color: #fff; }
+.compare-bar .btn-sm { min-height: 34px; padding: 0 16px; border-radius: 999px; }
+.compare-bar .btn-outline { background: #F5FAFE; border-color: #E3F2FC; color: #1287C6; }
+.compare-bar .btn-outline:hover { background: #EFF8FE; border-color: #CFE9F9; color: #101A24; }
+.compare-bar .btn-primary { box-shadow: 0 4px 12px rgba(14,126,184,.22); }
+.compare-bar .btn-primary:hover { box-shadow: 0 6px 16px rgba(14,126,184,.28); }
 
 /* ---- 4. 设备卡片 ---- */
 .printer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 22px; }
 .printer-card {
   position: relative; display: flex; flex-direction: column;
-  background: #fff; border: 1.5px solid #eaf1ec; border-radius: var(--radius-media, 22px);
-  box-shadow: 0 1px 2px rgba(16,26,19,.03), 0 6px 20px rgba(16,26,19,.045);
+  background: #fff; border: 1.5px solid #EFF8FE; border-radius: var(--radius-media, 22px);
+  box-shadow: 0 1px 2px rgba(16,26,36,.03), 0 6px 20px rgba(16,26,36,.045);
   overflow: hidden;
   transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease;
 }
-.printer-card:hover { transform: translateY(-5px); box-shadow: 0 24px 54px rgba(16,26,19,.13); border-color: #bfe6cd; }
-.printer-card.selected { border-color: var(--brand, #0cb461); box-shadow: 0 0 0 4px rgba(12,180,97,.12), 0 20px 46px rgba(12,150,80,.14); }
-.printer-card-media { position: relative; aspect-ratio: 16/9.5; overflow: hidden; background: #eef4ef; }
+.printer-card:hover { transform: translateY(-5px); box-shadow: 0 24px 54px rgba(16,26,36,.13); border-color: #B4DDF4; }
+.printer-card.selected { border-color: var(--brand, #1287C6); box-shadow: 0 0 0 4px rgba(18,135,198,.12), 0 20px 46px rgba(18,135,198,.14); }
+.printer-card-media { position: relative; aspect-ratio: 16/9.5; overflow: hidden; background: #EFF8FE; }
 .printer-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
 .printer-card:hover .printer-card-media img { transform: scale(1.05); }
 .printer-badge {
   position: absolute; top: 12px; left: 12px; z-index: 2;
   padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
-  color: #fff; background: linear-gradient(135deg, #14c268, #0a9b4f);
-  box-shadow: 0 6px 14px rgba(12,180,97,.35);
+  color: #fff; background: linear-gradient(135deg, #1E9BE0, #1287C6);
+  box-shadow: 0 6px 14px rgba(18,135,198,.35);
 }
 .printer-compare-check {
   position: absolute; top: 12px; right: 12px; z-index: 2;
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
   background: rgba(255,255,255,.9); backdrop-filter: blur(8px);
-  border: 1px solid rgba(16,26,19,.08); cursor: pointer;
+  border: 1px solid rgba(16,26,36,.08); cursor: pointer;
   transition: background .2s, transform .2s;
 }
 .printer-compare-check:hover { transform: scale(1.05); }
-.printer-compare-check input { accent-color: var(--brand, #0cb461); width: 15px; height: 15px; cursor: pointer; }
+.printer-compare-check input { accent-color: var(--brand, #1287C6); width: 15px; height: 15px; cursor: pointer; }
 .printer-card-body { display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 22px; flex: 1; }
 .printer-card-title { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .printer-card-title h3 { margin: 0; font-size: 19px; letter-spacing: -.01em; }
@@ -2124,76 +2154,79 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
 .printer-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .printer-chips span {
   padding: 5px 11px; border-radius: 999px; font-size: 12px;
-  background: var(--brand-mist, #f3faf5); color: #33523f; border: 1px solid #e2efe6;
+  background: var(--brand-mist, #F5FAFE); color: #0E7EB8; border: 1px solid #E3F2FC;
 }
 .printer-chips .chip-price { background: #fff7ea; color: #a05e00; border-color: #ffe3b3; font-weight: 700; }
 .printer-highlights { margin: 2px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .printer-highlights li { position: relative; padding-left: 18px; font-size: 13px; color: var(--text-secondary, #55605a); }
-.printer-highlights li::before { content: ''; position: absolute; left: 0; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, #14c268, #0a9b4f); }
+.printer-highlights li::before { content: ''; position: absolute; left: 0; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, #1E9BE0, #1287C6); }
 .printer-card-actions { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 8px; }
-.btn-text { border: none; background: none; color: var(--brand-text, #0a7c3f); font-weight: 600; padding: 8px 4px; }
-.btn-text:hover { color: #086b36; text-decoration: underline; }
+.btn-text { border: none; background: none; color: var(--brand-text, #0E7EB8); font-weight: 600; padding: 8px 4px; }
+.btn-text:hover { color: #0B628F; text-decoration: underline; }
 .printer-empty { text-align: center; color: var(--text-tertiary, #8a938d); padding: 60px 0; }
 
 /* ---- 5. 对比表 ---- */
-.compare-table-wrap { overflow-x: auto; border-radius: var(--radius-media, 22px); border: 1px solid #e6f0e9; background: #fff; box-shadow: 0 1px 2px rgba(16,26,19,.03), 0 10px 30px rgba(16,26,19,.05); }
+.compare-table-wrap { overflow-x: auto; border-radius: var(--radius-media, 22px); border: 1px solid #E3F2FC; background: #fff; box-shadow: 0 1px 2px rgba(16,26,36,.03), 0 10px 30px rgba(16,26,36,.05); }
 .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
-.compare-table th, .compare-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #eef4ef; vertical-align: top; }
-.compare-table thead th { background: var(--brand-mist, #f3faf5); border-bottom: 1px solid #e2efe6; }
-.compare-table .dim-col { color: var(--text-secondary, #55605a); font-weight: 600; white-space: nowrap; background: #fbfdfc; width: 140px; }
-.compare-table td.best { color: #0a7c3f; font-weight: 700; background: #f0fbf3; }
-.best-tag { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #14c268, #0a9b4f); vertical-align: 1px; }
+.compare-table th, .compare-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #EFF8FE; vertical-align: top; }
+.compare-table thead th { background: var(--brand-mist, #F5FAFE); border-bottom: 1px solid #E3F2FC; }
+.compare-table .dim-col { color: var(--text-secondary, #55605a); font-weight: 600; white-space: nowrap; background: #FAFDFF; width: 140px; }
+.compare-table td.best { color: #0E7EB8; font-weight: 700; background: #F5FAFE; }
+.best-tag { display: inline-block; margin-left: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #1E9BE0, #1287C6); vertical-align: 1px; }
 .cmp-head { display: flex; align-items: center; gap: 10px; }
 .cmp-head img { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; }
 .cmp-head b { display: block; font-size: 15px; }
 .cmp-head small { color: var(--text-tertiary, #8a938d); }
-.compare-table .dim-group td { background: #f5faf6; font-weight: 700; color: #33523f; letter-spacing: .04em; }
+.compare-table .dim-group td { background: #F5FAFE; font-weight: 700; color: #0E7EB8; letter-spacing: .04em; }
 .cmp-source { font-size: 12.5px; color: var(--text-tertiary, #8a938d); }
 
 /* ---- 6. 说明面板 ---- */
 .note-panel {
   padding: 22px 24px; border-radius: var(--radius-media, 22px);
-  background: linear-gradient(180deg, #fbfdfb, #f3f8f4);
-  border: 1px dashed #c8e2cf; color: var(--text-secondary, #55605a);
+  background: linear-gradient(180deg, #FAFDFF, #F5FAFE);
+  border: 1px dashed #B4DDF4; color: var(--text-secondary, #55605a);
   font-size: 13.5px; line-height: 1.8;
 }
-.note-panel b { color: #33523f; }
+.note-panel b { color: #0E7EB8; }
 
 /* ---- 7. 详情弹层 ---- */
 .printer-modal { border: none; padding: 0; background: transparent; max-width: min(860px, 94vw); width: 100%; }
-.printer-modal::backdrop { background: rgba(10,18,13,.5); backdrop-filter: blur(6px); }
+.printer-modal::backdrop { background: rgba(16,26,36,.5); backdrop-filter: blur(6px); }
 .printer-modal-card {
   position: relative; background: #fff; border-radius: 24px; padding: 30px;
-  box-shadow: 0 40px 90px rgba(10,18,13,.3);
+  box-shadow: 0 40px 90px rgba(16,26,36,.3);
   animation: yqFadeUp .35s cubic-bezier(.2,.7,.2,1);
   max-height: 86vh; overflow-y: auto;
 }
 .printer-modal-close {
   position: absolute; top: 14px; right: 16px; z-index: 2;
   width: 38px; height: 38px; border-radius: 50%; border: none;
-  background: #f1f5f1; color: var(--text-primary, #141a16); font-size: 20px; line-height: 1;
+  background: #EFF8FE; color: var(--text-primary, #101A24); font-size: 20px; line-height: 1;
   cursor: pointer; transition: background .2s, transform .2s;
 }
-.printer-modal-close:hover { background: #e2eae3; transform: rotate(90deg); }
+.printer-modal-close:hover { background: #E3F2FC; transform: rotate(90deg); }
 .pm-hero { display: grid; grid-template-columns: 260px 1fr; gap: 22px; margin-bottom: 22px; }
 .pm-hero img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 16px; }
 .pm-hero h2 { margin: 10px 0 8px; font-size: 26px; letter-spacing: -.02em; }
 .pm-hero p { margin: 0 0 12px; color: var(--text-secondary, #55605a); line-height: 1.7; }
 .pm-price { display: inline-block; padding: 8px 16px; border-radius: 999px; background: #fff7ea; color: #a05e00; font-weight: 800; border: 1px solid #ffe3b3; }
 .pm-grid, .pm-specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
-.pm-item { padding: 12px 14px; border-radius: 14px; background: var(--brand-mist, #f5faf6); border: 1px solid #e6f0e9; }
+.pm-item { padding: 12px 14px; border-radius: 14px; background: var(--brand-mist, #F5FAFE); border: 1px solid #E3F2FC; }
 .pm-item small { display: block; color: var(--text-tertiary, #8a938d); font-size: 12px; margin-bottom: 4px; }
 .pm-item b { font-size: 14px; font-weight: 650; }
 .pm-h { margin: 22px 0 10px; font-size: 16px; }
 .pm-hl { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
 .pm-hl li { position: relative; padding-left: 20px; color: var(--text-secondary, #55605a); font-size: 14px; }
-.pm-hl li::before { content: ''; position: absolute; left: 0; top: 8px; width: 9px; height: 9px; border-radius: 50%; background: linear-gradient(135deg, #14c268, #0a9b4f); }
+.pm-hl li::before { content: ''; position: absolute; left: 0; top: 8px; width: 9px; height: 9px; border-radius: 50%; background: linear-gradient(135deg, #1E9BE0, #1287C6); }
 .pm-meta { margin: 22px 0 0; font-size: 12.5px; color: var(--text-tertiary, #8a938d); line-height: 1.7; }
 .pm-actions { margin-top: 16px; }
 
 /* ---- 8. 移动端 ---- */
 @media (max-width: 720px) {
-  .compare-bar { top: 76px; border-radius: 18px; }
+  .compare-bar { top: 78px; border-radius: 18px; padding: 8px 8px 8px 16px; gap: 8px; flex-wrap: nowrap; }
+  .compare-bar-info { font-size: 12.5px; }
+  .compare-bar-info b { font-size: 15px; margin: 0 1px; }
+  .compare-bar .btn-sm { min-height: 32px; padding: 0 12px; font-size: 12px; }
   .pm-hero { grid-template-columns: 1fr; }
   .printer-toolbar { flex-direction: column; align-items: flex-start; }
 }
@@ -2208,11 +2241,10 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
 .hero--home {
   padding: 70px 0 0;
   background:
-    radial-gradient(880px 430px at 88% -10%, rgba(12,180,97,.16), transparent 64%),
-    radial-gradient(760px 360px at 0% 2%, rgba(255,171,46,.10), transparent 62%),
-    radial-gradient(rgba(12,180,97,.055) 1.2px, transparent 1.3px) 0 0 / 22px 22px,
-    linear-gradient(180deg, #f1f8f3 0%, #fdfefd 78%);
-  border-bottom: 1px solid rgba(16, 22, 20, .05);
+    radial-gradient(900px 460px at 86% -14%, rgba(30,155,224,.16), transparent 66%),
+    radial-gradient(720px 340px at 0% 0%, rgba(143,202,239,.20), transparent 62%),
+    linear-gradient(180deg, #E9F6FE 0%, #F5FBFF 62%, #FFFFFF 100%);
+  border-bottom: 1px solid rgba(16,26,36,.05);
 }
 .hero--home .hero-swiper { min-height: 0; height: auto; max-height: none; }
 .hero--home .hero-slide {
@@ -2499,18 +2531,304 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
     padding-left: 12px;
     padding-right: 10px;
     background: #fff;
-    box-shadow: 1px 0 0 #eef4ef;
+    box-shadow: 1px 0 0 #EFF8FE;
     white-space: normal;
     font-size: 13px;
   }
-  .compare-table thead th.dim-col { background: var(--brand-mist, #f3faf5); }
+  .compare-table thead th.dim-col { background: var(--brand-mist, #F5FAFE); }
   .compare-table .dim-group td {
     position: sticky;
     left: 0;
-    background: #f5faf6;
-    box-shadow: 1px 0 0 #eef4ef;
+    background: #F5FAFE;
+    box-shadow: 1px 0 0 #EFF8FE;
   }
   .compare-table th, .compare-table td { padding: 12px 14px; }
   .cmp-head img { width: 40px; height: 40px; }
   .compare-table-wrap { -webkit-overflow-scrolling: touch; }
+}
+
+/* ===========================================================
+   细节打磨 v11 · 2026-10
+   ① CTA 由高亮纯绿改为深林绿渐变，降低大面积平色块的压迫感
+   ② 订阅卡顶部装饰线由「绿→米黄」收敛为绿色系
+   ③ 轮播暂停/播放按钮改用矢量图标，替代 9px 的 Ⅱ 字符
+   仅追加，可整段回滚。
+   =========================================================== */
+
+/* ---- 1. CTA：浅天空蓝渐变，收尾轻一点，靠按钮承担行动指向 ---- */
+.cta-band.cta--brand {
+  background:
+    radial-gradient(680px 320px at 86% -26%, rgba(30,155,224,.20), transparent 60%),
+    radial-gradient(520px 300px at 4% 128%, rgba(143,202,239,.34), transparent 62%),
+    radial-gradient(rgba(18,135,198,.06) 1.2px, transparent 1.3px) 0 0 / 22px 22px,
+    linear-gradient(128deg, #E1F3FE 0%, #D2EBFB 54%, #C3E4F8 100%);
+  border: 1px solid #C6E4F7;
+}
+.cta-band.cta--brand h2 { letter-spacing: -.03em; color: var(--text-primary); }
+.cta-band.cta--brand p { color: var(--text-secondary); }
+.cta-band.cta--brand .btn:not(.btn-outline) {
+  background: linear-gradient(135deg, #1E9BE0 0%, #1287C6 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(18,135,198,.30), inset 0 1px 0 rgba(255,255,255,.24);
+}
+.cta-band.cta--brand .btn:not(.btn-outline):hover {
+  background: linear-gradient(135deg, #1E9BE0 0%, #0E7EB8 100%);
+  color: #fff;
+}
+
+/* ---- 2. 订阅卡顶部装饰线：统一天空蓝系 ---- */
+.subscribe-inner::before {
+  background: linear-gradient(90deg, #1287C6, #8FCAEF 62%, #CFE9F9);
+}
+
+/* ---- 3. 轮播控制按钮图标 ---- */
+.hero-control svg { width: 7px; height: 8px; display: block; }
+
+/* ---- 4. 窄屏标题避免孤字：CTA 与订阅卡标题均衡折行 ---- */
+.cta-band h2,
+.subscribe-inner h3 { text-wrap: balance; }
+@media (max-width: 720px) {
+  .cta-band h2 { font-size: 24px; line-height: 1.32; }
+}
+
+/* ---- 5. 居中的引导语均衡折行，避免末行只剩两三个字 ---- */
+.section-head p,
+.competition-preview p,
+.trial-preview-copy p { text-wrap: balance; }
+
+/* ===========================================================
+   交互动效层 v12 · 2026-10
+   目标：让静态排版「活」起来，但保持克制 —— 所有位移 ≤5px，
+   时长 160–280ms，缓动统一，不做旋转 / 弹跳 / 视差。
+   ① 统一缓动与焦点态
+   ② 按钮：抬升 + 按压缩放 + 主按钮高光扫过
+   ③ 卡片：整卡抬升 + 阴影 + 边框染色 + 图内微推近
+   ④ 导航：下划线由中心展开
+   ⑤ 表格行 / 输入框 / 社交图标反馈
+   ⑥ 复用既有 .reveal 入场并补错落延迟，新增点击涟漪（.yq-ripple）
+   仅追加，可整段回滚。
+   =========================================================== */
+
+:root {
+  --yq-ease: cubic-bezier(.22,.68,.24,1);
+  --yq-ease-spring: cubic-bezier(.34,1.42,.64,1);
+  --yq-ring: rgba(18,135,198,.34);
+}
+
+/* ---- 1. 焦点态：键盘浏览时给清楚的绿色环，鼠标点击不显示 ---- */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #1287C6;
+  outline-offset: 3px;
+}
+
+/* ---- 2. 按钮：抬升 + 按下回弹 ---- */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    color .18s var(--yq-ease),
+    background-color .2s var(--yq-ease),
+    border-color .2s var(--yq-ease),
+    box-shadow .24s var(--yq-ease),
+    transform .2s var(--yq-ease);
+}
+
+/* 悬停整体上浮 2px，阴影同步扩散；按下迅速收回并微缩，形成「压下去」的手感 */
+@media (hover: hover) {
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary:hover { box-shadow: 0 10px 24px -6px rgba(18,135,198,.44); }
+  .btn-dark:hover { box-shadow: 0 10px 22px -8px rgba(16,26,36,.42); }
+  .btn-light:hover,
+  .btn-outline:hover { box-shadow: 0 8px 18px -10px rgba(16,26,36,.3); }
+  .btn-ghost:hover { box-shadow: none; }
+}
+.btn:active,
+.btn.is-pressed {
+  transform: translateY(0) scale(.968);
+  transition-duration: .09s;
+  /* 内阴影让按钮「按进去」，即使动画被系统降级也有明确反馈 */
+  box-shadow: inset 0 2px 8px rgba(16,26,36,.22), 0 1px 3px rgba(16,26,36,.14);
+}
+
+/* 主按钮的高光扫过：一道很淡的斜向白光，hover 时自左向右掠过一次 */
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 34%, rgba(255,255,255,.34) 48%, transparent 62%);
+  transform: translateX(-130%);
+  transition: transform .62s var(--yq-ease);
+}
+@media (hover: hover) {
+  .btn-primary:hover::before { transform: translateX(130%); }
+}
+
+/* 轻按钮（.btn-link）箭头随 hover 右移 */
+.btn-link::after { transition: transform .22s var(--yq-ease); }
+.btn-link:hover::after { transform: translateX(4px); }
+
+/* ---- 3. 卡片：只补缺失的两类 ----
+   站内多数卡片已有 hover 体系（抬升 + 彩色光晕 + 图片推近），
+   这里只给漏掉的 .card 与 .article-card 补齐同一套语言，
+   再用最轻的方式强化「可点」暗示，不重复已有位移。 */
+@media (hover: hover) and (pointer: fine) {
+  .card,
+  .article-card {
+    transition: transform .28s var(--yq-ease), box-shadow .28s var(--yq-ease), border-color .28s var(--yq-ease);
+  }
+  .card:hover,
+  .article-card:hover {
+    transform: translateY(-5px);
+    border-color: #B4DDF4;
+    box-shadow: 0 6px 14px rgba(16,26,36,.05), 0 26px 54px rgba(16,26,36,.13);
+  }
+
+  /* 图标卡内的配图：已有规则未覆盖这一类 */
+  .feature-card img { transition: transform .55s var(--yq-ease); }
+  .feature-card:hover img { transform: scale(1.04); }
+
+  /* 标题在悬停时染上品牌绿 */
+  .works-preview-card h3,
+  .video-card .video-body strong { transition: color .2s var(--yq-ease); }
+  .works-preview-card:hover h3,
+  .video-card:hover .video-body strong { color: var(--brand-text, #0E7EB8); }
+}
+
+/* ---- 4. 导航：下划线由中心向两侧展开 ---- */
+.nav-links > a,
+.education-nav-group > a {
+  position: relative;
+}
+.nav-links > a::after,
+.education-nav-group > a::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1287C6, #63B4E7);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .26s var(--yq-ease);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .nav-links > a:hover::after,
+  .education-nav-group > a:hover::after { transform: scaleX(1); }
+}
+/* 当前页：下划线常驻，代替纯底色高亮后的空落感 */
+.nav-links > a.active::after { transform: scaleX(1); opacity: .55; }
+
+/* 移动端菜单是纵向列表，下划线改为左侧竖条 */
+@media (max-width: 900px) {
+  .nav-links > a::after,
+  .education-nav-group > a::after { display: none; }
+  .nav-links > a {
+    transition: background-color .2s var(--yq-ease), color .2s var(--yq-ease), padding-left .22s var(--yq-ease);
+  }
+  .nav-links > a:hover { padding-left: 19px; }
+}
+
+/* 下拉三角随展开翻转 */
+.education-nav-trigger span { transition: transform .24s var(--yq-ease); }
+.education-nav-trigger[aria-expanded="true"] span { transform: rotate(180deg); }
+
+/* ---- 5. 表格行、输入框、社交图标 ---- */
+tbody tr { transition: background-color .16s var(--yq-ease); }
+@media (hover: hover) {
+  tbody tr:hover { background-color: rgba(18,135,198,.045); }
+}
+/* 对比表首列有吸附，悬停高亮时单独补一层，避免被单元格底色切断 */
+.compare-table tbody tr:hover .dim-col { background-color: #F5FAFE; }
+
+.form-row input,
+.form-row select,
+.form-row textarea,
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+  transition: border-color .2s var(--yq-ease), box-shadow .22s var(--yq-ease), background-color .2s var(--yq-ease);
+}
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #1287C6;
+  box-shadow: 0 0 0 4px rgba(18,135,198,.12);
+}
+
+.footer-brand .social-row a {
+  transition: background-color .22s var(--yq-ease), transform .26s var(--yq-ease-spring);
+}
+@media (hover: hover) {
+  .footer-brand .social-row a:hover { transform: translateY(-3px) scale(1.06); }
+}
+
+/* 页脚文字链接：下划线滑入 */
+.site-footer ul a { transition: color .2s var(--yq-ease), padding-left .2s var(--yq-ease); }
+@media (hover: hover) {
+  .site-footer ul a:hover { padding-left: 4px; }
+}
+
+/* 轮播分页点与暂停键的按压反馈 */
+.hero-control,
+.hero-dot { transition: transform .18s var(--yq-ease), background-color .2s var(--yq-ease), opacity .2s var(--yq-ease); }
+.hero-control:active { transform: scale(.9); }
+
+/* 设备筛选 chip */
+.printer-chips button,
+.printer-chips a {
+  transition: transform .16s var(--yq-ease), background-color .18s var(--yq-ease),
+              border-color .18s var(--yq-ease), color .18s var(--yq-ease);
+}
+@media (hover: hover) {
+  .printer-chips button:hover,
+  .printer-chips a:hover { transform: translateY(-1px); }
+}
+
+/* ---- 6. 滚动入场：沿用站内既有的 .reveal 机制 ----
+   位移与透明度由 .js .reveal 原规则管，这里只补 --reveal-delay，
+   让同组卡片依次浮现，而不是整块同时出现。 */
+.js .reveal { transition-delay: var(--reveal-delay, 0ms); }
+
+/* ---- 7. 点击涟漪 ----
+   边缘用径向渐变向外淡出，避免圆形被按钮高度裁切后露出硬边。 */
+.yq-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, currentColor 0%, currentColor 46%, transparent 72%);
+  transform: scale(0);
+  animation: yqRipple .62s var(--yq-ease) forwards;
+}
+@keyframes yqRipple {
+  from { transform: scale(0); opacity: .17; }
+  to { transform: scale(2.2); opacity: 0; }
+}
+
+/* ---- 8. 尊重系统的「减少动态效果」设置 ---- */
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal { transition: none; translate: none; }
+  .yq-ripple { display: none; }
+  .btn { transition: none; }
+  .btn:hover,
+  .btn:active,
+  .card:hover,
+  .article-card:hover,
+  .feature-card:hover img,
+  .works-preview-card:hover h3,
+  .video-card:hover .video-body strong { transform: none; }
+  .btn-primary::before { display: none; }
 }

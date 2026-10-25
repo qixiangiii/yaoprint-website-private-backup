@@ -46,7 +46,7 @@
       return response.json();
     })
     .then(rows => {
-      root.innerHTML = rows.length ? rows.map(card).join('') : '<div class="empty-panel">暂无已发布的竞赛入口，请从后台添加。</div>';
+      root.innerHTML = rows.length ? rows.map(card).join('') : '<div class="empty-panel">暂无进行中的竞赛入口，新赛季开放后会在这里公布。</div>';
     })
     .catch(() => {
       const fallback = Array.isArray(window.QIYUAN_COMPETITIONS) ? window.QIYUAN_COMPETITIONS : [];

@@ -240,6 +240,19 @@
       }
     });
   }, { threshold: 0.1 });
+  // 网格子项错落入场：同组卡片依次浮现，避免整块同时淡入
+  const staggerGroups = [
+    '.pathway-grid', '.video-grid', '.works-preview-grid', '.quick-grid',
+    '.feature-grid', '.course-grid', '.product-grid', '.ecosystem-grid',
+    '.scene-grid', '.rule-grid', '.project-proof-grid', '.media-grid'
+  ];
+  staggerGroups.forEach(selector => $$(selector).forEach(group => {
+    [...group.children].forEach((child, index) => {
+      if (child.classList.contains('reveal')) return;
+      child.classList.add('reveal');
+      if (index) child.style.setProperty('--reveal-delay', Math.min(index, 5) * 60 + 'ms');
+    });
+  }));
   $$('.reveal').forEach(element => observer.observe(element));
 
   // 全站可替换信息：只更新标记过 data-setting / data-social 的节点，避免影响内页独立文案。
@@ -248,7 +261,8 @@
       const settings = await fetchJSON('/api/settings');
       $$('[data-setting]').forEach(element => {
         const value = settings[element.dataset.setting];
-        if (value !== undefined) element.textContent = value;
+        // 后台留空的项保留页面默认文案，避免把备案号、版权等信息清成空白
+        if (value !== undefined && value !== '') element.textContent = value;
       });
       $$('[data-social]').forEach(element => {
         const value = settings[`social_${element.dataset.social}`];
@@ -312,11 +326,14 @@
       const control = document.createElement('button');
       control.type = 'button';
       control.className = 'hero-control';
+      // 9px 的 Ⅱ 字符在圆钮里几乎看不见，改用矢量图标保证任何缩放下都清晰
+      const playIcon = '<svg viewBox="0 0 8 10" aria-hidden="true"><path d="M0 0l8 5-8 5z" fill="currentColor"/></svg>';
+      const pauseIcon = '<svg viewBox="0 0 8 10" aria-hidden="true"><rect x="0" y="0" width="2.6" height="10" rx=".6" fill="currentColor"/><rect x="5.4" y="0" width="2.6" height="10" rx=".6" fill="currentColor"/></svg>';
       control.setAttribute('aria-label', paused ? '播放轮播' : '暂停轮播');
-      control.textContent = paused ? '▶' : 'Ⅱ';
+      control.innerHTML = paused ? playIcon : pauseIcon;
       control.addEventListener('click', () => {
         paused = !paused;
-        control.textContent = paused ? '▶' : 'Ⅱ';
+        control.innerHTML = paused ? playIcon : pauseIcon;
         control.setAttribute('aria-label', paused ? '播放轮播' : '暂停轮播');
         start();
       });
@@ -483,7 +500,10 @@
     try {
       const list = await fetchJSON('/api/videos');
       if (!list.length) return renderState(target, 'empty', '暂时没有视频。');
-      target.innerHTML = list.map(item => `<a href="${text(item.url && item.url !== '#' ? item.url : '/explore/creators.html')}" class="video-card" ${item.url && item.url !== '#' ? 'target="_blank" rel="noopener"' : ''}><div class="video-thumb">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : ''}</div><div class="video-body"><span class="video-source">${text(item.source || '创作者内容')}</span><strong>${text(item.title)}</strong><span class="video-link">打开视频网页 ↗</span></div></a>`).join('');
+      target.innerHTML = list.map(item => {
+        const hasUrl = item.url && item.url !== '#';
+        return `<a href="${text(hasUrl ? item.url : '/explore/creators.html')}" class="video-card" ${hasUrl ? 'target="_blank" rel="noopener"' : ''}><div class="video-thumb">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : ''}</div><div class="video-body"><span class="video-source">${text(item.source || '创作者内容')}</span><strong>${text(item.title)}</strong><span class="video-link">${hasUrl ? '打开视频网页 ↗' : '进入创作者内容 ↗'}</span></div></a>`;
+      }).join('');
     } catch (error) { renderState(target, 'error', '视频加载失败。', loadVideos); }
   }
   loadVideos();
@@ -652,6 +672,31 @@
   }
   loadContentList();
 
+  // 内容详情页对外展示的补充信息：只认白名单字段，键名统一中文。
+  // 内部配置字段（cta / source_url / video_url 等）不展示。
+  const metaLabels = {
+    nozzle: '喷嘴温度', bed: '热床温度', strength: '韧性', compatible: '兼容设备',
+    industry: '适用行业', result: '项目成效', products: '应用设备',
+    product: '适用范围', read_time: '阅读时长', level: '难度', duration: '耗时',
+    author: '作者', material: '建议材料',
+    version: '版本', effective_date: '生效日期',
+    response: '响应时效'
+  };
+  const metaListMarkup = meta => {
+    const rows = Object.entries(meta || {})
+      .filter(([key, value]) => metaLabels[key] && value !== '' && value != null)
+      .map(([key, value]) => `<div><dt>${metaLabels[key]}</dt><dd>${text(value)}</dd></div>`);
+    return rows.length ? `<dl class="meta-list">${rows.join('')}</dl>` : '';
+  };
+  // cta 是站内路由配置，只接受相对路径，避免被写成 javascript: 或外站地址
+  const ctaHref = (meta, title) => {
+    const fallback = `/contact.html?subject=${encodeURIComponent(title)}`;
+    const raw = meta && typeof meta.cta === 'string' ? meta.cta.trim() : '';
+    if (!raw) return fallback;
+    const clean = raw.replace(/^\/+/, '');
+    return /^[a-z0-9][a-z0-9\-_/]*(\.html)?(\?[a-z0-9=&%\-_]+)?$/i.test(clean) ? `/${clean}` : fallback;
+  };
+
   async function loadContentDetail() {
     const target = $('[data-content-detail]');
     if (!target) return;
@@ -661,7 +706,7 @@
     try {
       const item = await fetchJSON(`/api/content/${encodeURIComponent(type)}/${encodeURIComponent(slug)}`);
       document.title = `${item.title} — 起元星启`;
-      target.innerHTML = `<article class="content-detail">${item.cover ? `<img class="content-detail-cover" src="${text(item.cover)}" alt="${text(item.title)}">` : ''}<div class="content-detail-copy">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h1>${text(item.title)}</h1><p class="content-detail-summary">${text(item.summary || '')}</p><div class="content-detail-body">${text(item.body || '').split(/\n+/).filter(Boolean).map(p => `<p>${p}</p>`).join('')}</div>${Object.keys(item.meta || {}).length ? `<dl class="meta-list">${Object.entries(item.meta).map(([key, value]) => `<div><dt>${text(key.replace(/_/g, ' '))}</dt><dd>${text(value)}</dd></div>`).join('')}</dl>` : ''}<a class="btn btn-primary" href="/contact.html?subject=${encodeURIComponent(item.title)}">咨询相关方案</a></div></article>`;
+      target.innerHTML = `<article class="content-detail">${item.cover ? `<img class="content-detail-cover" src="${text(item.cover)}" alt="${text(item.title)}">` : ''}<div class="content-detail-copy">${item.tag ? `<span class="badge">${text(item.tag)}</span>` : ''}<h1>${text(item.title)}</h1><p class="content-detail-summary">${text(item.summary || '')}</p><div class="content-detail-body">${text(item.body || '').split(/\n+/).filter(Boolean).map(p => `<p>${p}</p>`).join('')}</div>${metaListMarkup(item.meta)}<a class="btn btn-primary" href="${ctaHref(item.meta, item.title)}">咨询相关方案</a></div></article>`;
     } catch { renderState(target, 'error', '该内容不存在或尚未发布。'); }
   }
   loadContentDetail();
@@ -671,6 +716,23 @@
     event.preventDefault(); const tip = $('#ticketTip');
     try { const result = await fetchJSON('/api/tickets', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.fromEntries(new FormData(ticketForm).entries())) }); if (!result.ok) throw new Error(); ticketForm.reset(); tip.textContent='✓ 工单已提交，技术团队将在 1 个工作日内联系您。'; tip.className='form-tip'; tip.style.display='block'; }
     catch { tip.textContent='提交失败，请检查联系方式后重试。'; tip.className='form-tip error'; tip.style.display='block'; }
+  });
+
+  /* ---- 点击涟漪（v12 动效层） ----
+     滚动入场沿用站内既有的 .reveal 机制（见上方 IntersectionObserver），
+     这里只补一层按下反馈，并在下方为网格子项补错落的入场延迟。 */
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reducedMotion) document.addEventListener('pointerdown', event => {
+    const host = event.target.closest('.btn');
+    if (!host || host.disabled || host.dataset.noRipple === 'true') return;
+    const rect = host.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 1.1;
+    const ripple = document.createElement('span');
+    ripple.className = 'yq-ripple';
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${event.clientX - rect.left - size / 2}px;top:${event.clientY - rect.top - size / 2}px`;
+    host.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
   });
 
 })();
