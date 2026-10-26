@@ -143,8 +143,21 @@
 
   async function fetchJSON(url, options = {}) {
     const response = await fetch(url, options);
-    if (!response.ok) throw new Error(`请求失败 (${response.status})`);
+    if (!response.ok) {
+      let message = `请求失败 (${response.status})`;
+      try {
+        const data = await response.clone().json();
+        if (data && data.error) message = data.error;
+      } catch { /* 非 JSON 响应，保留默认提示 */ }
+      throw new Error(message);
+    }
     return response.json();
+  }
+
+  // 表单提示：优先使用服务端返回的具体原因，接口异常时回落到通用文案
+  function errorText(error, fallback) {
+    const message = String((error && error.message) || '').trim();
+    return message && !/^请求失败/.test(message) ? message : fallback;
   }
 
   // 轻量访问统计：上报当前页面路径（失败静默，不阻塞页面）
@@ -409,7 +422,7 @@
             <div class="hero-media"><img class="hero-img" src="${text(image)}" alt="${text(hero.subtitle || hero.title || '起元星启课程')}"></div>
             <div class="hero-overlay">
               ${hero.tag ? `<span class="hero-tag">${text(hero.tag)}</span>` : ''}
-              <h1>${heading}</h1>
+              ${index === 0 ? `<h1>${heading}</h1>` : `<h2>${heading}</h2>`}
               ${hero.subtitle ? `<p class="hero-sub">${text(hero.subtitle)}</p>` : ''}
               ${hero.lead ? `<p class="hero-lead">${text(hero.lead)}</p>` : ''}
               <div class="hero-actions">
@@ -646,7 +659,7 @@
       tip.style.display = 'block';
       tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
-    try { const data = Object.fromEntries(new FormData(trialForm).entries()); data.privacy_consent = trialForm.querySelector('[name="privacy_consent"]').checked; data.privacy_version = '2026.09'; const result = await fetchJSON('/api/enrollment-inquiries', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!result.ok) throw new Error(); trialForm.reset(); showTip('✓ 提交成功！已收到预约信息，课程顾问将尽快联系监护人确认试听安排。', false); } catch (error) { showTip('提交失败，请检查监护人姓名、电话及隐私同意项后重试。', true); }
+    try { const data = Object.fromEntries(new FormData(trialForm).entries()); data.privacy_consent = trialForm.querySelector('[name="privacy_consent"]').checked; data.privacy_version = '2026.09'; const result = await fetchJSON('/api/enrollment-inquiries', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!result.ok) throw new Error(); trialForm.reset(); showTip('✓ 提交成功！已收到预约信息，课程顾问将尽快联系监护人确认试听安排。', false); } catch (error) { showTip(errorText(error, '提交失败，请检查监护人姓名、电话及隐私同意项后重试。'), true); }
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '提交试听预约'; }
   });
 
@@ -676,7 +689,7 @@
         showFormTip('✓ 提交成功，我们将在 1 个工作日内联系您。', false);
         form.reset();
       } catch (error) {
-        showFormTip('提交失败，请稍后再试。', true);
+        showFormTip(errorText(error, '提交失败，请稍后再试。'), true);
       } finally {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '提交需求'; }
       }
@@ -780,7 +793,7 @@
     };
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
     try { const result = await fetchJSON('/api/tickets', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.fromEntries(new FormData(ticketForm).entries())) }); if (!result.ok) throw new Error(); ticketForm.reset(); showTicketTip('✓ 工单已提交，技术团队将在 1 个工作日内联系您。', false); }
-    catch { showTicketTip('提交失败，请检查联系方式后重试。', true); }
+    catch (error) { showTicketTip(errorText(error, '提交失败，请检查联系方式后重试。'), true); }
     finally { if (submitBtn) { submitBtn.disabled = false; if (submitBtn.isConnected) submitBtn.textContent = '提交工单'; } }
   });
 

@@ -15,6 +15,12 @@
   const post = (url, body) => api(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const put = (url, body) => api(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const query = new URLSearchParams(location.search);
+  // 跳转白名单：只接受站内绝对路径，阻断外站地址与 javascript: 等伪协议
+  const safeNext = value => {
+    const target = String(value || '').trim();
+    if (!target.startsWith('/') || target.startsWith('//') || target.startsWith('/\\')) return '/account/index.html';
+    return target;
+  };
   const content = (title, lead, body) => `<section class="page-hero"><div class="container"><span class="kicker">QIYUAN XINGQI ACCOUNT</span><h1>${title}</h1><p>${lead}</p></div></section><section class="section"><div class="container">${body}</div></section>`;
   const tip = `<div class="form-tip" data-tip></div>`;
   const showTip = (message, error = false) => {
@@ -44,7 +50,7 @@
 
   if (view === 'login') {
     main.innerHTML = content('登录起元星启账户', '登录后可保存选购清单、查看报价订单、登记设备和跟进服务工单。', `<form class="form-wrap business-form" id="loginForm"><h2>欢迎回来</h2><div class="form-row single"><div><label for="accountEmail">邮箱</label><input id="accountEmail" name="email" type="email" required autocomplete="email"></div></div><div class="form-row single"><div><label for="accountPassword">密码</label><input id="accountPassword" name="password" type="password" required autocomplete="current-password"></div></div><button class="btn btn-primary btn-lg" type="submit">登录</button>${tip}<p class="form-note">还没有账户？<a href="/account/register.html">立即注册</a> · <a href="/account/forgot-password.html">忘记密码</a></p></form>`);
-    guardSubmit($('#loginForm'), async form => { try { await post('/api/account/login', Object.fromEntries(new FormData(form))); location.href = query.get('next') || '/account/index.html'; } catch (error) { showTip(error.message, true); } });
+    guardSubmit($('#loginForm'), async form => { try { await post('/api/account/login', Object.fromEntries(new FormData(form))); location.href = safeNext(query.get('next')); } catch (error) { showTip(error.message, true); } });
     return;
   }
   if (view === 'register') {

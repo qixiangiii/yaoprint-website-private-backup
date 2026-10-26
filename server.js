@@ -134,7 +134,9 @@ function customerPublic(customer) {
 }
 
 function orderNumber() {
-  return `YQ${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+  const now = new Date();
+  const day = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  return `YQ${day}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 }
 
 function parseJSON(value, fallback) {
@@ -176,6 +178,19 @@ function capStrings(max = 4000) {
     }
     next();
   };
+}
+
+// 单字段长度裁剪：不同字段语义不同，统一 4000 上限对姓名/电话过于宽松
+function limitText(value, max) {
+  return String(value ?? '').trim().slice(0, max);
+}
+
+// 电话格式校验：手机号、带区号固话、可带 +86 前缀与分隔符
+function isPhone(value = '') {
+  const raw = String(value).trim().replace(/[\s()（）]/g, '');
+  if (!raw) return false;
+  const normalized = raw.replace(/^\+?86/, '');
+  return /^1[3-9]\d{9}$/.test(normalized) || /^0\d{2,3}-?\d{7,8}$/.test(normalized);
 }
 
 // 图片文件魔数校验：防止伪造 Content-Type 上传非图片内容（如 HTML/脚本）
@@ -454,9 +469,10 @@ const subsLimiter = rateLimit({
 app.post('/api/enrollment-inquiries', submitLimiter, capStrings(4000), (req, res) => {
   const { lead_type, parent_name, parent_phone, parent_wechat, student_grade, course_id, campus_id, preferred_time, experience_level, message, privacy_consent, privacy_version } = req.body || {};
   if (!parent_name || !parent_phone) return res.status(400).json({ error: '请填写监护人姓名和联系电话' });
+  if (!isPhone(parent_phone)) return res.status(400).json({ error: '请填写有效的联系电话' });
   if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
   const result = db.prepare(`INSERT INTO enrollment_inquiries (lead_type,parent_name,parent_phone,parent_wechat,student_grade,course_id,campus_id,preferred_time,experience_level,message,privacy_consent,privacy_version,consent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))`)
-    .run(String(lead_type || 'trial'), String(parent_name).trim(), String(parent_phone).trim(), String(parent_wechat || '').trim(), String(student_grade || '').trim(), Number(course_id) || null, Number(campus_id) || null, String(preferred_time || '').trim(), String(experience_level || '').trim(), String(message || '').trim(), 1, String(privacy_version || '2026.09').trim());
+    .run(limitText(lead_type || 'trial', 20), limitText(parent_name, 40), limitText(parent_phone, 20), limitText(parent_wechat, 40), limitText(student_grade, 20), Number(course_id) || null, Number(campus_id) || null, limitText(preferred_time, 40), limitText(experience_level, 40), limitText(message, 1000), 1, limitText(privacy_version || '2026.09', 20));
   const leadTypeLabel = { trial: '体验课预约', school: '学校合作咨询', competition: '竞赛咨询' }[String(lead_type || 'trial')] || '预约咨询';
   const courseRow = Number(course_id) ? db.prepare('SELECT title FROM courses WHERE id=?').get(Number(course_id)) : null;
   const campusRow = Number(campus_id) ? db.prepare('SELECT name FROM campuses WHERE id=?').get(Number(campus_id)) : null;
@@ -475,8 +491,10 @@ app.get('/api/heroes', (req, res) => {
 app.post('/api/leads', submitLimiter, capStrings(4000), (req, res) => {
   const { name, company, phone, email, scene, message, source } = req.body || {};
   if (!name && !phone && !email) return res.status(400).json({ error: '请填写联系信息' });
+  if (phone && !isPhone(phone)) return res.status(400).json({ error: '请填写有效的联系电话' });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return res.status(400).json({ error: '请填写有效的邮箱' });
   db.prepare('INSERT INTO leads (name, company, phone, email, scene, message, source) VALUES (?,?,?,?,?,?,?)')
-    .run(name || '', company || '', phone || '', email || '', scene || '', message || '', source || 'website');
+    .run(limitText(name, 40), limitText(company, 80), limitText(phone, 20), limitText(email, 120), limitText(scene, 60), limitText(message, 1000), limitText(source || 'website', 40));
   notifyWeCom('【起元星启】新的通用咨询', [
     ['姓名', name], ['公司/单位', company], ['电话', phone], ['邮箱', email],
     ['场景', scene], ['留言', message], ['来源', source]
@@ -549,7 +567,7 @@ app.post('/api/cart/items', requireCustomer, (req, res) => {
   const customerId = req.session.customer.id;
   db.prepare('INSERT OR IGNORE INTO carts (customer_id) VALUES (?)').run(customerId);
   const cart = db.prepare('SELECT * FROM carts WHERE customer_id=?').get(customerId);
-  db.prepare('INSERT INTO cart_items (cart_id,sku_id,quantity) VALUES (?,?,?) ON CONFLICT(cart_id,sku_id) DO UPDATE SET quantity=quantity+excluded.quantity').run(cart.id, skuId, quantity);
+  db.prepare('INSERT INTO cart_items (cart_id,sku_id,quantity) VALUES (?,?,?) ON CONFLICT(cart_id,sku_id) DO UPDATE SET quantity=MIN(99, quantity+excluded.quantity)').run(cart.id, skuId, quantity);
   db.prepare("UPDATE carts SET updated_at=datetime('now','localtime') WHERE id=?").run(cart.id);
   res.json({ ok: true });
 });
@@ -577,7 +595,7 @@ app.get('/api/devices/:sn',requireCustomer,(req,res)=>{const d=db.prepare('SELEC
 app.post('/api/submissions',requireCustomer,(req,res)=>{const {title,description,license}=req.body||{};if(!title)return res.status(400).json({error:'作品标题必填'});const r=db.prepare('INSERT INTO creator_submissions (customer_id,title,description,license) VALUES (?,?,?,?)').run(req.session.customer.id,title,String(description||''),String(license||''));res.json({ok:true,id:r.lastInsertRowid});});
 app.get('/api/submissions',requireCustomer,(req,res)=>res.json(db.prepare('SELECT * FROM creator_submissions WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id)));
 app.get('/api/partners', (req,res)=>{const city=String(req.query.city||'').trim();const type=String(req.query.type||'').trim();const clauses=["status='active'"],values=[];if(city){clauses.push('(city LIKE ? OR province LIKE ?)');values.push(`%${city}%`,`%${city}%`)}if(type){clauses.push('service_type LIKE ?');values.push(`%${type}%`)}res.json(db.prepare(`SELECT * FROM partners WHERE ${clauses.join(' AND ')} ORDER BY sort,id`).all(...values));});
-app.post('/api/partner-applications', submitLimiter, capStrings(4000), (req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(company,contact_name,phone||'',email||'',application_type||'',city||'',description||'');res.json({ok:true});});
+app.post('/api/partner-applications', submitLimiter, capStrings(4000), (req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});if(phone&&!isPhone(phone))return res.status(400).json({error:'请填写有效的联系电话'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(limitText(company,80),limitText(contact_name,40),limitText(phone,20),limitText(email,120),limitText(application_type,40),limitText(city,40),limitText(description,1000));res.json({ok:true});});
 
 app.post('/api/subs', subsLimiter, capStrings(254), (req, res) => {
   const email = (req.body && req.body.email || '').trim();
@@ -626,10 +644,11 @@ app.post('/api/tickets', submitLimiter, capStrings(4000), (req, res) => {
   const resolvedPhone = String(phone || customer?.phone || '').trim();
   const resolvedEmail = String(email || customer?.email || '').trim();
   if (!resolvedName || (!resolvedPhone && !resolvedEmail)) return res.status(400).json({ error: '请填写姓名及至少一种联系方式' });
+  if (resolvedPhone && !isPhone(resolvedPhone)) return res.status(400).json({ error: '请填写有效的联系电话' });
   let deviceId = null;
   if (customer && serial_no) deviceId = db.prepare('SELECT d.id FROM devices d JOIN device_bindings b ON b.device_id=d.id WHERE d.serial_no=? AND b.customer_id=?').get(String(serial_no).trim(), customer.id)?.id || null;
   db.prepare('INSERT INTO service_tickets (name,phone,email,product,serial_no,subject,description,source,customer_id,device_id,order_no) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
-    .run(resolvedName, resolvedPhone, resolvedEmail, String(product || '').trim(), String(serial_no || '').trim(), String(subject || '').trim(), String(description || '').trim(), String(source || 'support-ticket').trim(), customer?.id || null, deviceId, String(order_no || '').trim());
+    .run(limitText(resolvedName, 40), limitText(resolvedPhone, 20), limitText(resolvedEmail, 120), limitText(product, 120), limitText(serial_no, 60), limitText(subject, 120), limitText(description, 1000), limitText(source || 'support-ticket', 40), customer?.id || null, deviceId, limitText(order_no, 40));
   res.json({ ok: true });
 });
 
@@ -918,13 +937,19 @@ function siteBaseUrl() {
   return configured ? configured.replace(/\/+$/, '') : '';
 }
 
-// 前台需要被收录的静态页面（排除账户/购物车/模板等非内容页）
+// 前台需要被收录的静态页面（排除账户/选购/模板等非内容页与已标记 noindex 的页面）
 const SEO_PAGES = [
-  '/', '/courses/index.html', '/works.html', '/trial.html', '/printers.html',
-  '/solutions/school.html', '/teachers.html', '/knowledge.html', '/learning.html',
-  '/news.html', '/competition.html', '/about.html', '/contact.html',
-  '/materials.html', '/printer-types.html', '/software.html', '/explore/ecosystem.html',
-  '/partners/apply.html', '/partners/find.html'
+  '/', '/courses/index.html', '/works.html', '/trial.html', '/printers.html', '/products.html',
+  '/compare.html', '/printer-types.html', '/solutions/school.html', '/solutions/education.html',
+  '/solutions/industrial.html', '/solutions/creative.html', '/solutions/healthcare.html', '/solutions.html',
+  '/teachers.html', '/knowledge.html', '/learning.html', '/news.html', '/competition.html',
+  '/about.html', '/about/careers.html', '/about/partners.html', '/about/media-kit.html',
+  '/contact.html', '/materials.html', '/filament.html', '/filament/materials.html',
+  '/filament/selector.html', '/software.html', '/software/releases.html', '/software/status.html',
+  '/explore.html', '/explore/models.html', '/explore/ecosystem.html',
+  '/support.html', '/support/knowledge-base.html', '/support/manuals.html', '/support/warranty.html',
+  '/support/service-network.html', '/support/academy.html', '/partners/find.html', '/partners/guide.html',
+  '/image-credits.html'
 ];
 
 app.get('/sitemap.xml', (req, res) => {
@@ -978,6 +1003,20 @@ app.get('/admin/*', (req, res) => {
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+// 404：接口返回 JSON，页面返回带导航的品牌化提示页（原为 Express 默认英文页）
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: '接口不存在' });
+  res.status(404).type('html').send(`<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>页面不存在｜起元星启</title>
+<link rel="stylesheet" href="/css/style.min.css"></head>
+<body><main class="section"><div class="container" style="text-align:center;padding:80px 0">
+<p class="kicker">404</p><h1>没有找到这个页面</h1>
+<p style="color:var(--text-secondary);margin:12px 0 28px">地址可能已经调整，或链接输入有误。可以回到首页，或直接预约一次体验课。</p>
+<p><a class="btn btn-primary" href="/">返回首页</a> <a class="btn btn-outline" href="/trial.html">预约试听</a> <a class="btn btn-outline" href="/contact.html">联系我们</a></p>
+</div></main></body></html>`);
+});
 
 app.listen(PORT, () => {
   console.log(`🟢 起元星启网站已启动: http://localhost:${PORT}`);

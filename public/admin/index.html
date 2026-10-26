@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow">
   <title>起元星启｜教育运营后台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -797,7 +797,7 @@ function empty(cols,message='暂无内容') {return `<tr><td class="empty" colsp
 function imageCell(url){return url?`<img class="thumb" src="${esc(url)}" alt="" onerror="this.style.display='none'">`:'–'} function statusBadge(status){return status==='published'?'<span class="badge">已发布</span>':status==='soon'?'<span class="badge alert">即将发布</span>':'<span class="badge draft">草稿</span>'}
 
 const pageTitles={dashboard:'仪表盘',analytics:'访问统计',heroes:'首页轮播',products:'教学设备参考',categories:'设备分类',news:'教学文章',content:'内容中心',competitions:'竞赛入口',ecosystem_platforms:'模型生态平台',courses:'课程中心','course-sessions':'课程班期',teachers:'师资教研',campuses:'校区与授课点','education-cases':'教学案例',scenes:'应用场景',academy:'课程入口卡',videos:'创作视频',reviews:'媒体评测',downloads:'软件下载',customers:'消费者账户',skus:'选购 SKU',orders:'报价订单',afterSales:'售后申请',devices:'设备与保修',submissions:'创作投稿',partnerApps:'伙伴申请',partners:'服务伙伴',enrollments:'试听与招生咨询',leads:'通用咨询',tickets:'服务工单',subs:'邮件订阅',settings:'站点设置',preview:'前台预览'};
-function goPage(page){$$('.page').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('#pageTitle').textContent=pageTitles[page];$('#pageCrumb').textContent='首页 / '+pageTitles[page];if(page==='dashboard')loadDashboard();if(page==='analytics')loadAnalytics();if(page==='products')loadProducts();if(page==='news')loadNews();if(page==='content')loadContent();if(page==='enrollments')loadEnrollments();if(page==='leads')loadLeads();if(page==='tickets')loadTickets();if(page==='subs')loadSubs();if(page==='settings')loadSettings();if(businessConfigs[page])loadBusiness(page);if(genericConfigs[page])loadGeneric(page)}
+function goPage(page){const pageTitle=pageTitles[page]||genericConfigs[page]?.title||businessConfigs[page]?.title||page;$$('.page').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$$('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('#pageTitle').textContent=pageTitle;$('#pageCrumb').textContent='首页 / '+pageTitle;if(page==='dashboard')loadDashboard();if(page==='analytics')loadAnalytics();if(page==='products')loadProducts();if(page==='news')loadNews();if(page==='content')loadContent();if(page==='enrollments')loadEnrollments();if(page==='leads')loadLeads();if(page==='tickets')loadTickets();if(page==='subs')loadSubs();if(page==='settings')loadSettings();if(businessConfigs[page])loadBusiness(page);if(genericConfigs[page])loadGeneric(page)}
 $$('.nav-item').forEach(btn=>btn.addEventListener('click',()=>goPage(btn.dataset.page)));
 
 async function checkAuth(){try{const u=await api('/api/admin/me');showAdmin(u)}catch{$('#loginPage').hidden=false}}
