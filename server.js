@@ -59,6 +59,24 @@ function requireCustomer(req, res, next) {
   return res.status(401).json({ error: '请先登录起元星启账户' });
 }
 
+// ============ 企业微信机器人通知 ============
+// Webhook 优先级：环境变量 WECOM_WEBHOOK_URL > 后台「站点设置 → 通知设置」
+function notifyWeCom(title, fields) {
+  const webhook = String(process.env.WECOM_WEBHOOK_URL || '').trim()
+    || String(db.prepare('SELECT value FROM settings WHERE key=?').get('wecom_webhook_url')?.value || '').trim();
+  if (!webhook) return;
+  const lines = fields.filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '')
+    .map(([k, v]) => `**${k}：**${String(v).trim()}`);
+  const content = `### ${title}\n${lines.join('\n')}\n> 提交时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })}`;
+  fetch(webhook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ msgtype: 'markdown', markdown: { content } })
+  }).then(r => r.json()).then(j => {
+    if (j.errcode) console.error('[wecom notify]', j.errcode, j.errmsg);
+  }).catch(e => console.error('[wecom notify]', e.message));
+}
+
 function customerPublic(customer) {
   return { id: customer.id, email: customer.email, name: customer.name, phone: customer.phone, status: customer.status, created_at: customer.created_at };
 }
@@ -251,6 +269,14 @@ app.post('/api/enrollment-inquiries', (req, res) => {
   if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
   const result = db.prepare(`INSERT INTO enrollment_inquiries (lead_type,parent_name,parent_phone,parent_wechat,student_grade,course_id,campus_id,preferred_time,experience_level,message,privacy_consent,privacy_version,consent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))`)
     .run(String(lead_type || 'trial'), String(parent_name).trim(), String(parent_phone).trim(), String(parent_wechat || '').trim(), String(student_grade || '').trim(), Number(course_id) || null, Number(campus_id) || null, String(preferred_time || '').trim(), String(experience_level || '').trim(), String(message || '').trim(), 1, String(privacy_version || '2026.09').trim());
+  const leadTypeLabel = { trial: '体验课预约', school: '学校合作咨询', competition: '竞赛咨询' }[String(lead_type || 'trial')] || '预约咨询';
+  const courseRow = Number(course_id) ? db.prepare('SELECT title FROM courses WHERE id=?').get(Number(course_id)) : null;
+  const campusRow = Number(campus_id) ? db.prepare('SELECT name FROM campuses WHERE id=?').get(Number(campus_id)) : null;
+  notifyWeCom(`【起元星启】新的${leadTypeLabel}`, [
+    ['监护人', parent_name], ['电话', parent_phone], ['微信号', parent_wechat],
+    ['学生年级', student_grade], ['意向课程', courseRow?.title], ['校区', campusRow?.name],
+    ['期望时间', preferred_time], ['已有基础', experience_level], ['留言', message]
+  ]);
   res.json({ ok: true, id: result.lastInsertRowid });
 });
 
@@ -263,6 +289,10 @@ app.post('/api/leads', (req, res) => {
   if (!name && !phone && !email) return res.status(400).json({ error: '请填写联系信息' });
   db.prepare('INSERT INTO leads (name, company, phone, email, scene, message, source) VALUES (?,?,?,?,?,?,?)')
     .run(name || '', company || '', phone || '', email || '', scene || '', message || '', source || 'website');
+  notifyWeCom('【起元星启】新的通用咨询', [
+    ['姓名', name], ['公司/单位', company], ['电话', phone], ['邮箱', email],
+    ['场景', scene], ['留言', message], ['来源', source]
+  ]);
   res.json({ ok: true });
 });
 
