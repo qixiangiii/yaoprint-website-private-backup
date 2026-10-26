@@ -735,4 +735,65 @@
     ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
   });
 
+  /* ---- 首页创作实验室（v14 内容型视觉） ---- */
+  const lab = document.querySelector('.innovation-lab');
+  if (lab) {
+    const labItems = [
+      {
+        step: 'STEP 01', label: 'MODEL', title: '把需求画进三维空间',
+        description: '先定义尺寸、用途和约束，再把草图变成可编辑的 3D 模型。',
+        image: '/img/education/gen-cad-modeling.jpg', alt: '学生正在电脑上完成三维建模设计', metric: '100% 可检查'
+      },
+      {
+        step: 'STEP 02', label: 'PRINT', title: '让数字模型开始真实成型',
+        description: '理解切片参数、材料选择和打印过程，看到作品一层层长出来。',
+        image: '/img/education/hero-creative-lab.jpg', alt: '学生正在创客教室里观察3D打印作品', metric: '过程可视化'
+      },
+      {
+        step: 'STEP 03', label: 'TEST', title: '用真实测试发现问题',
+        description: '记录承重、配合、强度和失败位置，让每一次判断都有依据。',
+        image: '/media/bridge-structure.jpg', alt: '学生正在给3D打印桥梁模型做承重测试', metric: '数据可追溯'
+      },
+      {
+        step: 'STEP 04', label: 'ITERATE', title: '修改后再做出更好的版本',
+        description: '根据测试结果调整结构，完成更稳定、更好用的实体作品。',
+        image: '/media/phone-stand.jpg', alt: '3D打印手机支架成品和设计草图', metric: '版本可比较'
+      }
+    ];
+    const tabs = $$('.lab-tab', lab);
+    const frame = $('.lab-frame', lab);
+    const image = $('[data-lab-image]', lab);
+    const nodes = {
+      title: $('[data-lab-title]', lab), description: $('[data-lab-description]', lab),
+      step: $('[data-lab-step]', lab), label: $('[data-lab-label]', lab), metric: $('[data-lab-metric]', lab)
+    };
+    labItems.forEach(item => { const preload = new Image(); preload.src = item.image; });
+    const setLabItem = index => {
+      const item = labItems[index];
+      if (!item || !frame || !image) return;
+      tabs.forEach((tab, tabIndex) => {
+        const active = tabIndex === index;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      frame.classList.add('is-switching');
+      setTimeout(() => {
+        image.src = item.image;
+        image.alt = item.alt;
+        Object.entries(nodes).forEach(([key, node]) => { if (node) node.textContent = item[key]; });
+        frame.classList.remove('is-switching');
+      }, reducedMotion ? 0 : 150);
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => setLabItem(index));
+      tab.addEventListener('keydown', event => {
+        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+        event.preventDefault();
+        const next = (index + (event.key === 'ArrowUp' || event.key === 'ArrowLeft' ? tabs.length - 1 : 1)) % tabs.length;
+        tabs[next].focus();
+        setLabItem(next);
+      });
+    });
+  }
+
 })();
