@@ -18,6 +18,10 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 const SESSION_SECRET = process.env.SESSION_SECRET || (IS_PROD ? '' : 'qiyuan-xingqi-development-secret-change-me');
 if (IS_PROD && !SESSION_SECRET) throw new Error('生产环境必须配置 SESSION_SECRET');
 
+// 反向代理后正确解析客户端 IP / 协议，保证 secure Cookie、限流与访问统计准确。
+// 默认不信任 X-Forwarded-*，避免直连时被伪造；部署到 Nginx 等一层代理后由生产环境开启。
+if (IS_PROD) app.set('trust proxy', 1);
+
 // 关闭框架指纹，避免暴露技术栈
 app.disable('x-powered-by');
 
@@ -31,14 +35,33 @@ app.use(helmet({
 // gzip/brotli 压缩文本类响应
 app.use(compression());
 
-app.use(express.json({ limit: '4mb' }));
-app.use(express.urlencoded({ extended: true }));
+// 收紧请求体大小：JSON 2MB、表单 256KB，防止超大载荷拖垮进程或撑大数据库
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '256kb', parameterLimit: 100 }));
+
+// CSRF 纵深防御：写请求若携带 Origin 且与本机 Host 不一致则拒绝。
+// （同站 fetch/表单 Origin 与 Host 一致；旧浏览器不发送 Origin 时回退到 SameSite=Lax 保护）
+function csrfOriginGuard(req, res, next) {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  const origin = req.get('origin');
+  if (!origin) return next();
+  try {
+    if (new URL(origin).host === req.get('host')) return next();
+  } catch { /* 非法 Origin 视为跨站 */ }
+  return res.status(403).json({ error: '跨站请求被拒绝' });
+}
+app.use(csrfOriginGuard);
 
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 }
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: IS_PROD, // 生产环境仅经 HTTPS 传输，防止会话 Cookie 被嗅探
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
 }));
 
 const uploadDir = path.join(__dirname, 'public', 'uploads');
@@ -77,10 +100,23 @@ function requireCustomer(req, res, next) {
 
 // ============ 企业微信机器人通知 ============
 // Webhook 优先级：环境变量 WECOM_WEBHOOK_URL > 后台「站点设置 → 通知设置」
+// 只允许外网 HTTPS 地址，阻断指向内网/回环的 SSRF 请求（如云元数据 169.254.169.254）
+function isSafeWebhook(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'https:') return false;
+    const host = u.hostname.toLowerCase();
+    if (!host || host === 'localhost' || host.endsWith('.local') || host === '[::1]' || host === '::1') return false;
+    if (/^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(host)) return false;
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return false;
+    return true;
+  } catch { return false; }
+}
 function notifyWeCom(title, fields) {
   const webhook = String(process.env.WECOM_WEBHOOK_URL || '').trim()
     || String(db.prepare('SELECT value FROM settings WHERE key=?').get('wecom_webhook_url')?.value || '').trim();
   if (!webhook) return;
+  if (!isSafeWebhook(webhook)) { console.error('[wecom notify] 已拒绝不安全的 Webhook 地址'); return; }
   const lines = fields.filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '')
     .map(([k, v]) => `**${k}：**${String(v).trim()}`);
   const content = `### ${title}\n${lines.join('\n')}\n> 提交时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })}`;
@@ -128,6 +164,44 @@ function safeLink(value = '') {
 
 function isExternal(url = '') { return /^https:\/\//i.test(url); }
 
+// 公开提交类接口的字段长度上限，防止单次请求写入超大文本（DoS / 数据库膨胀）
+function capStrings(max = 4000) {
+  return function (req, res, next) {
+    if (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) {
+      for (const key of Object.keys(req.body)) {
+        if (typeof req.body[key] === 'string' && req.body[key].length > max) {
+          req.body[key] = req.body[key].slice(0, max);
+        }
+      }
+    }
+    next();
+  };
+}
+
+// 图片文件魔数校验：防止伪造 Content-Type 上传非图片内容（如 HTML/脚本）
+function isValidImageBuffer(buf) {
+  if (!buf || buf.length < 12) return false;
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return true; // JPEG
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return true; // PNG
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return true; // GIF
+  if (buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return true; // WEBP
+  return false;
+}
+
+// 登录失败路径也执行一次哈希比较，避免用响应时间枚举有效账号
+const DUMMY_HASH = bcrypt.hashSync('qiyuan-timing-guard', 10);
+
+// 公开设置白名单：仅暴露品牌/联系/SEO/统计等前台展示项，绝不返回 webhook 等敏感键
+const PUBLIC_SETTING_KEYS = new Set([
+  'brand_name', 'site_name', 'site_tagline', 'site_url', 'company_legal_name',
+  'business_scope', 'campus_summary', 'copyright', 'icp', 'course_catalog_visibility',
+  'seo_default_title', 'seo_default_description',
+  'contact_address', 'contact_email', 'contact_hours', 'contact_phone', 'contact_wechat',
+  'social_bilibili', 'social_douyin', 'social_wechat', 'social_weibo', 'social_youtube',
+  'stat1_label', 'stat1_unit', 'stat1_value', 'stat2_label', 'stat2_unit', 'stat2_value',
+  'stat3_label', 'stat3_unit', 'stat3_value', 'stat4_label', 'stat4_unit', 'stat4_value'
+]);
+
 function crud(table, fields, options = {}) {
   const required = options.required || [];
   const validate = options.validate || (() => null);
@@ -136,7 +210,8 @@ function crud(table, fields, options = {}) {
   const adminOrder = options.adminOrder || 'sort, id DESC';
 
   app.get(`/api/${table}`, (req, res) => {
-    const limit = Number(req.query.limit) || 0;
+    // 限制单次返回条数，避免被用于一次性拖取整表
+    const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 200);
     const sql = `SELECT * FROM ${table}${publicWhere ? ' WHERE ' + publicWhere : ''} ORDER BY ${publicOrder}${limit ? ' LIMIT ?' : ''}`;
     res.json(limit ? db.prepare(sql).all(limit) : db.prepare(sql).all());
   });
@@ -217,7 +292,17 @@ app.get('/api/products/:slug', (req, res) => {
 	  res.json(n);
 	});
 
+// 公开设置：仅返回白名单内的展示字段，避免 webhook / 内部迁移标记等敏感键外泄
 app.get('/api/settings', (req, res) => {
+  const obj = {};
+  db.prepare('SELECT * FROM settings').all().forEach(r => {
+    if (PUBLIC_SETTING_KEYS.has(r.key)) obj[r.key] = r.value;
+  });
+  res.json(obj);
+});
+
+// 后台读取全部设置（含通知等敏感项），仅登录管理员可见
+app.get('/api/admin/settings', requireAdmin, (req, res) => {
   const obj = {};
   db.prepare('SELECT * FROM settings').all().forEach(r => { obj[r.key] = r.value; });
   res.json(obj);
@@ -227,7 +312,16 @@ app.get('/api/settings', (req, res) => {
 // 前端按需 POST 页面路径，服务端聚合为每日/每页访问量，供后台看板查询。
 const CRAWLER_UA = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|twitterbot|headless|pingdom|monitor/i;
 
-app.post('/api/pageview', (req, res) => {
+// 访问统计埋点限流（阈值宽松，正常浏览不受影响；需在路由注册前定义）
+const pageviewLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '请求过于频繁' }
+});
+
+app.post('/api/pageview', pageviewLimiter, (req, res) => {
   try {
     const pathName = String((req.body && req.body.path) || '/').trim().slice(0, 255) || '/';
     // 仅统计站内路径，拒绝外链与协议注入
@@ -340,8 +434,24 @@ const submitLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: '提交过于频繁，请稍后再试' }
 });
+// 账户注册限流，防止批量注册/邮箱枚举
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '注册过于频繁，请稍后再试' }
+});
+// 邮件订阅限流
+const subsLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '订阅提交过于频繁，请稍后再试' }
+});
 
-app.post('/api/enrollment-inquiries', submitLimiter, (req, res) => {
+app.post('/api/enrollment-inquiries', submitLimiter, capStrings(4000), (req, res) => {
   const { lead_type, parent_name, parent_phone, parent_wechat, student_grade, course_id, campus_id, preferred_time, experience_level, message, privacy_consent, privacy_version } = req.body || {};
   if (!parent_name || !parent_phone) return res.status(400).json({ error: '请填写监护人姓名和联系电话' });
   if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
@@ -362,7 +472,7 @@ app.get('/api/heroes', (req, res) => {
   res.json(db.prepare("SELECT * FROM heroes WHERE status='published' ORDER BY sort, id").all());
 });
 
-app.post('/api/leads', submitLimiter, (req, res) => {
+app.post('/api/leads', submitLimiter, capStrings(4000), (req, res) => {
   const { name, company, phone, email, scene, message, source } = req.body || {};
   if (!name && !phone && !email) return res.status(400).json({ error: '请填写联系信息' });
   db.prepare('INSERT INTO leads (name, company, phone, email, scene, message, source) VALUES (?,?,?,?,?,?,?)')
@@ -375,24 +485,34 @@ app.post('/api/leads', submitLimiter, (req, res) => {
 });
 
 // ============ 消费者账户与报价订单 API ============
-app.post('/api/account/register', (req, res) => {
+app.post('/api/account/register', registerLimiter, capStrings(254), (req, res) => {
   const { email, password, name, phone } = req.body || {};
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) return res.status(400).json({ error: '请输入有效邮箱' });
-  if (!password || String(password).length < 6) return res.status(400).json({ error: '密码至少 6 位' });
+  if (!password || String(password).length < 8) return res.status(400).json({ error: '密码至少 8 位' });
   try {
     const result = db.prepare('INSERT INTO customers (email,password_hash,name,phone) VALUES (?,?,?,?)').run(String(email).trim().toLowerCase(), bcrypt.hashSync(String(password), 10), String(name || '').trim(), String(phone || '').trim());
     const customer = db.prepare('SELECT * FROM customers WHERE id=?').get(result.lastInsertRowid);
-    req.session.customer = customerPublic(customer);
-    res.json({ ok: true, customer: req.session.customer });
+    // 注册即登录，同样重建会话 ID
+    req.session.regenerate(err => {
+      if (err) return res.status(500).json({ error: '注册成功，请重新登录' });
+      req.session.customer = customerPublic(customer);
+      req.session.save(() => res.json({ ok: true, customer: req.session.customer }));
+    });
   } catch { res.status(400).json({ error: '该邮箱已注册，请直接登录' }); }
 });
 
 app.post('/api/account/login', loginLimiter, (req, res) => {
   const { email, password } = req.body || {};
   const customer = db.prepare('SELECT * FROM customers WHERE email=?').get(String(email || '').trim().toLowerCase());
-  if (!customer || customer.status !== 'active' || !bcrypt.compareSync(String(password || ''), customer.password_hash)) return res.status(401).json({ error: '邮箱或密码错误' });
-  req.session.customer = customerPublic(customer);
-  res.json({ ok: true, customer: req.session.customer });
+  // 账号不存在时也对占位哈希做一次比较，抹平响应时间差异
+  const ok = bcrypt.compareSync(String(password || ''), customer?.password_hash || DUMMY_HASH);
+  if (!customer || customer.status !== 'active' || !ok) return res.status(401).json({ error: '邮箱或密码错误' });
+  // 登录成功重建会话 ID，防止会话固定攻击
+  req.session.regenerate(err => {
+    if (err) return res.status(500).json({ error: '登录失败，请重试' });
+    req.session.customer = customerPublic(customer);
+    req.session.save(() => res.json({ ok: true, customer: req.session.customer }));
+  });
 });
 
 app.post('/api/account/logout', (req, res) => { delete req.session.customer; res.json({ ok: true }); });
@@ -457,9 +577,9 @@ app.get('/api/devices/:sn',requireCustomer,(req,res)=>{const d=db.prepare('SELEC
 app.post('/api/submissions',requireCustomer,(req,res)=>{const {title,description,license}=req.body||{};if(!title)return res.status(400).json({error:'作品标题必填'});const r=db.prepare('INSERT INTO creator_submissions (customer_id,title,description,license) VALUES (?,?,?,?)').run(req.session.customer.id,title,String(description||''),String(license||''));res.json({ok:true,id:r.lastInsertRowid});});
 app.get('/api/submissions',requireCustomer,(req,res)=>res.json(db.prepare('SELECT * FROM creator_submissions WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id)));
 app.get('/api/partners', (req,res)=>{const city=String(req.query.city||'').trim();const type=String(req.query.type||'').trim();const clauses=["status='active'"],values=[];if(city){clauses.push('(city LIKE ? OR province LIKE ?)');values.push(`%${city}%`,`%${city}%`)}if(type){clauses.push('service_type LIKE ?');values.push(`%${type}%`)}res.json(db.prepare(`SELECT * FROM partners WHERE ${clauses.join(' AND ')} ORDER BY sort,id`).all(...values));});
-app.post('/api/partner-applications', submitLimiter, (req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(company,contact_name,phone||'',email||'',application_type||'',city||'',description||'');res.json({ok:true});});
+app.post('/api/partner-applications', submitLimiter, capStrings(4000), (req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(company,contact_name,phone||'',email||'',application_type||'',city||'',description||'');res.json({ok:true});});
 
-app.post('/api/subs', (req, res) => {
+app.post('/api/subs', subsLimiter, capStrings(254), (req, res) => {
   const email = (req.body && req.body.email || '').trim();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return res.status(400).json({ error: '请输入有效邮箱' });
@@ -499,7 +619,7 @@ app.get('/api/tickets/mine', requireCustomer, (req, res) => {
   res.json(db.prepare('SELECT * FROM service_tickets WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id));
 });
 
-app.post('/api/tickets', submitLimiter, (req, res) => {
+app.post('/api/tickets', submitLimiter, capStrings(4000), (req, res) => {
   const { name, phone, email, product, serial_no, subject, description, source, order_no } = req.body || {};
   const customer = req.session && req.session.customer;
   const resolvedName = String(name || customer?.name || '').trim();
@@ -546,11 +666,16 @@ crud('heroes', ['title', 'highlight', 'subtitle', 'lead', 'tag', 'image', 'link'
 // ============ 后台 API ============
 app.post('/api/admin/login', loginLimiter, (req, res) => {
   const { username, password } = req.body || {};
-  const u = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-  if (!u || !bcrypt.compareSync(password || '', u.password_hash))
-    return res.status(401).json({ error: '账号或密码错误' });
-  req.session.user = { id: u.id, username: u.username, name: u.name, role: u.role };
-  res.json({ ok: true, user: req.session.user });
+  const u = db.prepare('SELECT * FROM users WHERE username = ?').get(String(username || ''));
+  // 账号不存在时也执行一次比较，避免用响应时间枚举管理员账号
+  const ok = bcrypt.compareSync(String(password || ''), u?.password_hash || DUMMY_HASH);
+  if (!u || !ok) return res.status(401).json({ error: '账号或密码错误' });
+  // 登录成功重建会话 ID，防止会话固定攻击
+  req.session.regenerate(err => {
+    if (err) return res.status(500).json({ error: '登录失败，请重试' });
+    req.session.user = { id: u.id, username: u.username, name: u.name, role: u.role };
+    req.session.save(() => res.json({ ok: true, user: req.session.user }));
+  });
 });
 
 app.post('/api/admin/logout', (req, res) => {
@@ -564,7 +689,7 @@ app.get('/api/admin/me', (req, res) => {
 
 app.post('/api/admin/password', requireAdmin, (req, res) => {
   const { current, next } = req.body || {};
-  if (!next || String(next).length < 6) return res.status(400).json({ error: '新密码至少 6 位' });
+  if (!next || String(next).length < 8) return res.status(400).json({ error: '新密码至少 8 位' });
   const u = db.prepare('SELECT * FROM users WHERE id=?').get(req.session.user.id);
   if (!u || !bcrypt.compareSync(current || '', u.password_hash))
     return res.status(400).json({ error: '当前密码不正确' });
@@ -770,6 +895,19 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
   upload.single('file')(req, res, err => {
     if (err) return res.status(400).json({ error: err.message || '上传失败' });
     if (!req.file) return res.status(400).json({ error: '请选择图片文件（jpg/png/webp/gif，最大 5MB）' });
+    // 校验文件真实内容（魔数），防止将 HTML/脚本伪装成图片上传
+    let head = null;
+    try {
+      const fd = fs.openSync(req.file.path, 'r');
+      const buf = Buffer.alloc(12);
+      fs.readSync(fd, buf, 0, 12, 0);
+      fs.closeSync(fd);
+      head = buf;
+    } catch { head = null; }
+    if (!isValidImageBuffer(head)) {
+      try { fs.unlinkSync(req.file.path); } catch { /* 清理失败忽略 */ }
+      return res.status(400).json({ error: '文件内容不是有效图片，请上传 jpg / png / webp / gif' });
+    }
     res.json({ ok: true, url: '/uploads/' + req.file.filename });
   });
 });
@@ -827,11 +965,16 @@ app.use(express.static(path.join(__dirname, 'public'), staticOpts));
 // 使用品牌 Logo 作为轻量站点图标，避免浏览器在教育页发起 favicon 404 请求。
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'img', 'logo.svg')));
 
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html')));
+const ADMIN_DIR = path.join(__dirname, 'public', 'admin');
+app.get('/admin', (req, res) => res.sendFile(path.join(ADMIN_DIR, 'index.html')));
 app.get('/admin/*', (req, res) => {
-  const p = path.join(__dirname, 'public', 'admin', req.path.replace(/^\/admin\//, ''));
-  if (fs.existsSync(p) && fs.statSync(p).isFile()) return res.sendFile(p);
-  res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+  const rel = req.path.replace(/^\/admin\/?/, '') || 'index.html';
+  const p = path.resolve(ADMIN_DIR, rel);
+  // 解析后仍须位于 admin 目录内，阻断 ../ 路径遍历读取任意文件
+  if ((p === ADMIN_DIR || p.startsWith(ADMIN_DIR + path.sep)) && fs.existsSync(p) && fs.statSync(p).isFile()) {
+    return res.sendFile(p);
+  }
+  res.sendFile(path.join(ADMIN_DIR, 'index.html'));
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
@@ -839,5 +982,11 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.listen(PORT, () => {
   console.log(`🟢 起元星启网站已启动: http://localhost:${PORT}`);
   console.log(`   后台管理: http://localhost:${PORT}/admin`);
-  if (!IS_PROD) console.log('   开发环境默认账号见 README（首次请立即修改密码）');
+  // 默认口令检测：发现仍为初始口令时给出明确告警
+  try {
+    const adminUser = db.prepare("SELECT password_hash FROM users WHERE username='admin'").get();
+    if (adminUser && bcrypt.compareSync('admin123', adminUser.password_hash)) {
+      console.warn('⚠️  安全警告：后台仍在使用默认口令 admin123，请立即在「后台 → 修改密码」中更换！');
+    }
+  } catch { /* 忽略检测异常 */ }
 });

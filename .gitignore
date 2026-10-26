@@ -6,6 +6,7 @@ data/*.db
 data/*.db-*
 data/*.sqlite
 data/*.sqlite-*
+data/admin-credentials.txt
 
 # Deployment secrets and local configuration
 .env

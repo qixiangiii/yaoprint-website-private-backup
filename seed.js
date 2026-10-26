@@ -6,10 +6,13 @@ console.log('⏳ 初始化种子数据…');
 
 const count = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
 if (count === 0) {
-  const hash = bcrypt.hashSync('admin123', 10);
+  // 生成随机强口令，避免使用 admin123 这类可被猜解的默认密码
+  const adminPassword = process.env.ADMIN_INIT_PASSWORD || require('crypto').randomBytes(12).toString('base64url');
+  const hash = bcrypt.hashSync(adminPassword, 10);
   db.prepare('INSERT INTO users (username, password_hash, name, role) VALUES (?,?,?,?)')
     .run('admin', hash, '超级管理员', 'admin');
-  console.log('  ✔ 创建后台账号 admin / admin123');
+  console.log('  ✔ 创建后台账号 admin');
+  console.log('  ⚠ 初始密码（仅本次显示，请登录后立即修改）：' + adminPassword);
 }
 
 // 清空数据
