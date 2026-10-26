@@ -21,7 +21,7 @@ window.QIYUAN_COMPETITIONS = [
     url: 'https://ceic.kpcb.org.cn/cms/gyds/index.htm',
     source: '世界机器人大会青少年赛事信息页',
     verified: '2026-09-18',
-    image: '/img/education/robotic-fair-01.webp'
+    image: '/img/competition/robotics-arena.jpg'
   },
   {
     title: '全国中小学信息技术创新与实践大赛（NOC）',

@@ -10,6 +10,26 @@
 | `public/img/ecosystem/snapmaker.png` | 模型社区下拉与生态页跳转缩略图 | [Snapmaker 官网首页](https://www.snapmaker.com/) 截图 | Snapmaker / 快造 | 第三方官网界面截图 | 仅作官方入口识别与跳转示意；商标与界面版权归权利人所有。不代表官方合作。 |
 | `public/img/ecosystem/crealitycloud.png` | 模型社区下拉与生态页跳转缩略图 | [Creality Cloud 官网首页](https://www.crealitycloud.com/) 截图 | Creality Cloud / 创想三维 | 第三方官网界面截图 | 仅作官方入口识别与跳转示意；商标与界面版权归权利人所有。不镜像模型文件。 |
 
+## AI 生成图片（2026-10 视觉升级 · 内容匹配配图）
+
+以下为 AI 生成的站内配图，用于教育场景与课程视觉说明，**不代表真实校区、教师、学生或教学成果**：
+
+| 文件 | 用途 |
+| --- | --- |
+| `public/img/scenes/education.jpg` | 教育/创客教室场景 |
+| `public/img/scenes/diy.jpg` | 个人/家庭 DIY 创作场景 |
+| `public/img/scenes/utility.jpg` | 实用生活收纳件 |
+| `public/img/scenes/art.jpg` | 艺术雕塑与时装配饰 |
+| `public/img/cards/academy.jpg` | 课堂教学/师资 |
+| `public/img/cards/filament.jpg` | 耗材线材管理区 |
+| `public/img/cards/models.jpg` | 学生作品/模型库展示 |
+| `public/img/education/makerspace-panorama.jpg` | 创客空间全景（探索页主视觉） |
+| `public/img/competition/robotics-arena.jpg` | 机器人竞赛（竞赛方向卡片） |
+| `public/img/education/industrial-print.jpg` | 工业应用（工业配件卡片） |
+
+- 生成提示词见 [`图片生成提示词库.md`](./图片生成提示词库.md)。
+- 原 `robotic-fair-01.webp`（Wikimedia，Public domain）已由 AI 生成的 `robotics-arena.jpg` 替换，旧文件保留在仓库中但不再被引用。
+
 ## 产品图片规则
 
 智小白 Explorer3、Vorlon 350 × 350、快造 U1、小鲁班打印机、拓竹 A1 等第三方机型：
