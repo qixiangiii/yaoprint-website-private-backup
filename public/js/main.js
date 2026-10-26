@@ -635,14 +635,25 @@
     form.addEventListener('submit', async event => {
       event.preventDefault();
       const tip = $('#formTip');
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const showFormTip = (msg, isError) => {
+        if (!tip) return;
+        tip.style.display = 'block';
+        tip.className = 'form-tip' + (isError ? ' error' : '');
+        tip.textContent = msg;
+        tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
       try {
         const data = Object.fromEntries(new FormData(form).entries());
         const result = await fetchJSON('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
         if (!result.ok) throw new Error('提交失败');
-        if (tip) { tip.style.display = 'block'; tip.className = 'form-tip'; tip.textContent = '✓ 提交成功，我们将在 1 个工作日内联系您。'; }
+        showFormTip('✓ 提交成功，我们将在 1 个工作日内联系您。', false);
         form.reset();
       } catch (error) {
-        if (tip) { tip.style.display = 'block'; tip.className = 'form-tip error'; tip.textContent = '提交失败，请稍后再试。'; }
+        showFormTip('提交失败，请稍后再试。', true);
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '提交需求'; }
       }
     });
   }
@@ -652,13 +663,24 @@
     subForm.addEventListener('submit', async event => {
       event.preventDefault();
       const tip = $('#subTip');
+      const submitBtn = subForm.querySelector('button[type="submit"]');
+      const showSubTip = (msg, isError) => {
+        if (!tip) return;
+        tip.style.display = 'block';
+        tip.className = 'form-tip' + (isError ? ' error' : '');
+        tip.textContent = msg;
+        tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      if (submitBtn) { submitBtn.disabled = true; }
       try {
         const result = await fetchJSON('/api/subs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('[name="email"]', subForm).value }) });
         if (!result.ok) throw new Error('订阅失败');
-        if (tip) { tip.style.display = 'block'; tip.className = 'form-tip'; tip.textContent = result.dup ? '✓ 该邮箱已订阅。' : '✓ 订阅成功，感谢关注！'; }
+        showSubTip(result.dup ? '✓ 该邮箱已订阅。' : '✓ 订阅成功，感谢关注！', false);
         subForm.reset();
       } catch (error) {
-        if (tip) { tip.style.display = 'block'; tip.className = 'form-tip error'; tip.textContent = '订阅失败，请检查邮箱后重试。'; }
+        showSubTip('订阅失败，请检查邮箱后重试。', true);
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; }
       }
     });
   }
@@ -725,8 +747,16 @@
   const ticketForm = $('#ticketForm');
   if (ticketForm) ticketForm.addEventListener('submit', async event => {
     event.preventDefault(); const tip = $('#ticketTip');
-    try { const result = await fetchJSON('/api/tickets', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.fromEntries(new FormData(ticketForm).entries())) }); if (!result.ok) throw new Error(); ticketForm.reset(); tip.textContent='✓ 工单已提交，技术团队将在 1 个工作日内联系您。'; tip.className='form-tip'; tip.style.display='block'; }
-    catch { tip.textContent='提交失败，请检查联系方式后重试。'; tip.className='form-tip error'; tip.style.display='block'; }
+    const submitBtn = ticketForm.querySelector('button[type="submit"]');
+    const showTicketTip = (msg, isError) => {
+      if (!tip) return;
+      tip.textContent = msg; tip.className = 'form-tip' + (isError ? ' error' : ''); tip.style.display = 'block';
+      tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
+    try { const result = await fetchJSON('/api/tickets', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.fromEntries(new FormData(ticketForm).entries())) }); if (!result.ok) throw new Error(); ticketForm.reset(); showTicketTip('✓ 工单已提交，技术团队将在 1 个工作日内联系您。', false); }
+    catch { showTicketTip('提交失败，请检查联系方式后重试。', true); }
+    finally { if (submitBtn) { submitBtn.disabled = false; if (submitBtn.isConnected) submitBtn.textContent = '提交工单'; } }
   });
 
   /* ---- 点击涟漪（v12 动效层） ----
