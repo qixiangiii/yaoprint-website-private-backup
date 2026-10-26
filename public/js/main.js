@@ -180,9 +180,11 @@
   }
 
   // 轻量访问统计：上报当前页面路径（失败静默，不阻塞页面）
+  // 只取 pathname 不带查询串：product.html?slug=a 与 ?slug=b 属于同一页面，
+  // 带上参数会把「热门页面」拆成一堆一次性路径。
   function trackPageView() {
     try {
-      const pathName = location.pathname + location.search;
+      const pathName = location.pathname;
       if (!pathName.startsWith('/')) return;
       fetch('/api/pageview', {
         method: 'POST',

@@ -42,9 +42,10 @@ module.exports = function registerPublicRoutes(app) {
   });
 
   app.get('/api/products/:slug', (req, res) => {
+    // 与列表接口保持一致：草稿/下架产品不能通过猜 slug 直接读到
     const product = stmt(`SELECT p.*, c.slug AS cat_slug, c.name AS cat_name
       FROM products p LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.slug = ?`).get(req.params.slug);
+      WHERE p.slug = ? AND p.status IN ('published','soon')`).get(req.params.slug);
     if (!product) return res.status(404).json({ error: 'not found' });
     res.json(parseProduct(product));
   });
@@ -126,7 +127,8 @@ module.exports = function registerPublicRoutes(app) {
     course.syllabus = parseJSON(course.syllabus_json, []);
     course.outcomes = parseJSON(course.outcomes_json, []);
     course.gallery = parseJSON(course.gallery_json, []);
-    course.sessions = stmt("SELECT * FROM course_sessions WHERE course_id=? AND status IN ('open','draft') ORDER BY sort,id").all(course.id);
+    // 只返回已开放报名的班期；草稿班期属于后台未定稿内容，不应出现在前台
+    course.sessions = stmt("SELECT * FROM course_sessions WHERE course_id=? AND status='open' ORDER BY sort,id").all(course.id);
     res.json(course);
   });
 
@@ -211,8 +213,14 @@ module.exports = function registerPublicRoutes(app) {
     if (!isEmail(email)) return res.status(400).json({ error: '请输入有效邮箱' });
     try {
       stmt('INSERT INTO subs (email) VALUES (?)').run(email);
-    } catch {
-      return res.json({ ok: true, dup: true });
+    } catch (error) {
+      // 只有唯一约束才代表“已订阅”；其他数据库异常必须如实报错，
+      // 否则写入失败也会被前端显示成“✓ 该邮箱已订阅”。
+      if (error && (error.code === 'SQLITE_CONSTRAINT_UNIQUE' || /UNIQUE constraint failed/i.test(error.message || ''))) {
+        return res.json({ ok: true, dup: true });
+      }
+      console.error('[subs]', error && error.message);
+      return res.status(500).json({ error: '订阅失败，请稍后重试' });
     }
     res.json({ ok: true });
   });

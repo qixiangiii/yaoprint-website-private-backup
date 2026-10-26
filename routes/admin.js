@@ -120,13 +120,15 @@ module.exports = function registerAdminRoutes(app) {
 
   app.put('/api/admin/enrollment-inquiries/:id', requireAdmin, (req, res) => {
     const body = req.body || {};
-    stmt('UPDATE enrollment_inquiries SET status=?,follow_up_note=? WHERE id=?')
-      .run(String(body.status || 'new'), String(body.follow_up_note || ''), req.params.id);
+    const result = stmt('UPDATE enrollment_inquiries SET status=?,follow_up_note=? WHERE id=?')
+      .run(String(body.status || 'new'), limitText(body.follow_up_note, 1000), req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '咨询记录不存在' });
     res.json({ ok: true });
   });
 
   app.delete('/api/admin/enrollment-inquiries/:id', requireAdmin, (req, res) => {
-    stmt('DELETE FROM enrollment_inquiries WHERE id=?').run(req.params.id);
+    const result = stmt('DELETE FROM enrollment_inquiries WHERE id=?').run(req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '咨询记录不存在' });
     res.json({ ok: true });
   });
 
@@ -136,7 +138,8 @@ module.exports = function registerAdminRoutes(app) {
   });
 
   app.put('/api/admin/customers/:id', requireAdmin, (req, res) => {
-    stmt('UPDATE customers SET status=? WHERE id=?').run(String((req.body || {}).status || 'active'), req.params.id);
+    const result = stmt('UPDATE customers SET status=? WHERE id=?').run(String((req.body || {}).status || 'active'), req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '客户不存在' });
     res.json({ ok: true });
   });
 
@@ -156,13 +159,16 @@ module.exports = function registerAdminRoutes(app) {
 
   app.put('/api/admin/skus/:id', requireAdmin, (req, res) => {
     const body = req.body || {};
-    stmt('UPDATE catalog_skus SET product_id=?,slug=?,name=?,variant=?,price=?,cover=?,status=?,sort=? WHERE id=?')
+    if (!body.slug || !body.name) return res.status(400).json({ error: 'slug 与名称必填' });
+    const result = stmt('UPDATE catalog_skus SET product_id=?,slug=?,name=?,variant=?,price=?,cover=?,status=?,sort=? WHERE id=?')
       .run(body.product_id || null, body.slug, body.name, body.variant || '', body.price || '', body.cover || '', body.status || 'published', Number(body.sort) || 0, req.params.id);
+    if (!result.changes) return res.status(404).json({ error: 'SKU 不存在' });
     res.json({ ok: true });
   });
 
   app.delete('/api/admin/skus/:id', requireAdmin, (req, res) => {
-    stmt('DELETE FROM catalog_skus WHERE id=?').run(req.params.id);
+    const result = stmt('DELETE FROM catalog_skus WHERE id=?').run(req.params.id);
+    if (!result.changes) return res.status(404).json({ error: 'SKU 不存在' });
     res.json({ ok: true });
   });
 
@@ -171,7 +177,8 @@ module.exports = function registerAdminRoutes(app) {
   });
 
   app.put('/api/admin/orders/:id', requireAdmin, (req, res) => {
-    stmt('UPDATE orders SET status=? WHERE id=?').run(String((req.body || {}).status || 'pending_review'), req.params.id);
+    const result = stmt('UPDATE orders SET status=? WHERE id=?').run(String((req.body || {}).status || 'pending_review'), req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '订单不存在' });
     res.json({ ok: true });
   });
 
@@ -180,7 +187,8 @@ module.exports = function registerAdminRoutes(app) {
   });
 
   app.put('/api/admin/after-sales/:id', requireAdmin, (req, res) => {
-    stmt('UPDATE after_sales SET status=? WHERE id=?').run(String((req.body || {}).status || 'new'), req.params.id);
+    const result = stmt('UPDATE after_sales SET status=? WHERE id=?').run(String((req.body || {}).status || 'new'), req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '售后申请不存在' });
     res.json({ ok: true });
   });
 
@@ -194,8 +202,9 @@ module.exports = function registerAdminRoutes(app) {
 
   app.put('/api/admin/submissions/:id', requireAdmin, (req, res) => {
     const body = req.body || {};
-    stmt('UPDATE creator_submissions SET status=?,admin_note=? WHERE id=?')
-      .run(String(body.status || 'pending'), String(body.admin_note || ''), req.params.id);
+    const result = stmt('UPDATE creator_submissions SET status=?,admin_note=? WHERE id=?')
+      .run(String(body.status || 'pending'), limitText(body.admin_note, 1000), req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '投稿不存在' });
     res.json({ ok: true });
   });
 
@@ -204,7 +213,8 @@ module.exports = function registerAdminRoutes(app) {
   });
 
   app.put('/api/admin/partner-applications/:id', requireAdmin, (req, res) => {
-    stmt('UPDATE partner_applications SET status=? WHERE id=?').run(String((req.body || {}).status || 'new'), req.params.id);
+    const result = stmt('UPDATE partner_applications SET status=? WHERE id=?').run(String((req.body || {}).status || 'new'), req.params.id);
+    if (!result.changes) return res.status(404).json({ error: '伙伴申请不存在' });
     res.json({ ok: true });
   });
 
@@ -293,6 +303,8 @@ module.exports = function registerAdminRoutes(app) {
 
   app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
     const { slug, name, subtitle, category_id, tag, price, description, spec, image_svg, hero_image, card_image, gallery, colors, kits, features, relationship, official_url, source_label, relationship_disclaimer, spec_source, spec_verified_at, featured_home, status, sort } = req.body || {};
+    // 与新增保持一致：编辑不允许把 slug / 名称清空，否则前台产品页会失去入口
+    if (!slug || !name) return res.status(400).json({ error: 'slug 与名称必填' });
     const result = stmt(`UPDATE products SET slug=?, name=?, subtitle=?, category_id=?, tag=?, price=?, description=?, spec_json=?, image_svg=?, hero_image=?, card_image=?, gallery_json=?, colors_json=?, kits_json=?, feature_json=?, relationship=?, official_url=?, source_label=?, relationship_disclaimer=?, spec_source=?, spec_verified_at=?, featured_home=?, status=?, sort=?, updated_at=datetime('now','localtime') WHERE id=?`)
       .run(slug, name, subtitle || '', category_id || null, tag || '', price || '', description || '',
         JSON.stringify(spec || {}), image_svg || '', hero_image || '', card_image || '', JSON.stringify(gallery || []),
@@ -326,6 +338,7 @@ module.exports = function registerAdminRoutes(app) {
 
   app.put('/api/admin/news/:id', requireAdmin, (req, res) => {
     const { slug, title, summary, body, cover, tag, status, sort } = req.body || {};
+    if (!slug || !title) return res.status(400).json({ error: 'slug 与标题必填' });
     const result = stmt('UPDATE news SET slug=?, title=?, summary=?, body=?, cover=?, tag=?, status=?, sort=? WHERE id=?')
       .run(slug, title, summary || '', body || '', cover || '', tag || '', status || 'published', sort || 0, req.params.id);
     if (!result.changes) return res.status(404).json({ error: '文章不存在' });

@@ -37,7 +37,14 @@ module.exports = function registerCommerceRoutes(app) {
       const customer = stmt('SELECT * FROM customers WHERE id=?').get(result.lastInsertRowid);
       // 注册即登录，同样重建会话 ID
       loginSession(req, res, { key: 'customer', value: customerPublic(customer), error: '注册成功，请重新登录' });
-    } catch { res.status(400).json({ error: '该邮箱已注册，请直接登录' }); }
+    } catch (error) {
+      // 只有邮箱唯一约束才是“已注册”，其他写入异常不能被伪装成重复邮箱
+      if (error && (error.code === 'SQLITE_CONSTRAINT_UNIQUE' || /UNIQUE constraint failed/i.test(error.message || ''))) {
+        return res.status(400).json({ error: '该邮箱已注册，请直接登录' });
+      }
+      console.error('[register]', error && error.message);
+      res.status(500).json({ error: '注册失败，请稍后重试' });
+    }
   });
 
   app.post('/api/account/login', loginLimiter, (req, res) => {
@@ -114,12 +121,14 @@ module.exports = function registerCommerceRoutes(app) {
 
   app.put('/api/cart/items/:id', requireCustomer, (req, res) => {
     const quantity = clampQuantity((req.body || {}).quantity);
-    stmt('UPDATE cart_items SET quantity=? WHERE id=? AND cart_id IN (SELECT id FROM carts WHERE customer_id=?)').run(quantity, req.params.id, req.session.customer.id);
+    const result = stmt('UPDATE cart_items SET quantity=? WHERE id=? AND cart_id IN (SELECT id FROM carts WHERE customer_id=?)').run(quantity, req.params.id, req.session.customer.id);
+    if (!result.changes) return res.status(404).json({ error: '选购项不存在' });
     res.json({ ok: true });
   });
 
   app.delete('/api/cart/items/:id', requireCustomer, (req, res) => {
-    stmt('DELETE FROM cart_items WHERE id=? AND cart_id IN (SELECT id FROM carts WHERE customer_id=?)').run(req.params.id, req.session.customer.id);
+    const result = stmt('DELETE FROM cart_items WHERE id=? AND cart_id IN (SELECT id FROM carts WHERE customer_id=?)').run(req.params.id, req.session.customer.id);
+    if (!result.changes) return res.status(404).json({ error: '选购项不存在' });
     res.json({ ok: true });
   });
 
@@ -165,8 +174,11 @@ module.exports = function registerCommerceRoutes(app) {
     const { order_no, type, reason } = req.body || {};
     const order = stmt('SELECT id FROM orders WHERE order_no=? AND customer_id=?').get(order_no, req.session.customer.id);
     if (!order) return res.status(404).json({ error: '订单不存在' });
+    // 服务类型对应前台三个选项，其余取值统一回落到维修咨询，避免脏数据进库
+    const serviceType = ['repair', 'replacement', 'refund'].includes(String(type)) ? String(type) : 'repair';
+    if (!String(reason || '').trim()) return res.status(400).json({ error: '请填写问题说明' });
     stmt('INSERT INTO after_sales (order_id,customer_id,type,reason) VALUES (?,?,?,?)')
-      .run(order.id, req.session.customer.id, limitText(type || 'repair', 20), limitText(reason, 1000));
+      .run(order.id, req.session.customer.id, serviceType, limitText(reason, 1000));
     res.json({ ok: true });
   });
 
@@ -176,7 +188,9 @@ module.exports = function registerCommerceRoutes(app) {
     if (!serial_no || !product_name) return res.status(400).json({ error: '序列号和设备型号必填' });
     const serial = limitText(serial_no, 60);
     let device = stmt('SELECT * FROM devices WHERE serial_no=?').get(serial);
-    if (device && stmt('SELECT id FROM device_bindings WHERE device_id=?').get(device.id)) {
+    // 同一账户重复登记应视为幂等成功；只有被别的账户占用时才拒绝
+    const binding = device ? stmt('SELECT customer_id FROM device_bindings WHERE device_id=?').get(device.id) : null;
+    if (binding && binding.customer_id !== req.session.customer.id) {
       return res.status(400).json({ error: '该设备已绑定其他账户' });
     }
     if (!device) {
@@ -184,7 +198,8 @@ module.exports = function registerCommerceRoutes(app) {
         .run(serial, limitText(product_name, 120), limitText(purchase_date, 20), limitText(channel, 40));
       device = stmt('SELECT * FROM devices WHERE id=?').get(result.lastInsertRowid);
     }
-    stmt('INSERT OR IGNORE INTO device_bindings (device_id,customer_id) VALUES (?,?)').run(device.id, req.session.customer.id);
+    // device_bindings 没有 (device_id, customer_id) 唯一约束，先查再插避免重复绑定行
+    if (!binding) stmt('INSERT INTO device_bindings (device_id,customer_id) VALUES (?,?)').run(device.id, req.session.customer.id);
     res.json({ ok: true, device });
   });
 
