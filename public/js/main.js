@@ -613,7 +613,16 @@
     const trialForm = event.target.closest ? event.target.closest('#trialForm') : null;
     if (!trialForm) return;
     event.preventDefault(); const tip = $('#trialTip');
-    try { const data = Object.fromEntries(new FormData(trialForm).entries()); data.privacy_consent = trialForm.querySelector('[name="privacy_consent"]').checked; data.privacy_version = '2026.09'; const result = await fetchJSON('/api/enrollment-inquiries', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!result.ok) throw new Error(); trialForm.reset(); tip.textContent='✓ 已收到预约信息，课程顾问将联系监护人确认试听安排。'; tip.className='form-tip'; tip.style.display='block'; } catch (error) { tip.textContent='提交失败，请检查监护人姓名、电话及隐私同意项。'; tip.className='form-tip error'; tip.style.display='block'; }
+    const submitBtn = trialForm.querySelector('button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
+    const showTip = (msg, isError) => {
+      tip.textContent = msg;
+      tip.className = 'form-tip' + (isError ? ' error' : '');
+      tip.style.display = 'block';
+      tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    try { const data = Object.fromEntries(new FormData(trialForm).entries()); data.privacy_consent = trialForm.querySelector('[name="privacy_consent"]').checked; data.privacy_version = '2026.09'; const result = await fetchJSON('/api/enrollment-inquiries', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!result.ok) throw new Error(); trialForm.reset(); showTip('✓ 提交成功！已收到预约信息，课程顾问将尽快联系监护人确认试听安排。', false); } catch (error) { showTip('提交失败，请检查监护人姓名、电话及隐私同意项后重试。', true); }
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '提交试听预约'; }
   });
 
   // 联系表单：从产品/套装链接中预填
