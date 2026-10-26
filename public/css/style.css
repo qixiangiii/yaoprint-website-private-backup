@@ -292,6 +292,42 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .hero--home .hero-pagination .dot.active { background: #fff; }
 .hero-secondary { color:#fff; border:1px solid rgba(255,255,255,.44); background:transparent; }
 .hero-secondary:hover { color:#fff; border-color:#fff; background:rgba(255,255,255,.12); }
+.hero--home .hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #101A24;
+}
+.hero--home .hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.hero--home .hero-overlay {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  width: 100%;
+  padding: clamp(120px, 16vh, 160px) clamp(24px, 5vw, 80px) clamp(64px, 10vh, 110px);
+  color: #fff;
+}
+.hero--home .hero-overlay::before { display: none; }
+.hero--home .hero-tag { align-self: flex-start; border-color: rgba(255,255,255,.24); background: rgba(255,255,255,.08); }
+.hero--home .hero-sub { max-width: 620px; }
+.hero--home .hero-lead { max-width: 540px; color: rgba(255,255,255,.84); }
+.hero--home .hero-pagination { bottom: 28px; left: 50%; transform: translateX(-50%); }
+.hero--home .hero-pagination .dot { background: rgba(255,255,255,.4); }
+.hero--home .hero-pagination .dot.active { background: #fff; }
+.hero-secondary { color:#fff; border:1px solid rgba(255,255,255,.44); background:transparent; }
+.hero-secondary:hover { color:#fff; border-color:#fff; background:rgba(255,255,255,.12); }
 
 /* 数据条 */
 .stats-band {
@@ -2233,62 +2269,79 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
 }
 
 /* ===========================================================
-   v8 · 首页轮播统一为内页 hero 气质
-   浅色渐变 + 绿光晕 + 点阵底纹，左文案 / 右圆角图卡，
-   与 printers.html 等内页 page-hero 保持同一套语言。
-   （要回滚：删除本段即可，上文 v3–v7 段落不受影响）
+   v10 · 首页首屏全屏沉浸式轮播
+   画面铺满整个视口（100svh），悬浮玻璃导航压在其上，
+   幻灯片交叉淡入 + Ken Burns 缓慢推近，文案白色叠加左侧，
+   右下角提供向下滚动提示。尊重系统减少动态偏好。
+   （要回滚：删除本段即可，上文 v3–v9 段落不受影响）
    =========================================================== */
 
 .hero--home {
-  padding: 70px 0 0;
-  background:
-    radial-gradient(900px 460px at 86% -14%, rgba(30,155,224,.16), transparent 66%),
-    radial-gradient(720px 340px at 0% 0%, rgba(143,202,239,.20), transparent 62%),
-    linear-gradient(180deg, #E9F6FE 0%, #F5FBFF 62%, #FFFFFF 100%);
-  border-bottom: 1px solid rgba(16,26,36,.05);
+  padding: 0;
+  background: #0C1824;
+  border-bottom: none;
 }
-.hero--home .hero-swiper { min-height: 0; height: auto; max-height: none; }
-.hero--home .hero-slide {
-  display: grid;
-  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(26px, 4.4vw, 64px);
-  min-height: 0;
-  height: auto;
+.hero--home::before { display: none; }
+.hero--home .hero-swiper {
+  height: 100vh;
+  height: 100svh;
+  min-height: 620px;
   max-height: none;
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(30px, 4.2vw, 58px) clamp(20px, 3vw, 32px) clamp(58px, 5.4vw, 82px);
-  overflow: visible;
-  border-radius: 0;
-  background: transparent;
 }
-/* 右上装饰圆环，替代原深色遮罩 */
-.hero--home::before {
-  content: '';
+.hero--home .hero-slide {
+  display: flex;
+  align-items: center;
   position: absolute;
-  z-index: 0;
-  top: -120px;
-  right: -110px;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  border: 52px solid rgba(18,135,198,.07);
+  inset: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: #101A24;
+}
+/* 多张幻灯片时由 JS 加 hero--fade，启用交叉淡入；单张/兜底场景保持直接可见 */
+.hero--home .hero--fade .hero-slide {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transition: opacity .9s ease, visibility 0s linear .9s;
+}
+.hero--home .hero--fade .hero-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .9s ease;
+}
+.hero--home .hero-slide[hidden] { display: none; }
+/* 左侧压暗渐变，保证白色文案可读；底部微渐变托住分页点 */
+.hero--home .hero-slide::after {
+  content: '';
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(10,22,32,.72) 0%, rgba(10,22,32,.42) 38%, rgba(10,22,32,.08) 66%, transparent 88%),
+    linear-gradient(0deg, rgba(10,22,32,.42), transparent 42%);
 }
 .hero--home .hero-media {
-  position: relative;
-  inset: auto;
-  order: 2;
-  z-index: 1;
+  position: absolute;
+  inset: 0;
+  order: 0;
+  z-index: 0;
   width: 100%;
-  aspect-ratio: 16 / 11.4;
-  max-height: 470px;
-  border-radius: 28px;
-  border: 1px solid rgba(18,135,198,.14);
-  background: #E3F2FC;
+  aspect-ratio: auto;
+  max-height: none;
+  border-radius: 0;
+  border: 0;
+  background: #101A24;
   overflow: hidden;
-  box-shadow: 0 36px 74px -34px rgba(16,26,36,.44), 0 10px 24px -14px rgba(16,26,36,.18);
+  box-shadow: none;
 }
 .hero--home .hero-media::after { display: none; }
 .hero--home .hero-img {
@@ -2298,98 +2351,99 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transform: scale(1.01);
-  transition: transform 1.2s cubic-bezier(.2, .7, .2, 1);
+  transform: none;
+  transition: none;
 }
-.hero--home .hero-slide:hover .hero-img { transform: scale(1.045); }
 
 .hero--home .hero-overlay {
-  order: 1;
+  order: 0;
+  position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  color: var(--edu-ink, #101A24);
+  max-width: var(--maxw);
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(110px, 15vh, 150px) clamp(24px, 5vw, 80px) clamp(64px, 10vh, 110px);
+  color: #fff;
 }
 .hero--home .hero-tag {
   align-self: flex-start;
   margin-bottom: 20px;
   padding: 8px 14px;
-  border: 1px solid rgba(18,135,198,.18);
+  border: 1px solid rgba(255,255,255,.24);
   border-radius: 999px;
-  background: #EFF8FE;
-  color: var(--edu-green-deep, #0B628F);
+  background: rgba(255,255,255,.10);
+  color: #fff;
   font-size: 11px;
   font-weight: 750;
   letter-spacing: .14em;
   text-transform: uppercase;
 }
 .hero--home .hero-overlay h1 {
-  max-width: 640px;
+  max-width: 680px;
   margin-bottom: 14px;
-  font-size: clamp(36px, 4.35vw, 60px);
+  font-size: clamp(38px, 4.6vw, 68px);
   font-weight: 800;
-  line-height: 1.08;
+  line-height: 1.06;
   letter-spacing: -.055em;
-  color: transparent;
-  background: linear-gradient(115deg, #101A24 24%, #0B628F 92%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: none;
+  color: #fff;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: #fff;
+  text-shadow: 0 2px 18px rgba(0,0,0,.30);
 }
 .hero--home .hero-overlay h1 .green {
-  color: transparent;
-  background: linear-gradient(115deg, #1E9BE0 8%, #0B628F 94%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #63B4E7;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: #63B4E7;
 }
 .hero--home .hero-sub {
-  max-width: 560px;
+  max-width: 620px;
   margin-bottom: 10px;
-  color: #0A4A6D;
-  font-size: clamp(18px, 1.9vw, 24px);
+  color: #fff;
+  font-size: clamp(18px, 2vw, 26px);
   font-weight: 700;
   letter-spacing: .01em;
-  text-shadow: none;
+  text-shadow: 0 2px 10px rgba(0,0,0,.35);
 }
 .hero--home .hero-lead {
-  max-width: 520px;
-  margin-bottom: 28px;
-  color: var(--edu-muted, #5C6775);
+  max-width: 540px;
+  margin-bottom: 30px;
+  color: rgba(255,255,255,.84);
   font-size: 15.5px;
   line-height: 1.78;
-  text-shadow: none;
+  text-shadow: 0 1px 4px rgba(0,0,0,.3);
 }
 .hero--home .btn-light {
   background: var(--edu-green, #1287C6);
   color: #fff;
-  box-shadow: 0 12px 26px -12px rgba(18,135,198,.6);
+  box-shadow: 0 12px 26px -12px rgba(0,0,0,.5);
 }
 .hero--home .btn-light:hover { background: var(--edu-green-deep, #0B628F); color: #fff; }
 .hero--home .hero-secondary {
-  color: var(--edu-ink, #101A24);
-  border: 1px solid #B4DDF4;
-  background: #fff;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.44);
+  background: transparent;
 }
 .hero--home .hero-secondary:hover {
-  color: var(--edu-green-deep, #0B628F);
-  border-color: #8FCAEF;
-  background: #F5FAFE;
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255,255,255,.12);
 }
 .hero--home .hero-pagination { bottom: 30px; display: flex; align-items: center; gap: 6px; }
 .hero--home .hero-pagination .dot {
   width: 8px; height: 8px; padding: 0; border-radius: 999px;
-  background: rgba(16,26,36,.16); background-clip: border-box;
+  background: rgba(255,255,255,.38); background-clip: border-box;
   transition: width .32s cubic-bezier(.2, .7, .2, 1), background .25s;
 }
-.hero--home .hero-pagination .dot:hover { background: rgba(16,26,36,.3); }
-.hero--home .hero-pagination .dot.active { width: 26px; background: var(--edu-green, #1287C6); }
+.hero--home .hero-pagination .dot:hover { background: rgba(255,255,255,.62); }
+.hero--home .hero-pagination .dot.active { width: 26px; background: #fff; }
 .hero-control {
   display: inline-flex;
   align-items: center;
@@ -2398,60 +2452,76 @@ a, button, .btn { transition-timing-function: cubic-bezier(.2,.7,.2,1); }
   height: 22px;
   margin-left: 4px;
   padding: 0;
-  border: 1px solid rgba(16,26,36,.18);
+  border: 1px solid rgba(255,255,255,.4);
   border-radius: 50%;
   background: transparent;
-  color: rgba(16,26,36,.58);
+  color: rgba(255,255,255,.85);
   font-size: 9px;
   line-height: 1;
   cursor: pointer;
   transition: border-color .2s, color .2s, background .2s;
 }
-.hero-control:hover { border-color: rgba(16,26,36,.4); color: var(--edu-ink, #101A24); background: rgba(255,255,255,.7); }
+.hero-control:hover { border-color: rgba(255,255,255,.85); color: #fff; background: rgba(255,255,255,.14); }
 
-@media (max-width: 900px) {
-  .hero--home .hero-slide {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 22px;
-    padding: 22px clamp(18px, 4vw, 26px) 60px;
-  }
-  .hero--home .hero-overlay { order: 1; width: 100%; padding: 0; }
-  .hero--home .hero-media { order: 2; aspect-ratio: 16 / 9; max-height: 420px; border-radius: 22px; }
-  .hero--home .hero-overlay h1 { font-size: clamp(30px, 7.6vw, 44px); }
-  .hero--home .hero-sub { font-size: clamp(16px, 4.2vw, 20px); }
-  .hero--home .hero-lead { font-size: 14.5px; margin-bottom: 22px; }
-  .hero--home::before { width: 220px; height: 220px; border-width: 32px; top: -80px; right: -80px; }
-  .hero--home .hero-pagination { bottom: 18px; }
+/* 切换动效：Ken Burns 缓慢推近 + 文案交错上浮（仅在幻灯片激活时运行一次） */
+.hero--home .hero--fade .hero-slide.is-active .hero-img { animation: heroImgIn 9s ease-out both; }
+.hero--home .hero--fade .hero-slide.is-active .hero-overlay > * { animation: yqFadeUp .8s cubic-bezier(.2,.7,.2,1) both; }
+.hero--home .hero--fade .hero-slide.is-active .hero-overlay > *:nth-child(2) { animation-delay: .08s; }
+.hero--home .hero--fade .hero-slide.is-active .hero-overlay > *:nth-child(3) { animation-delay: .16s; }
+.hero--home .hero--fade .hero-slide.is-active .hero-overlay > *:nth-child(4) { animation-delay: .24s; }
+.hero--home .hero--fade .hero-slide.is-active .hero-overlay > *:nth-child(5) { animation-delay: .32s; }
+
+/* 向下滚动提示 */
+.hero--home .hero-scroll {
+  position: absolute;
+  bottom: 26px;
+  right: clamp(24px, 4vw, 56px);
+  z-index: 6;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background .3s ease, transform .3s ease;
 }
-@media (max-width: 720px) {
-  .hero--home { padding: 64px 0 0; }
-  .hero--home .hero-swiper,
-  .hero--home .hero-slide { min-height: 0; height: auto; max-height: none; }
-  .hero--home .hero-slide { padding: 18px 18px 56px; gap: 18px; }
-  .hero--home .hero-media { aspect-ratio: 4 / 3; max-height: 300px; border-radius: 18px; }
-  .hero--home .hero-overlay h1 { margin-bottom: 10px; }
-  .hero--home .hero-tag { margin-bottom: 14px; }
-  .hero--home .hero-lead { margin-bottom: 18px; }
-  .hero--home .hero-pagination { bottom: 16px; }
-}
+.hero--home .hero-scroll:hover { background: rgba(255,255,255,.26); transform: translateY(2px); }
+.hero--home .hero-scroll svg { animation: heroBounce 2.2s ease-in-out infinite; }
+@keyframes heroBounce { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
 
 /* 轮播切换的入场节奏（尊重系统减少动态偏好） */
 @media (prefers-reduced-motion: no-preference) {
-  .hero--home .hero-slide:not([hidden]) .hero-tag,
-  .hero--home .hero-slide:not([hidden]) .hero-overlay h1,
-  .hero--home .hero-slide:not([hidden]) .hero-sub,
-  .hero--home .hero-slide:not([hidden]) .hero-lead,
-  .hero--home .hero-slide:not([hidden]) .hero-actions {
-    animation: yqFadeUp .6s cubic-bezier(.2, .7, .2, 1) both;
-  }
-  .hero--home .hero-slide:not([hidden]) .hero-overlay h1 { animation-delay: .05s; }
-  .hero--home .hero-slide:not([hidden]) .hero-sub { animation-delay: .1s; }
-  .hero--home .hero-slide:not([hidden]) .hero-lead { animation-delay: .14s; }
-  .hero--home .hero-slide:not([hidden]) .hero-actions { animation-delay: .18s; }
-  .hero--home .hero-slide:not([hidden]) .hero-img { animation: heroImgIn 1.1s cubic-bezier(.2, .7, .2, 1) both; }
+  @keyframes heroImgIn { from { transform: scale(1.08); } to { transform: scale(1); } }
 }
-@keyframes heroImgIn { from { transform: scale(1.06); } to { transform: scale(1.01); } }
-.hero--home .hero-slide:hover .hero-img { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .hero--home .hero--fade .hero-slide { transition: none; }
+  .hero--home .hero--fade .hero-slide.is-active .hero-img,
+  .hero--home .hero--fade .hero-slide.is-active .hero-overlay > * { animation: none; }
+  .hero--home .hero-scroll svg { animation: none; }
+}
+
+@media (max-width: 900px) {
+  .hero--home .hero-swiper { height: 100vh; height: 100svh; min-height: 540px; }
+  .hero--home .hero-slide { min-height: 0; height: 100%; }
+  .hero--home .hero-overlay { padding: clamp(100px, 14vh, 130px) clamp(20px, 5vw, 40px) clamp(56px, 8vh, 90px); }
+  .hero--home .hero-overlay h1 { font-size: clamp(32px, 8.4vw, 48px); }
+  .hero--home .hero-pagination { bottom: 22px; }
+}
+@media (max-width: 720px) {
+  .hero--home .hero-swiper { height: 100svh; min-height: 480px; }
+  .hero--home .hero-slide { min-height: 0; height: 100%; }
+  .hero--home .hero-overlay { padding: 104px 20px 72px; }
+  .hero--home .hero-overlay h1 { margin-bottom: 10px; }
+  .hero--home .hero-tag { margin-bottom: 14px; }
+  .hero--home .hero-lead { margin-bottom: 22px; }
+  .hero--home .hero-scroll { display: none; }
+  .hero--home .hero-pagination { bottom: 16px; }
+}
 
 /* ===========================================================
    v9 · 全站导航统一（模型社区下拉 + 9 项导航 + 预约试听）
@@ -3242,4 +3312,26 @@ select:focus {
   .lab-scan, .lab-cube { animation: none; }
   .lab-frame img, .lab-tab, .lab-tab b { transition: none; }
   .lab-tab:hover { transform: none; }
+}
+
+/* ===========================================================
+   v14 · 全屏首屏对 v13 精修层的适配（2026-10）
+   v13 的图卡白边/浅色标签/深灰说明是为左文右图分栏设计，
+   全屏深色首屏需要覆盖回深色语义。仅追加，可整段回滚。
+   =========================================================== */
+.hero--home .hero-slide { padding-top: 0; }
+.hero--home .hero-media {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.hero--home .hero-tag {
+  border-color: rgba(255, 255, 255, .24);
+  background: rgba(255, 255, 255, .10);
+  color: #fff;
+  box-shadow: none;
+}
+.hero--home .hero-lead { color: rgba(255, 255, 255, .84); }
+@media (max-width: 720px) {
+  .hero--home .hero-slide { padding-top: 0; }
 }

@@ -282,6 +282,9 @@
     const slides = $$('.hero-slide', swiper);
     const dotsWrap = $('.hero-pagination', swiper);
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // 多张幻灯片时启用交叉淡入（CSS 类控制），单张保持直接显隐
+    const fadeMode = slides.length > 1;
+    if (fadeMode) swiper.classList.add('hero--fade');
     let index = 0;
     let timer = null;
     let paused = reduceMotion;
@@ -293,7 +296,8 @@
       index = (next + slides.length) % slides.length;
       slides.forEach((slide, i) => {
         const active = i === index;
-        slide.hidden = !active;
+        if (fadeMode) { slide.classList.toggle('is-active', active); slide.hidden = false; }
+        else slide.hidden = !active;
         slide.setAttribute('aria-hidden', String(!active));
       });
       const activeSlide = slides[index];
