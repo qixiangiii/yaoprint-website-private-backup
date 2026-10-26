@@ -608,8 +608,10 @@
   }
   loadEducationCases();
 
-  const trialForm = $('#trialForm');
-  if (trialForm) trialForm.addEventListener('submit', async event => {
+  // 试听预约表单由 education.js 异步渲染，直接绑定会拿不到元素，改用 document 委托。
+  document.addEventListener('submit', async event => {
+    const trialForm = event.target.closest ? event.target.closest('#trialForm') : null;
+    if (!trialForm) return;
     event.preventDefault(); const tip = $('#trialTip');
     try { const data = Object.fromEntries(new FormData(trialForm).entries()); data.privacy_consent = trialForm.querySelector('[name="privacy_consent"]').checked; data.privacy_version = '2026.09'; const result = await fetchJSON('/api/enrollment-inquiries', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!result.ok) throw new Error(); trialForm.reset(); tip.textContent='✓ 已收到预约信息，课程顾问将联系监护人确认试听安排。'; tip.className='form-tip'; tip.style.display='block'; } catch (error) { tip.textContent='提交失败，请检查监护人姓名、电话及隐私同意项。'; tip.className='form-tip error'; tip.style.display='block'; }
   });
