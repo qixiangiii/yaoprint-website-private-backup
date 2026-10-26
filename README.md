@@ -76,13 +76,29 @@ npm start
 
 ```text
 .
-├── server.js                  # Express 服务：前台 API、后台 API、静态资源
-├── db.js                      # SQLite 建表、兼容迁移、默认设置与初始内容
+├── server.js                  # Express 装配：中间件 → 路由 → 静态资源 → 兜底
+├── db.js                      # SQLite 建表、兼容迁移、索引、默认设置与初始内容
+├── lib/
+│   ├── validate.js            # 输入解析、电话/邮箱校验、长度裁剪、参数收敛
+│   ├── security.js            # CSRF 来源校验、限流工厂、Webhook 白名单
+│   ├── limiters.js            # 全站限流实例（登录/提交/注册/订阅/埋点）
+│   ├── store.js               # 预编译语句缓存、站点设置缓存与公开白名单
+│   ├── auth.js                # 管理员/消费者会话守卫、登录会话重建
+│   ├── catalog.js             # 商品字段清单与 *_json 展开
+│   ├── upload.js              # 图片上传白名单与文件头魔数校验
+│   ├── notify.js              # 企业微信机器人通知
+│   └── crud.js                # 通用 CRUD 路由工厂
+├── routes/
+│   ├── public.js              # 前台只读接口与公开表单提交
+│   ├── commerce.js            # 账户、选购清单、报价订单、设备、投稿
+│   ├── admin.js               # 后台接口、统计看板与通用 CRUD 注册
+│   └── seo.js                 # sitemap.xml 与 robots.txt
 ├── seed.js                    # 演示数据初始化脚本（会重置内容表）
 ├── curriculum.js              # 课程与学习内容数据（辅助脚本）
 ├── teaching-articles.js       # 教学文章数据（辅助脚本）
 ├── industry-news.js           # 行业动态数据（辅助脚本）
 ├── tools/site-check.js        # 站点链接与页面自检脚本
+├── tools/build-js.js          # 前端脚本压缩构建（生成 public/js/*.min.js）
 ├── docs/
 │   └── image-attribution.md   # 图片授权与来源台账
 ├── data/                      # SQLite 数据库（自动生成，不提交 Git）
@@ -104,11 +120,12 @@ npm start
 │   ├── shop/                  # 选购与报价
 │   ├── admin/index.html       # 后台管理 SPA
 │   ├── css/style.css
-│   ├── js/main.js             # 公共导航、设置、首页、生态下拉
-│   ├── js/education.js        # 课程、试听、学校合作、师资、作品
-│   ├── js/business.js         # 账户、购物袋、订单、设备
-│   ├── js/business-extra.js   # 设备登记、投稿、伙伴、下载
-│   ├── js/competition.js      # 竞赛页面
+│   ├── js/main.js             # 公共导航、设置、首页、生态下拉（源码）
+│   ├── js/education.js        # 课程、试听、学校合作、师资、作品（源码）
+│   ├── js/business.js         # 账户、购物袋、订单、设备（源码）
+│   ├── js/business-extra.js   # 设备登记、投稿、伙伴、下载（源码）
+│   ├── js/competition.js      # 竞赛页面（源码）
+│   ├── js/*.min.js            # 由 npm run build:js 生成，勿手工编辑
 │   └── uploads/               # 后台上传图片（不提交 Git）
 └── package.json
 ```
@@ -251,7 +268,8 @@ npm start
 ```bash
 npm start          # 启动站点（默认 3000 端口）
 npm run check      # 运行站点页面/链接自检（tools/site-check.js）
-npm run check:syntax  # 检查主要 JS 文件语法
+npm run check:syntax  # 检查服务端与前端 JS 语法
+npm run build:js   # 由源码生成 public/js/*.min.js（页面引用压缩版）
 npm rebuild better-sqlite3  # 原生模块与当前 Node 版本不匹配时重建
 ```
 

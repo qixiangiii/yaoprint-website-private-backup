@@ -50,7 +50,8 @@
 
   // 旧页面仍可能保留按学段编写的静态片段。教育品牌前台统一按学习基础
   // 表达，且只处理文本节点，不改动链接、接口参数或后台数据字段。
-  function normalizeEducationCopy() {
+  // root 为可选的扫描起点：动态渲染时只处理新增子树，不再重扫整页。
+  function normalizeEducationCopy(root) {
     const path = location.pathname;
     const isEducation = document.body.classList.contains('education-page')
       || Boolean(document.querySelector('[data-education-view], .hero--education'))
@@ -82,7 +83,7 @@
         node.childNodes.forEach(apply);
       }
     };
-    apply(document.body);
+    apply(root || document.body);
     if (document.title) document.title = document.title.replace(/初高中 3D 建模与打印培训/g, '3D 建模与打印学习平台');
   }
   normalizeEducationCopy();
@@ -107,9 +108,27 @@
     });
   }
 
-  new MutationObserver(() => {
-    normalizeEducationCopy();
+  // 只在新增节点范围内重跑文案归一化：原实现对每次 DOM 变更都重扫整个 body，
+  // 列表页连续渲染卡片时开销会被放大成「节点数 × 规则数」。
+  // 变更合并到下一帧执行，同一批渲染只处理一次。
+  const pendingCopyRoots = new Set();
+  let copyScheduled = false;
+  const flushEducationCopy = () => {
+    copyScheduled = false;
+    const roots = [...pendingCopyRoots];
+    pendingCopyRoots.clear();
+    roots.forEach(node => { if (node.isConnected) normalizeEducationCopy(node); });
     redirectHiddenCourseLinks();
+  };
+  new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) pendingCopyRoots.add(node);
+      }
+    }
+    if (!pendingCopyRoots.size || copyScheduled) return;
+    copyScheduled = true;
+    requestAnimationFrame(flushEducationCopy);
   }).observe(document.body, { childList: true, subtree: true });
 
   function setupEducationNavGroups() {
@@ -181,18 +200,32 @@
     }, { once: true });
   }
 
-  async function applyCourseCatalogVisibility() {
-    try {
-      const settings = await fetchJSON('/api/settings');
-      courseCatalogPublic = settings.course_catalog_visibility === 'public';
-    } catch {
-      courseCatalogPublic = false;
-    }
-    normalizeEducationNavigation(courseCatalogPublic);
+  // 站点设置全站只取一次：课程可见性、品牌文案、社交链接共用同一个请求结果。
+  // 原先两个函数各自 fetch 一次 /api/settings，每个页面都多一次往返。
+  let settingsPromise = null;
+  function loadSettings() {
+    if (!settingsPromise) settingsPromise = fetchJSON('/api/settings').catch(() => ({}));
+    return settingsPromise;
+  }
+
+  async function applySiteSettings() {
+    const settings = await loadSettings();
+    courseCatalogPublic = settings.course_catalog_visibility === 'public';
+    // 后台留空的项保留页面默认文案，避免把备案号、版权等信息清成空白
+    $$('[data-setting]').forEach(element => {
+      const value = settings[element.dataset.setting];
+      if (value !== undefined && value !== '') element.textContent = value;
+    });
+    $$('[data-social]').forEach(element => {
+      const value = settings[`social_${element.dataset.social}`];
+      if (value && value !== '#') element.href = value;
+      else element.hidden = true;
+    });
+    normalizeEducationNavigation();
     setupEducationNavGroups();
     redirectHiddenCourseLinks();
   }
-  applyCourseCatalogVisibility();
+  applySiteSettings();
 
   // 导航滚动状态与移动端菜单
   const nav = $('.navbar');
@@ -289,25 +322,7 @@
   }));
   $$('.reveal').forEach(element => observer.observe(element));
 
-  // 全站可替换信息：只更新标记过 data-setting / data-social 的节点，避免影响内页独立文案。
-  async function applySettings() {
-    try {
-      const settings = await fetchJSON('/api/settings');
-      $$('[data-setting]').forEach(element => {
-        const value = settings[element.dataset.setting];
-        // 后台留空的项保留页面默认文案，避免把备案号、版权等信息清成空白
-        if (value !== undefined && value !== '') element.textContent = value;
-      });
-      $$('[data-social]').forEach(element => {
-        const value = settings[`social_${element.dataset.social}`];
-        if (value && value !== '#') element.href = value;
-        else element.hidden = true;
-      });
-    } catch {
-      // 设置接口不可用时保留页面中的默认信息。
-    }
-  }
-  applySettings();
+  // 全站可替换信息由 applySiteSettings 统一处理，见文件上方。
 
   // 首页 Hero：自动轮播、键盘、暂停/播放、减少动态效果。
   function initHero(swiper) {
@@ -646,21 +661,63 @@
   }
   loadEducationCases();
 
-  // 试听预约表单由 education.js 异步渲染，直接绑定会拿不到元素，改用 document 委托。
-  document.addEventListener('submit', async event => {
-    const trialForm = event.target.closest ? event.target.closest('#trialForm') : null;
-    if (!trialForm) return;
-    event.preventDefault(); const tip = $('#trialTip');
-    const submitBtn = trialForm.querySelector('button[type="submit"]');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
-    const showTip = (msg, isError) => {
-      tip.textContent = msg;
+  // 表单提交统一处理：禁用按钮 → 请求 → 提示区反馈 → 恢复按钮。
+  // 原先四个表单各写一遍，提示文案与按钮恢复逻辑容易改漏。
+  async function submitForm(form, event, options) {
+    event.preventDefault();
+    const tip = options.tip ? $(options.tip) : null;
+    const button = form.querySelector('button[type="submit"]');
+    const buttonLabel = button ? button.textContent : '';
+    const showTip = (message, isError) => {
+      if (!tip) return;
+      tip.textContent = message;
       tip.className = 'form-tip' + (isError ? ' error' : '');
       tip.style.display = 'block';
       tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
-    try { const data = Object.fromEntries(new FormData(trialForm).entries()); data.privacy_consent = trialForm.querySelector('[name="privacy_consent"]').checked; data.privacy_version = '2026.09'; const result = await fetchJSON('/api/enrollment-inquiries', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }); if (!result.ok) throw new Error(); trialForm.reset(); showTip('✓ 提交成功！已收到预约信息，课程顾问将尽快联系监护人确认试听安排。', false); } catch (error) { showTip(errorText(error, '提交失败，请检查监护人姓名、电话及隐私同意项后重试。'), true); }
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '提交试听预约'; }
+    if (button) { button.disabled = true; button.textContent = '提交中…'; }
+    try {
+      const payload = options.build ? options.build(form) : Object.fromEntries(new FormData(form).entries());
+      const result = await fetchJSON(options.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!result.ok) throw new Error();
+      showTip(options.success(result), false);
+      if (options.reset !== false) form.reset();
+    } catch (error) {
+      showTip(errorText(error, options.fallback), true);
+    } finally {
+      if (button && button.isConnected) { button.disabled = false; button.textContent = buttonLabel; }
+    }
+  }
+
+  function bindFormSubmit(form, options) {
+    if (!form) return;
+    form.addEventListener('submit', event => submitForm(form, event, options));
+  }
+
+  // 表单由其他脚本异步渲染时（看不到元素），用事件委托绑定
+  function bindDelegatedSubmit(selector, options) {
+    document.addEventListener('submit', event => {
+      const form = event.target && event.target.closest ? event.target.closest(selector) : null;
+      if (form) submitForm(form, event, options);
+    });
+  }
+
+  // 试听预约表单由 education.js 异步渲染，直接绑定会拿不到元素，改用委托。
+  bindDelegatedSubmit('#trialForm', {
+    tip: '#trialTip',
+    url: '/api/enrollment-inquiries',
+    success: () => '✓ 提交成功！已收到预约信息，课程顾问将尽快联系监护人确认试听安排。',
+    fallback: '提交失败，请检查监护人姓名、电话及隐私同意项后重试。',
+    build: form => {
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.privacy_consent = Boolean(form.querySelector('[name="privacy_consent"]')?.checked);
+      data.privacy_version = '2026.09';
+      return data;
+    }
   });
 
   // 联系表单：从产品/套装链接中预填
@@ -670,56 +727,22 @@
     const message = $('[name="message"]', form);
     const topic = query.get('subject') || query.get('product');
     if (topic && message && !message.value) message.value = `我想咨询：${topic}。`;
-    form.addEventListener('submit', async event => {
-      event.preventDefault();
-      const tip = $('#formTip');
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const showFormTip = (msg, isError) => {
-        if (!tip) return;
-        tip.style.display = 'block';
-        tip.className = 'form-tip' + (isError ? ' error' : '');
-        tip.textContent = msg;
-        tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      };
-      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
-      try {
-        const data = Object.fromEntries(new FormData(form).entries());
-        const result = await fetchJSON('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        if (!result.ok) throw new Error('提交失败');
-        showFormTip('✓ 提交成功，我们将在 1 个工作日内联系您。', false);
-        form.reset();
-      } catch (error) {
-        showFormTip(errorText(error, '提交失败，请稍后再试。'), true);
-      } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '提交需求'; }
-      }
+    bindFormSubmit(form, {
+      tip: '#formTip',
+      url: '/api/leads',
+      success: () => '✓ 提交成功，我们将在 1 个工作日内联系您。',
+      fallback: '提交失败，请稍后再试。'
     });
   }
 
   const subForm = $('#subForm');
   if (subForm) {
-    subForm.addEventListener('submit', async event => {
-      event.preventDefault();
-      const tip = $('#subTip');
-      const submitBtn = subForm.querySelector('button[type="submit"]');
-      const showSubTip = (msg, isError) => {
-        if (!tip) return;
-        tip.style.display = 'block';
-        tip.className = 'form-tip' + (isError ? ' error' : '');
-        tip.textContent = msg;
-        tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      };
-      if (submitBtn) { submitBtn.disabled = true; }
-      try {
-        const result = await fetchJSON('/api/subs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('[name="email"]', subForm).value }) });
-        if (!result.ok) throw new Error('订阅失败');
-        showSubTip(result.dup ? '✓ 该邮箱已订阅。' : '✓ 订阅成功，感谢关注！', false);
-        subForm.reset();
-      } catch (error) {
-        showSubTip('订阅失败，请检查邮箱后重试。', true);
-      } finally {
-        if (submitBtn) { submitBtn.disabled = false; }
-      }
+    bindFormSubmit(subForm, {
+      tip: '#subTip',
+      url: '/api/subs',
+      success: result => result.dup ? '✓ 该邮箱已订阅。' : '✓ 订阅成功，感谢关注！',
+      fallback: '订阅失败，请检查邮箱后重试。',
+      build: form => ({ email: $('[name="email"]', form).value })
     });
   }
   const contentDetailPath = {
@@ -782,19 +805,11 @@
   }
   loadContentDetail();
 
-  const ticketForm = $('#ticketForm');
-  if (ticketForm) ticketForm.addEventListener('submit', async event => {
-    event.preventDefault(); const tip = $('#ticketTip');
-    const submitBtn = ticketForm.querySelector('button[type="submit"]');
-    const showTicketTip = (msg, isError) => {
-      if (!tip) return;
-      tip.textContent = msg; tip.className = 'form-tip' + (isError ? ' error' : ''); tip.style.display = 'block';
-      tip.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    };
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '提交中…'; }
-    try { const result = await fetchJSON('/api/tickets', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(Object.fromEntries(new FormData(ticketForm).entries())) }); if (!result.ok) throw new Error(); ticketForm.reset(); showTicketTip('✓ 工单已提交，技术团队将在 1 个工作日内联系您。', false); }
-    catch (error) { showTicketTip(errorText(error, '提交失败，请检查联系方式后重试。'), true); }
-    finally { if (submitBtn) { submitBtn.disabled = false; if (submitBtn.isConnected) submitBtn.textContent = '提交工单'; } }
+  bindFormSubmit($('#ticketForm'), {
+    tip: '#ticketTip',
+    url: '/api/tickets',
+    success: () => '✓ 工单已提交，技术团队将在 1 个工作日内联系您。',
+    fallback: '提交失败，请检查联系方式后重试。'
   });
 
   /* ---- 点击涟漪（v12 动效层） ----

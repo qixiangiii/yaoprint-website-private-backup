@@ -1005,8 +1005,8 @@ if (partnerCount === 0) {
   ].forEach(row => insertPartner.run(...row));
 }
 
-module.exports = db;
-
+// 打印机与访问统计表放在文件末尾创建，因此导出语句必须留在最后一行，
+// 否则 require 到的模块会拿到一个“尚未建完表”的连接对象。
 db.exec(`
 CREATE TABLE IF NOT EXISTS printers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1058,3 +1058,22 @@ CREATE TABLE IF NOT EXISTS page_views (
 CREATE INDEX IF NOT EXISTS idx_page_views_path ON page_views(path);
 CREATE INDEX IF NOT EXISTS idx_page_views_created ON page_views(created_at);
 `);
+
+// 账户中心与后台看板的高频查询都按「某个客户 + 时间倒序」过滤，
+// 这些表原先只有主键索引，数据量上来后会退化为全表扫描。
+db.exec(`
+CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id, id DESC);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_addresses_customer ON customer_addresses(customer_id, is_default DESC);
+CREATE INDEX IF NOT EXISTS idx_devices_bind_customer ON device_bindings(customer_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_customer ON service_tickets(customer_id, id DESC);
+CREATE INDEX IF NOT EXISTS idx_tickets_device ON service_tickets(device_id);
+CREATE INDEX IF NOT EXISTS idx_after_sales_customer ON after_sales(customer_id, id DESC);
+CREATE INDEX IF NOT EXISTS idx_submissions_customer ON creator_submissions(customer_id, id DESC);
+CREATE INDEX IF NOT EXISTS idx_sessions_course ON course_sessions(course_id, sort);
+CREATE INDEX IF NOT EXISTS idx_enrollment_course ON enrollment_inquiries(course_id);
+CREATE INDEX IF NOT EXISTS idx_news_status_tag ON news(status, tag, published_at);
+CREATE INDEX IF NOT EXISTS idx_products_status_sort ON products(status, sort);
+`);
+
+module.exports = db;

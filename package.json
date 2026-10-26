@@ -7,7 +7,8 @@
     "start": "node server.js",
     "seed": "node seed.js",
     "check": "node tools/site-check.js",
-    "check:syntax": "node --check server.js && node --check db.js && node --check public/js/main.js && node --check public/js/education.js && node --check public/js/competition-data.js && node --check public/js/competition.js"
+    "build:js": "node tools/build-js.js",
+    "check:syntax": "node --check server.js && node --check db.js && node --check lib/validate.js && node --check lib/security.js && node --check lib/store.js && node --check lib/auth.js && node --check lib/notify.js && node --check lib/upload.js && node --check lib/catalog.js && node --check lib/crud.js && node --check lib/limiters.js && node --check routes/public.js && node --check routes/commerce.js && node --check routes/admin.js && node --check routes/seo.js && node --check public/js/main.js && node --check public/js/education.js && node --check public/js/business.js && node --check public/js/business-extra.js && node --check public/js/competition-data.js && node --check public/js/competition.js && node --check public/js/page.js"
   },
   "keywords": [
     "3d-print",
@@ -27,5 +28,8 @@
     "express-session": "^1.18.0",
     "helmet": "^8.3.0",
     "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "terser": "^5.51.2"
   }
 }
