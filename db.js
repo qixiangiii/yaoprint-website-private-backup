@@ -549,6 +549,7 @@ const defaultSettings = {
   social_douyin: '#',
   social_youtube: '#',
   course_catalog_visibility: 'hidden',
+  site_url: '',
   stat1_value: '7',
   stat1_unit: '–12',
   stat1_label: '学习路径（基础至项目）',
@@ -1045,4 +1046,15 @@ CREATE TABLE IF NOT EXISTS printers (
   sort INTEGER DEFAULT 0,
   status TEXT DEFAULT 'published'
 );
+
+CREATE TABLE IF NOT EXISTS page_views (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  path TEXT NOT NULL,
+  referrer TEXT DEFAULT '',
+  visitor TEXT DEFAULT '',
+  is_crawler INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_page_views_path ON page_views(path);
+CREATE INDEX IF NOT EXISTS idx_page_views_created ON page_views(created_at);
 `);

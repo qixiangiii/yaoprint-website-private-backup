@@ -147,6 +147,27 @@
     return response.json();
   }
 
+  // 轻量访问统计：上报当前页面路径（失败静默，不阻塞页面）
+  function trackPageView() {
+    try {
+      const pathName = location.pathname + location.search;
+      if (!pathName.startsWith('/')) return;
+      fetch('/api/pageview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: pathName }),
+        keepalive: true
+      }).catch(() => {});
+    } catch { /* 忽略 */ }
+  }
+  if (document.visibilityState === 'visible') {
+    trackPageView();
+  } else {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') trackPageView();
+    }, { once: true });
+  }
+
   async function applyCourseCatalogVisibility() {
     try {
       const settings = await fetchJSON('/api/settings');

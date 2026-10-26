@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
+const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const db = require('./db');
 
@@ -14,6 +17,19 @@ const PORT = process.env.PORT || 3000;
 const IS_PROD = process.env.NODE_ENV === 'production';
 const SESSION_SECRET = process.env.SESSION_SECRET || (IS_PROD ? '' : 'qiyuan-xingqi-development-secret-change-me');
 if (IS_PROD && !SESSION_SECRET) throw new Error('生产环境必须配置 SESSION_SECRET');
+
+// 关闭框架指纹，避免暴露技术栈
+app.disable('x-powered-by');
+
+// 安全响应头（CSP 保持宽松以兼容现有内联脚本与第三方字体/图片）
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// gzip/brotli 压缩文本类响应
+app.use(compression());
 
 app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -207,6 +223,50 @@ app.get('/api/settings', (req, res) => {
   res.json(obj);
 });
 
+// ============ 轻量访问统计（自建，无第三方依赖） ============
+// 前端按需 POST 页面路径，服务端聚合为每日/每页访问量，供后台看板查询。
+const CRAWLER_UA = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|twitterbot|headless|pingdom|monitor/i;
+
+app.post('/api/pageview', (req, res) => {
+  try {
+    const pathName = String((req.body && req.body.path) || '/').trim().slice(0, 255) || '/';
+    // 仅统计站内路径，拒绝外链与协议注入
+    if (!pathName.startsWith('/') || /^\/\//.test(pathName)) return res.status(204).end();
+    const ua = String(req.get('user-agent') || '');
+    const referrer = String(req.get('referer') || '').trim().slice(0, 500);
+    // 用 IP + UA 哈希作为匿名访客标识，不存原始 IP
+    const visitor = crypto.createHash('sha256')
+      .update(String(req.ip || '') + '|' + ua)
+      .digest('hex').slice(0, 24);
+    db.prepare('INSERT INTO page_views (path, referrer, visitor, is_crawler) VALUES (?,?,?,?)')
+      .run(pathName, referrer, visitor, CRAWLER_UA.test(ua) ? 1 : 0);
+  } catch (e) { /* 统计失败不影响主流程 */ }
+  res.status(204).end();
+});
+
+app.get('/api/admin/pageviews/summary', requireAdmin, (req, res) => {
+  const days = Math.min(Math.max(Number(req.query.days) || 7, 1), 90);
+  const topPages = db.prepare(
+    `SELECT path, COUNT(*) AS views, COUNT(DISTINCT visitor) AS visitors
+     FROM page_views WHERE is_crawler=0 AND datetime(created_at) >= datetime('now','localtime', ?)
+     GROUP BY path ORDER BY views DESC LIMIT 20`
+  ).all(`-${days} days`);
+  const daily = db.prepare(
+    `SELECT substr(created_at,1,10) AS day, COUNT(*) AS views, COUNT(DISTINCT visitor) AS visitors
+     FROM page_views WHERE is_crawler=0 AND datetime(created_at) >= datetime('now','localtime', ?)
+     GROUP BY day ORDER BY day ASC`
+  ).all(`-${days} days`);
+  const total = db.prepare("SELECT COUNT(*) AS views, COUNT(DISTINCT visitor) AS visitors FROM page_views WHERE is_crawler=0").get();
+  // 转化漏斗：试听预约 + 通用咨询 + 伙伴申请 + 工单 最近 N 天
+  const conv = {
+    enrollments: db.prepare("SELECT COUNT(*) c FROM enrollment_inquiries WHERE datetime(created_at) >= datetime('now','localtime', ?)").get(`-${days} days`).c,
+    leads: db.prepare("SELECT COUNT(*) c FROM leads WHERE datetime(created_at) >= datetime('now','localtime', ?)").get(`-${days} days`).c,
+    partners: db.prepare("SELECT COUNT(*) c FROM partner_applications WHERE datetime(created_at) >= datetime('now','localtime', ?)").get(`-${days} days`).c,
+    tickets: db.prepare("SELECT COUNT(*) c FROM service_tickets WHERE datetime(created_at) >= datetime('now','localtime', ?)").get(`-${days} days`).c,
+  };
+  res.json({ days, total, daily, topPages, conversions: conv });
+});
+
 app.get('/api/ecosystem-platforms', (req, res) => {
   res.json(db.prepare("SELECT * FROM ecosystem_platforms WHERE status='published' ORDER BY sort,id").all().map(item => ({ ...item, url: safeLink(item.url) })).filter(item => item.url));
 });
@@ -263,7 +323,25 @@ app.get('/api/teachers', (req, res) => res.json(db.prepare("SELECT * FROM teache
 app.get('/api/campuses', (req, res) => res.json(db.prepare("SELECT * FROM campuses WHERE status='published' ORDER BY sort,id").all().map(c => ({ ...c, facilities: parseJSON(c.facilities_json, []) }))));
 app.get('/api/education-cases', (req, res) => res.json(db.prepare("SELECT * FROM education_cases WHERE status='published' AND visibility='public' ORDER BY sort,id").all().map(c => ({ ...c, outcomes: parseJSON(c.outcomes_json, []), gallery: parseJSON(c.gallery_json, []) }))));
 
-app.post('/api/enrollment-inquiries', (req, res) => {
+// ============ 频率限制（安全加固） ============
+// 登录接口限流，防暴力破解
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 分钟
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '登录尝试过于频繁，请稍后再试' }
+});
+// 预约/咨询等提交类接口限流，防刷爆企微群与数据库
+const submitLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 分钟
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '提交过于频繁，请稍后再试' }
+});
+
+app.post('/api/enrollment-inquiries', submitLimiter, (req, res) => {
   const { lead_type, parent_name, parent_phone, parent_wechat, student_grade, course_id, campus_id, preferred_time, experience_level, message, privacy_consent, privacy_version } = req.body || {};
   if (!parent_name || !parent_phone) return res.status(400).json({ error: '请填写监护人姓名和联系电话' });
   if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
@@ -284,7 +362,7 @@ app.get('/api/heroes', (req, res) => {
   res.json(db.prepare("SELECT * FROM heroes WHERE status='published' ORDER BY sort, id").all());
 });
 
-app.post('/api/leads', (req, res) => {
+app.post('/api/leads', submitLimiter, (req, res) => {
   const { name, company, phone, email, scene, message, source } = req.body || {};
   if (!name && !phone && !email) return res.status(400).json({ error: '请填写联系信息' });
   db.prepare('INSERT INTO leads (name, company, phone, email, scene, message, source) VALUES (?,?,?,?,?,?,?)')
@@ -309,7 +387,7 @@ app.post('/api/account/register', (req, res) => {
   } catch { res.status(400).json({ error: '该邮箱已注册，请直接登录' }); }
 });
 
-app.post('/api/account/login', (req, res) => {
+app.post('/api/account/login', loginLimiter, (req, res) => {
   const { email, password } = req.body || {};
   const customer = db.prepare('SELECT * FROM customers WHERE email=?').get(String(email || '').trim().toLowerCase());
   if (!customer || customer.status !== 'active' || !bcrypt.compareSync(String(password || ''), customer.password_hash)) return res.status(401).json({ error: '邮箱或密码错误' });
@@ -379,7 +457,7 @@ app.get('/api/devices/:sn',requireCustomer,(req,res)=>{const d=db.prepare('SELEC
 app.post('/api/submissions',requireCustomer,(req,res)=>{const {title,description,license}=req.body||{};if(!title)return res.status(400).json({error:'作品标题必填'});const r=db.prepare('INSERT INTO creator_submissions (customer_id,title,description,license) VALUES (?,?,?,?)').run(req.session.customer.id,title,String(description||''),String(license||''));res.json({ok:true,id:r.lastInsertRowid});});
 app.get('/api/submissions',requireCustomer,(req,res)=>res.json(db.prepare('SELECT * FROM creator_submissions WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id)));
 app.get('/api/partners', (req,res)=>{const city=String(req.query.city||'').trim();const type=String(req.query.type||'').trim();const clauses=["status='active'"],values=[];if(city){clauses.push('(city LIKE ? OR province LIKE ?)');values.push(`%${city}%`,`%${city}%`)}if(type){clauses.push('service_type LIKE ?');values.push(`%${type}%`)}res.json(db.prepare(`SELECT * FROM partners WHERE ${clauses.join(' AND ')} ORDER BY sort,id`).all(...values));});
-app.post('/api/partner-applications',(req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(company,contact_name,phone||'',email||'',application_type||'',city||'',description||'');res.json({ok:true});});
+app.post('/api/partner-applications', submitLimiter, (req,res)=>{const {company,contact_name,phone,email,application_type,city,description}=req.body||{};if(!company||!contact_name||(!phone&&!email))return res.status(400).json({error:'请填写企业、联系人及联系方式'});db.prepare('INSERT INTO partner_applications (company,contact_name,phone,email,application_type,city,description) VALUES (?,?,?,?,?,?,?)').run(company,contact_name,phone||'',email||'',application_type||'',city||'',description||'');res.json({ok:true});});
 
 app.post('/api/subs', (req, res) => {
   const email = (req.body && req.body.email || '').trim();
@@ -421,7 +499,7 @@ app.get('/api/tickets/mine', requireCustomer, (req, res) => {
   res.json(db.prepare('SELECT * FROM service_tickets WHERE customer_id=? ORDER BY id DESC').all(req.session.customer.id));
 });
 
-app.post('/api/tickets', (req, res) => {
+app.post('/api/tickets', submitLimiter, (req, res) => {
   const { name, phone, email, product, serial_no, subject, description, source, order_no } = req.body || {};
   const customer = req.session && req.session.customer;
   const resolvedName = String(name || customer?.name || '').trim();
@@ -466,7 +544,7 @@ crud('heroes', ['title', 'highlight', 'subtitle', 'lead', 'tag', 'image', 'link'
 });
 
 // ============ 后台 API ============
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', loginLimiter, (req, res) => {
   const { username, password } = req.body || {};
   const u = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (!u || !bcrypt.compareSync(password || '', u.password_hash))
@@ -696,7 +774,55 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+// ============ SEO：sitemap.xml 与 robots.txt ============
+function siteBaseUrl() {
+  const configured = String(db.prepare("SELECT value FROM settings WHERE key='site_url'").get()?.value || '').trim();
+  return configured ? configured.replace(/\/+$/, '') : '';
+}
+
+// 前台需要被收录的静态页面（排除账户/购物车/模板等非内容页）
+const SEO_PAGES = [
+  '/', '/courses/index.html', '/works.html', '/trial.html', '/printers.html',
+  '/solutions/school.html', '/teachers.html', '/knowledge.html', '/learning.html',
+  '/news.html', '/competition.html', '/about.html', '/contact.html',
+  '/materials.html', '/printer-types.html', '/software.html', '/explore/ecosystem.html',
+  '/partners/apply.html', '/partners/find.html'
+];
+
+app.get('/sitemap.xml', (req, res) => {
+  const base = siteBaseUrl() || `${req.protocol}://${req.get('host')}`;
+  const now = new Date().toISOString().slice(0, 10);
+  const urls = SEO_PAGES.map(p => {
+    const loc = p === '/' ? base + '/' : base + p;
+    return `  <url><loc>${loc}</loc><lastmod>${now}</lastmod><changefreq>weekly</changefreq><priority>${p === '/' ? '1.0' : '0.7'}</priority></url>`;
+  }).join('\n');
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`);
+});
+
+app.get('/robots.txt', (req, res) => {
+  const base = siteBaseUrl() || `${req.protocol}://${req.get('host')}`;
+  res.type('text/plain').send(
+    `User-agent: *\nAllow: /\nDisallow: /account/\nDisallow: /shop/\nDisallow: /admin\n\nSitemap: ${base}/sitemap.xml\n`
+  );
+});
+
+// 静态资源：按类型设置长缓存，提升回访加载速度。
+// HTML 不缓存（保证改版即时生效），图片/字体 30 天，CSS/JS/SVG 一年。
+const staticOpts = {
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    if (/\.(css|js|mjs|svg|ico)$/.test(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (/\.(png|jpe?g|webp|gif|avif|woff2?|ttf|otf)$/.test(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
+    } else if (/\.html?$/.test(ext)) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
+};
+app.use(express.static(path.join(__dirname, 'public'), staticOpts));
 
 // 使用品牌 Logo 作为轻量站点图标，避免浏览器在教育页发起 favicon 404 请求。
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'img', 'logo.svg')));
