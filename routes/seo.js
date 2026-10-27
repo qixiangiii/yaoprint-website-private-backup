@@ -29,15 +29,25 @@ module.exports = function registerSeoRoutes(app) {
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
   };
 
+  // sitemap 内容只随「日期」变化，缓存到当天即可，避免每个爬虫请求都重算一遍。
+  // 跨天首次请求自动重建；站点配置（site_url）变更最多延迟 30s（见 store.js 的设置 TTL）。
+  let sitemapCache = { date: '', body: '' };
+
   app.get('/sitemap.xml', (req, res) => {
     const base = siteBaseUrl() || `${req.protocol}://${req.get('host')}`;
     const today = localDate();
-    const urls = SEO_PAGES.map(page => {
-      const loc = page === '/' ? `${base}/` : base + page;
-      const priority = page === '/' ? '1.0' : '0.7';
-      return `  <url><loc>${loc}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>${priority}</priority></url>`;
-    }).join('\n');
-    res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`);
+    if (sitemapCache.date !== today || !sitemapCache.body) {
+      const urls = SEO_PAGES.map(page => {
+        const loc = page === '/' ? `${base}/` : base + page;
+        const priority = page === '/' ? '1.0' : '0.7';
+        return `  <url><loc>${loc}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>${priority}</priority></url>`;
+      }).join('\n');
+      sitemapCache = {
+        date: today,
+        body: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`
+      };
+    }
+    res.type('application/xml').send(sitemapCache.body);
   });
 
   app.get('/robots.txt', (req, res) => {

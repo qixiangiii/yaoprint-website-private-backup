@@ -11,6 +11,7 @@ const { PRODUCT_PUBLIC_SELECT, parseProduct } = require('../lib/catalog');
 const {
   parseContent, parseCourse, parseTeacher, parseCampus, parseEducationCase, parseCompetition
 } = require('../lib/transform');
+const { LEAD_TYPE } = require('../lib/status');
 
 const TEACHING_NEWS_TAGS = ['行业动态', '课堂方法', '学生教学', '软件选型'];
 const NEWS_ORDER_SQL = `CASE WHEN tag='行业动态' THEN 0 ELSE 1 END, datetime(published_at) DESC, id DESC`;
@@ -127,26 +128,36 @@ module.exports = function registerPublicRoutes(app) {
 
   // ---------- 首页轮播 ----------
   app.get('/api/heroes', (req, res) => {
-    res.json(stmt("SELECT * FROM heroes WHERE status='published' ORDER BY sort, id").all());
+    res.json(stmt("SELECT * FROM heroes WHERE status='published' ORDER BY sort, id").all()
+      .map(item => ({ ...item, link: safeLink(item.link), link2: safeLink(item.link2) })));
   });
 
   // ---------- 试听预约 ----------
   app.post('/api/enrollment-inquiries', submitLimiter, capStrings(4000), (req, res) => {
-    const { lead_type, parent_name, parent_phone, parent_wechat, student_grade, course_id, campus_id, preferred_time, experience_level, message, privacy_consent, privacy_version } = req.body || {};
+    const { lead_type, parent_name, parent_phone, parent_wechat, student_grade, course_id, campus_id, session_id, preferred_time, experience_level, message, privacy_consent, privacy_version } = req.body || {};
     if (!parent_name || !parent_phone) return res.status(400).json({ error: '请填写监护人姓名和联系电话' });
     if (!isPhone(parent_phone)) return res.status(400).json({ error: '请填写有效的联系电话' });
     if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
-    // 外键先查存在性：直接拿 Number() 落库，课程/校区被删或 id 伪造时会抛 FOREIGN KEY，
+    // 外键先查存在性：直接拿 Number() 落库，课程/校区/班期被删或 id 伪造时会抛 FOREIGN KEY，
     // 用户看到的是 500「服务器内部错误」，实际是「课程已下架」。与后台同类写入保持一致返回 400。
     const courseId = Number(course_id) || null;
     const campusId = Number(campus_id) || null;
+    const sessionId = Number(session_id) || null;
     const courseRow = courseId ? stmt('SELECT id, title FROM courses WHERE id=?').get(courseId) : null;
     if (courseId && !courseRow) return res.status(400).json({ error: '所选课程不存在或已下架，请刷新页面后重试' });
     const campusRow = campusId ? stmt('SELECT id, name FROM campuses WHERE id=?').get(campusId) : null;
     if (campusId && !campusRow) return res.status(400).json({ error: '所选校区不存在，请刷新页面后重试' });
-    const result = stmt(`INSERT INTO enrollment_inquiries (lead_type,parent_name,parent_phone,parent_wechat,student_grade,course_id,campus_id,preferred_time,experience_level,message,privacy_consent,privacy_version,consent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))`)
-      .run(limitText(lead_type || 'trial', 20), limitText(parent_name, 40), limitText(parent_phone, 20), limitText(parent_wechat, 40), limitText(student_grade, 20), courseId, campusId, limitText(preferred_time, 40), limitText(experience_level, 40), limitText(message, 1000), 1, limitText(privacy_version || '2026.09', 20));
-    const leadTypeLabel = { trial: '体验课预约', school: '学校合作咨询', competition: '竞赛咨询' }[String(lead_type || 'trial')] || '预约咨询';
+    // 班期可选；若提供则校验其存在且属于所选课程，避免把咨询挂到错误课程的班期上
+    if (sessionId) {
+      const sessionRow = stmt('SELECT id FROM course_sessions WHERE id=?').get(sessionId);
+      if (!sessionRow) return res.status(400).json({ error: '所选班期不存在，请刷新页面后重试' });
+      if (courseId && !stmt('SELECT id FROM course_sessions WHERE id=? AND course_id=?').get(sessionId, courseId)) {
+        return res.status(400).json({ error: '所选班期与课程不匹配，请刷新页面后重试' });
+      }
+    }
+    const result = stmt(`INSERT INTO enrollment_inquiries (lead_type,parent_name,parent_phone,parent_wechat,student_grade,course_id,campus_id,session_id,preferred_time,experience_level,message,privacy_consent,privacy_version,consent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))`)
+      .run(limitText(lead_type || LEAD_TYPE.TRIAL, 20), limitText(parent_name, 40), limitText(parent_phone, 20), limitText(parent_wechat, 40), limitText(student_grade, 20), courseId, campusId, sessionId, limitText(preferred_time, 40), limitText(experience_level, 40), limitText(message, 1000), 1, limitText(privacy_version || '2026.09', 20));
+    const leadTypeLabel = { [LEAD_TYPE.TRIAL]: '体验课预约', [LEAD_TYPE.SCHOOL]: '学校合作咨询', [LEAD_TYPE.COMPETITION]: '竞赛咨询' }[String(lead_type || LEAD_TYPE.TRIAL)] || '预约咨询';
     notifyWeCom(`【起元星启】新的${leadTypeLabel}`, [
       ['监护人', parent_name], ['电话', parent_phone], ['微信号', parent_wechat],
       ['学生年级', student_grade], ['意向课程', courseRow?.title], ['校区', campusRow?.name],

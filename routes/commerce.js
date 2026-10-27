@@ -7,6 +7,7 @@ const { db, stmt } = require('../lib/store');
 const { DUMMY_HASH, requireCustomer, loginSession } = require('../lib/auth');
 const { registerLimiter, loginLimiter } = require('../lib/limiters');
 const { capStrings, limitText, isPhone, isEmail } = require('../lib/validate');
+const { CUSTOMER_STATUS, AFTER_SALES_TYPE } = require('../lib/status');
 
 function customerPublic(customer) {
   return {
@@ -52,7 +53,7 @@ module.exports = function registerCommerceRoutes(app) {
     const customer = stmt('SELECT * FROM customers WHERE email=?').get(String(email || '').trim().toLowerCase());
     // 账号不存在时也对占位哈希做一次比较，抹平响应时间差异
     const ok = bcrypt.compareSync(String(password || ''), customer?.password_hash || DUMMY_HASH);
-    if (!customer || customer.status !== 'active' || !ok) return res.status(401).json({ error: '邮箱或密码错误' });
+    if (!customer || customer.status !== CUSTOMER_STATUS.ACTIVE || !ok) return res.status(401).json({ error: '邮箱或密码错误' });
     loginSession(req, res, { key: 'customer', value: customerPublic(customer), error: '登录失败，请重试' });
   });
 
@@ -188,7 +189,9 @@ module.exports = function registerCommerceRoutes(app) {
     const order = stmt('SELECT id FROM orders WHERE order_no=? AND customer_id=?').get(order_no, req.session.customer.id);
     if (!order) return res.status(404).json({ error: '订单不存在' });
     // 服务类型对应前台三个选项，其余取值统一回落到维修咨询，避免脏数据进库
-    const serviceType = ['repair', 'replacement', 'refund'].includes(String(type)) ? String(type) : 'repair';
+    const serviceType = [AFTER_SALES_TYPE.REPAIR, AFTER_SALES_TYPE.REPLACEMENT, AFTER_SALES_TYPE.REFUND].includes(String(type))
+      ? String(type)
+      : AFTER_SALES_TYPE.REPAIR;
     if (!String(reason || '').trim()) return res.status(400).json({ error: '请填写问题说明' });
     stmt('INSERT INTO after_sales (order_id,customer_id,type,reason) VALUES (?,?,?,?)')
       .run(order.id, req.session.customer.id, serviceType, limitText(reason, 1000));

@@ -11,6 +11,7 @@ const helmet = require('helmet');
 
 const db = require('./db');
 const { csrfOriginGuard } = require('./lib/security');
+const { startPruneScheduler } = require('./lib/prune');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,6 +41,20 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '256kb', parameterLimit: 100 }));
 
 app.use(csrfOriginGuard);
+
+// 健康检查：监控/负载均衡探活用。返回服务状态与数据库连通性，
+// 数据库不可用时返回 503，避免把故障节点继续留在流量里。
+app.get('/api/health', (req, res) => {
+  let dbOk = true;
+  try { db.prepare('SELECT 1').get(); } catch { dbOk = false; }
+  const status = dbOk ? 200 : 503;
+  res.status(status).json({
+    ok: dbOk,
+    service: 'qiyuan-xingqi',
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.use(session({
   secret: SESSION_SECRET,
@@ -127,6 +142,7 @@ app.listen(PORT, () => {
   console.log(`🟢 起元星启网站已启动: http://localhost:${PORT}`);
   console.log(`   后台管理: http://localhost:${PORT}/admin`);
   warnWeakAdminPassword();
+  startPruneScheduler();
 });
 
 // 弱口令自检：命中常见默认口令时给出明确告警（替代原先只比对 admin123 的失效检查）

@@ -888,6 +888,8 @@ async function saveGeneric(){try{const endpoint=$('#genericFields').dataset.endp
 async function deleteGeneric(endpoint,id){if(!confirm('确认删除该内容？此操作不可恢复。'))return;try{await api('/api/admin/'+endpoint+'/'+id,{method:'DELETE'});toast('内容已删除');loadGeneric(Object.keys(genericConfigs).find(k=>genericConfigs[k].endpoint===endpoint))}catch(e){toast(e.message,'error')}}
 </script>
 <script>
+// 设置表单的结构以后端 /api/admin/settings-schema 为单一来源；
+// 下面这份 settingGroups 仅作「schema 拉取失败」时的兜底，保证离线也不白屏。
 const settingGroups = [
   ['品牌与联系信息', [
     ['site_name', '站点名称'], ['brand_name', '展示品牌名'], ['company_legal_name', '公司法定全称', 'full'], ['site_tagline', '站点副标题', 'full'], ['business_scope', '业务范围', 'full'], ['campus_summary', '校区/服务说明', 'full'], ['contact_phone', '联系电话'], ['contact_wechat', '咨询微信'], ['contact_email', '联系邮箱'], ['contact_hours', '咨询时间'], ['contact_address', '联系地址', 'full'], ['copyright', '版权信息', 'full'], ['icp', 'ICP 备案号']
@@ -905,7 +907,8 @@ const settingGroups = [
     ['stat1_value', '数据 1 数值'], ['stat1_unit', '数据 1 单位'], ['stat1_label', '数据 1 描述', 'full'], ['stat2_value', '数据 2 数值'], ['stat2_unit', '数据 2 单位'], ['stat2_label', '数据 2 描述', 'full'], ['stat3_value', '数据 3 数值'], ['stat3_unit', '数据 3 单位'], ['stat3_label', '数据 3 描述', 'full'], ['stat4_value', '数据 4 数值'], ['stat4_unit', '数据 4 单位'], ['stat4_label', '数据 4 描述', 'full']
   ]]
 ];
-async function loadSettings(){try{state.settings=await api('/api/admin/settings');$('#settingsForm').innerHTML=settingGroups.map(([title,fields])=>`<section class="settings-section"><h3>${title}</h3><div class="form-grid">${fields.map(([key,label,wide])=>`<div class="field ${wide||''}"><label>${label}</label><input data-setting-key="${key}" value="${esc(state.settings[key]||'')}"></div>`).join('')}</div></section>`).join('')}catch(e){toast(e.message,'error')}}
+async function loadSettings(){try{state.settings=await api('/api/admin/settings');let groups=settingGroups;try{groups=await api('/api/admin/settings-schema')||settingGroups}catch(e){};renderSettings(groups)}catch(e){toast(e.message,'error')}}
+function renderSettings(groups){$('#settingsForm').innerHTML=groups.map(([title,fields])=>`<section class="settings-section"><h3>${title}</h3><div class="form-grid">${fields.map(([key,label,wide])=>`<div class="field ${wide||''}"><label>${label}</label><input data-setting-key="${key}" value="${esc(state.settings[key]||'')}"></div>`).join('')}</div></section>`).join('')}
 async function saveSettings(){try{const data={};$$('[data-setting-key]').forEach(el=>data[el.dataset.settingKey]=el.value);await put('/api/admin/settings',data);toast('全站设置已保存')}catch(e){toast(e.message,'error')}}
 async function changePassword(){try{const current=$('#passwordCurrent').value,next=$('#passwordNext').value;if(!current||!next)throw new Error('请填写当前密码和新密码');await post('/api/admin/password',{current,next});$('#passwordCurrent').value='';$('#passwordNext').value='';toast('管理员密码已更新')}catch(e){toast(e.message,'error')}}
 $('#dateNow').textContent=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());checkAuth();
