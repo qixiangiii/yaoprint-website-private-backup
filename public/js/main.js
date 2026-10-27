@@ -797,7 +797,11 @@
     const target = $('[data-content-detail]');
     if (!target) return;
     const params = new URLSearchParams(location.search), type = params.get('type'), slug = params.get('slug');
-    if (!type || !slug) return renderState(target, 'empty', '请选择需要查看的内容。');
+    if (!type || !slug) {
+      // 详情页缺少参数时给出可用入口，避免出现一片空白
+      target.innerHTML = `<div class="empty-panel"><h2>还没有选择要查看的内容</h2><p>这是内容详情页，需要从列表进入。先看看这三个入口：</p><div class="hero-actions hero-actions--center"><a class="btn btn-primary" href="/explore/models.html">模型与项目库</a><a class="btn btn-outline" href="/works.html">作品展厅</a><a class="btn btn-outline" href="/solutions/case.html">行业案例</a></div></div>`;
+      return;
+    }
     renderState(target, 'loading');
     try {
       const item = await fetchJSON(`/api/content/${encodeURIComponent(type)}/${encodeURIComponent(slug)}`);
