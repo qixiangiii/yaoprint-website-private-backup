@@ -8,7 +8,7 @@ const { minify } = require('terser');
 
 const SRC_DIR = path.join(__dirname, '..', 'public', 'js');
 // 顺序无关，仅决定日志输出顺序
-const FILES = ['main', 'education', 'business', 'business-extra', 'competition', 'competition-data', 'page'];
+const FILES = ['main', 'education', 'showcase-data', 'showcase', 'business', 'business-extra', 'competition', 'competition-data', 'page'];
 
 async function buildOne(name) {
   const sourcePath = path.join(SRC_DIR, `${name}.js`);
