@@ -4,7 +4,7 @@
   const root = document.querySelector('[data-showcase]');
   if (!root) return;
   const view = root.dataset.showcase;
-  const data = window.SHOWCASE || { works: [], process: [], scoring: [], collections: [], cases: [] };
+  const data = window.SHOWCASE || { works: [], process: [], scoring: [], collections: [], cases: [], solutions: [] };
   const $ = (s, p = document) => p.querySelector(s);
   const $$ = (s, p = document) => [...p.querySelectorAll(s)];
   const esc = (v = '') => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -110,12 +110,21 @@
       return;
     }
     if (item) {
+      // 案例按行业回链到对应方案页，避免案例与方案各写一套、互不相通
+      const solutionMap = {
+        '教育': ['/solutions/education.html', '教育与 STEAM 方案'],
+        '工业': ['/solutions/industrial.html', '工业原型方案'],
+        '医疗': ['/solutions/healthcare.html', '医疗与齿科方案'],
+        '文创': ['/solutions/creative.html', '文创与消费品方案'],
+        '竞赛': ['/competition.html', '竞赛专题']
+      };
+      const solution = solutionMap[item.industry.split(' · ')[0]];
       root.innerHTML = [
         `<section class="section course-page"><div class="container"><div class="course-hero-detail"><div class="course-hero-copy"><span class="kicker">${esc(item.industry)}</span><h1>${esc(item.title)}</h1><p class="course-hero-description">${esc(item.challenge)}</p><div class="course-facts"><div><span>场景</span><b>${esc(item.scale)}</b></div><div><span>案例类型</span><b>${esc(item.industry.split(' · ')[0])}</b></div></div><div class="hero-actions"><a class="btn btn-primary" href="/contact.html">聊聊类似需求</a>${link('/solutions/case.html', '返回案例库', 'btn btn-outline')}</div></div><img class="course-detail-cover" src="${esc(item.cover)}" alt="${esc(item.title)}"></div></div></section>`,
         `<section class="section soft"><div class="container">${sectionHead('Constraints', '先看约束，再谈方案', '没有约束的方案无法复用。这一节写的是当时必须满足的条件。')}<div class="model-detail-sections">${item.constraints.map((c, i) => `<section><h3>约束 ${String(i + 1).padStart(2, '0')}</h3><p>${esc(c)}</p></section>`).join('')}</div></div></section>`,
         `<section class="section"><div class="container">${sectionHead('Approach', '具体做了哪几步', '每一步都可以被下一所学校或下一个产线照着做，不依赖特定设备品牌。')}<div class="portfolio-timeline">${item.approach.map((a, i) => `<article><b>Step ${String(i + 1).padStart(2, '0')}</b><p>${esc(a)}</p></article>`).join('')}</div></div></section>`,
         `<section class="section soft"><div class="container">${sectionHead('Numbers', '记录口径下的数字', '以下为教学与打样记录的统计口径，不是客户承诺或商业宣传数据。')}${table(['指标', '数值', '口径说明'], item.metrics.map(m => [m.label, m.value, m.note]))}<div class="note-panel mt-3"><b>风险提示：</b>${esc(item.risks)}</div></div></section>`,
-        `<section class="section"><div class="container">${sectionHead('Transfer', '这套做法还能用在哪', '案例的价值不在复刻结果，而在可迁移的做法。')}<div class="detail-panel"><p>${esc(item.transfer)}</p><div class="hero-actions">${link('/works.html', '看对应作品档案', 'btn btn-primary')}${link('/solutions/school.html', '学校合作方案')}${link('/contact.html', '提交需求')}</div></div><p class="competition-disclaimer">案例说明：本页为方法与过程示例，已隐去客户名称与可识别信息，不包含获奖、认证或商业效果承诺。涉及医疗、工业等专业场景时，最终产品与服务须由具备相应资质的机构完成。</p></div></section>`
+        `<section class="section"><div class="container">${sectionHead('Transfer', '这套做法还能用在哪', '案例的价值不在复刻结果，而在可迁移的做法。')}<div class="detail-panel"><p>${esc(item.transfer)}</p><div class="hero-actions">${link('/works.html', '看对应作品档案', 'btn btn-primary')}${solution ? link(solution[0], solution[1]) : ''}${link('/contact.html', '提交需求')}</div></div><p class="competition-disclaimer">案例说明：本页为方法与过程示例，已隐去客户名称与可识别信息，不包含获奖、认证或商业效果承诺。涉及医疗、工业等专业场景时，最终产品与服务须由具备相应资质的机构完成。</p></div></section>`
       ].join('');
       return;
     }
@@ -124,6 +133,52 @@
       stats([[String(data.cases.length), '个', '场景案例'], ['5', '个', '覆盖行业'], ['18', '项', '记录指标'], ['0', '处', '客户名称披露']]),
       `<section class="section"><div class="container">${sectionHead('Browse', '按场景浏览', '点开任一案例可看约束、步骤、数字与风险提示。')}<div class="feature-grid">${data.cases.map(caseCard).join('')}</div><p class="curriculum-note">所有案例均隐去客户名称与可识别信息；数字为教学与打样记录口径，不构成效果承诺。涉及医疗、工业等专业场景时，最终交付须由具备资质的机构完成。</p></div></section>`,
       `<section class="cta-band"><div class="container"><h2>你的场景不在上面？</h2><p>把约束条件写给我们：批量、精度、交期、使用环境。有约束才谈得上方案。</p><div class="hero-actions hero-actions--center"><a class="btn btn-light btn-lg" href="/contact.html">提交场景需求</a><a class="btn btn-lg" href="/solutions.html">看解决方案</a></div></div></section>`
+    ].join('');
+  };
+
+  /* ---------- 行业方案 ---------- */
+  // 四个方向共用一套版式：谁的场景 → 方案构成 → 落地步骤 → 参数 → 翻车点 → 案例 → 作品 → 下一步。
+  // 案例与作品按 slug 从同一份数据取，避免方案页另写一份内容。
+  const autoGrid = (min, items) => `<div class="content-grid" style="grid-template-columns:repeat(auto-fit,minmax(${min}px,1fr))">${items.join('')}</div>`;
+
+  const renderSolution = () => {
+    const key = root.dataset.solution || '';
+    const s = data.solutions.find(x => x.slug === key);
+    if (!s) {
+      root.innerHTML = [
+        hero('SOLUTIONS', '行业方案', '按场景看约束与做法：教育、文创、医疗与工业四个方向，各自写清适用条件、参数起点与边界。'),
+        `<section class="section"><div class="container"><div class="feature-grid">${data.solutions.map(x => `<article class="detail-panel"><span class="badge">${esc(x.kicker.split('· ')[1] || '方案')}</span><h3>${esc(x.title)}</h3><p>${esc(x.lead)}</p><a class="btn btn-outline btn-sm" href="/solutions/${esc(x.slug)}.html">查看方案</a></article>`).join('')}</div></div></section>`
+      ].join('');
+      return;
+    }
+
+    const cases = s.caseSlugs.map(slug => data.cases.find(c => c.slug === slug)).filter(Boolean);
+    const works = s.workSlugs.map(slug => data.works.find(w => w.slug === slug)).filter(Boolean);
+    const caseMore = `<article class="content-card"><div class="work-card-cover work-placeholder" style="font-size:14px;letter-spacing:.08em">案例库 · 6 个场景</div><div class="content-card-body"><div style="align-self:flex-start"><span class="badge">完整案例库</span></div><h3>不止这一个场景</h3><p>教育、学科教具、工业工装、医疗辅具、文创短版与竞赛结构件，六个案例都写明约束、做法与记录口径。</p><a class="btn btn-outline btn-sm" href="/solutions/case.html">进入案例库</a></div></article>`;
+
+    root.innerHTML = [
+      hero(s.kicker, s.title, s.lead),
+      stats(s.stats),
+
+      `<section class="section"><div class="container">${sectionHead(s.fit.kicker, s.fit.title, s.fit.lead)}<div class="feature-grid">${s.fit.items.map(f => `<article class="detail-panel"><span class="badge">${esc(f.tag)}</span><h3>${esc(f.title)}</h3><p>${esc(f.body)}</p></article>`).join('')}</div></div></section>`,
+
+      `<section class="section soft"><div class="container">${sectionHead(s.build.kicker, s.build.title, s.build.lead)}<div class="feature-grid">${s.build.items.map(b => `<article class="detail-panel"><span class="kicker">${esc(b.kicker)}</span><h3>${esc(b.title)}</h3><p>${esc(b.body)}</p>${list(b.list)}</article>`).join('')}</div></div></section>`,
+
+      `<section class="section"><div class="container">${sectionHead(s.steps.kicker, s.steps.title, s.steps.lead)}<div class="portfolio-timeline">${s.steps.items.map(st => `<article><b>${esc(st.title)}</b><p>${esc(st.body)}</p></article>`).join('')}</div></div></section>`,
+
+      `<section class="section soft"><div class="container">${sectionHead(s.params.kicker, s.params.title, s.params.lead)}${table(s.params.head, s.params.rows)}<div class="note-panel mt-3"><b>口径说明：</b>${esc(s.params.note)}</div></div></section>`,
+
+      `<section class="section"><div class="container">${sectionHead(s.fails.kicker, s.fails.title, s.fails.lead)}${autoGrid(280, s.fails.items.map(f => `<article class="detail-panel"><h3>${esc(f.title)}</h3><p><b>表现：</b>${esc(f.body)}</p><p><b>处理：</b>${esc(f.fix)}</p></article>`))}</div></section>`,
+
+      `<section class="section soft"><div class="container">${sectionHead('Case files', '同类场景的实际案例', '每个案例都写清当时的约束、具体做法、记录口径下的数字与风险提示，不含客户名称。')}${autoGrid(300, [...cases.map(caseCard), caseMore])}</div></section>`,
+
+      works.length ? `<section class="section"><div class="container">${sectionHead('Related works', '可以上手的相关作品', '方案要落地，先得有人做出第一件。下列作品都有完整档案：约束、参数、失败位置、改版与测试。')}${autoGrid(280, works.map(workCard))}<p class="curriculum-note">${esc(s.workNote)}</p></div></section>` : '',
+
+      `<section class="section soft"><div class="container">${sectionHead('Next step', '接下来可以看什么', '按你现在的阶段挑一个入口：先看课纲、先看参数，还是先看别人的做法。')}<div class="direction-list">${s.next.map(n => `<a href="${esc(n[0])}"><strong>${esc(n[1])}</strong><span>${esc(n[2])}</span><i aria-hidden="true">→</i></a>`).join('')}</div><p class="competition-disclaimer mt-3"><b>边界与说明：</b>${esc(s.boundary)}</p></div></section>`,
+
+      `<section class="section"><div class="container">${sectionHead('Other directions', '另外三个方向', '四个方向的判断标准不一样：教育看课时与排产，文创看小批与后处理，医疗看边界，工业看受力。')}${autoGrid(300, data.solutions.filter(x => x.slug !== s.slug).map(x => `<article class="detail-panel"><span class="badge">${esc(x.kicker.split('· ')[1] || '方案')}</span><h3>${esc(x.title.split('：')[0])}</h3><p>${esc(x.lead)}</p><a class="btn btn-outline btn-sm" href="/solutions/${esc(x.slug)}.html">查看方案</a></article>`))}</div></section>`,
+
+      `<section class="cta-band"><div class="container"><h2>${esc(s.cta.title)}</h2><p>${esc(s.cta.lead)}</p><div class="hero-actions hero-actions--center"><a class="btn btn-light btn-lg" href="${esc(s.cta.primary[0])}">${esc(s.cta.primary[1])}</a><a class="btn btn-lg" href="${esc(s.cta.secondary[0])}">${esc(s.cta.secondary[1])}</a></div></div></section>`
     ].join('');
   };
 
@@ -141,4 +196,5 @@
   if (view === 'models') { renderModels(); return; }
   if (view === 'collections') { renderCollections(); return; }
   if (view === 'cases') { renderCases(); return; }
+  if (view === 'solution') { renderSolution(); return; }
 })();
