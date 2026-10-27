@@ -10,12 +10,8 @@ const { parseJSON, safeLink, httpsOnly, limitText, clampInt } = require('../lib/
 const { PRODUCT_ADMIN_SELECT, parseProduct } = require('../lib/catalog');
 const { uploadImage } = require('../lib/upload');
 const { registerCrud } = require('../lib/crud');
-
-function parseContent(item) {
-  item.meta = parseJSON(item.meta_json, {});
-  delete item.meta_json;
-  return item;
-}
+const { registerStatusRoutes } = require('../lib/admin-helpers');
+const { parseContent } = require('../lib/transform');
 
 module.exports = function registerAdminRoutes(app) {
   // ---------- 管理员会话 ----------
@@ -100,24 +96,14 @@ module.exports = function registerAdminRoutes(app) {
     res.json(stmt('SELECT * FROM service_tickets ORDER BY id DESC LIMIT 200').all());
   });
 
-  app.put('/api/admin/tickets/:id', requireAdmin, (req, res) => {
-    const status = String((req.body || {}).status || 'new');
-    const result = stmt('UPDATE service_tickets SET status=? WHERE id=?').run(status, req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '工单不存在' });
-    res.json({ ok: true });
-  });
-
-  app.delete('/api/admin/tickets/:id', requireAdmin, (req, res) => {
-    const result = stmt('DELETE FROM service_tickets WHERE id=?').run(req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '工单不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/tickets', { table: 'service_tickets', defaultStatus: 'new', label: '工单' });
 
   // ---------- 试听预约 ----------
   app.get('/api/admin/enrollment-inquiries', requireAdmin, (req, res) => {
     res.json(stmt('SELECT e.*,c.title AS course_title,p.name AS campus_name FROM enrollment_inquiries e LEFT JOIN courses c ON c.id=e.course_id LEFT JOIN campuses p ON p.id=e.campus_id ORDER BY e.id DESC').all());
   });
 
+  // 咨询记录的状态更新还携带 follow_up_note 字段，不能完全套用通用工厂，单独保留
   app.put('/api/admin/enrollment-inquiries/:id', requireAdmin, (req, res) => {
     const body = req.body || {};
     const result = stmt('UPDATE enrollment_inquiries SET status=?,follow_up_note=? WHERE id=?')
@@ -126,22 +112,14 @@ module.exports = function registerAdminRoutes(app) {
     res.json({ ok: true });
   });
 
-  app.delete('/api/admin/enrollment-inquiries/:id', requireAdmin, (req, res) => {
-    const result = stmt('DELETE FROM enrollment_inquiries WHERE id=?').run(req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '咨询记录不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/enrollment-inquiries', { table: 'enrollment_inquiries', defaultStatus: 'new', label: '咨询记录', skipPut: true });
 
   // ---------- 客户 / 商品 / 订单 ----------
   app.get('/api/admin/customers', requireAdmin, (req, res) => {
     res.json(stmt('SELECT id,email,name,phone,status,created_at FROM customers ORDER BY id DESC').all());
   });
 
-  app.put('/api/admin/customers/:id', requireAdmin, (req, res) => {
-    const result = stmt('UPDATE customers SET status=? WHERE id=?').run(String((req.body || {}).status || 'active'), req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '客户不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/customers', { table: 'customers', defaultStatus: 'active', label: '客户' });
 
   app.get('/api/admin/skus', requireAdmin, (req, res) => {
     res.json(stmt('SELECT s.*,p.name AS product_name FROM catalog_skus s LEFT JOIN products p ON p.id=s.product_id ORDER BY s.sort,s.id DESC').all());
@@ -176,21 +154,13 @@ module.exports = function registerAdminRoutes(app) {
     res.json(stmt('SELECT o.*,c.email,c.name FROM orders o JOIN customers c ON c.id=o.customer_id ORDER BY o.id DESC').all());
   });
 
-  app.put('/api/admin/orders/:id', requireAdmin, (req, res) => {
-    const result = stmt('UPDATE orders SET status=? WHERE id=?').run(String((req.body || {}).status || 'pending_review'), req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '订单不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/orders', { table: 'orders', defaultStatus: 'pending_review', label: '订单' });
 
   app.get('/api/admin/after-sales', requireAdmin, (req, res) => {
     res.json(stmt('SELECT a.*,o.order_no,c.email,c.name FROM after_sales a JOIN orders o ON o.id=a.order_id JOIN customers c ON c.id=a.customer_id ORDER BY a.id DESC').all());
   });
 
-  app.put('/api/admin/after-sales/:id', requireAdmin, (req, res) => {
-    const result = stmt('UPDATE after_sales SET status=? WHERE id=?').run(String((req.body || {}).status || 'new'), req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '售后申请不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/after-sales', { table: 'after_sales', defaultStatus: 'new', label: '售后申请' });
 
   app.get('/api/admin/devices', requireAdmin, (req, res) => {
     res.json(stmt('SELECT d.*,c.email,c.name FROM devices d LEFT JOIN device_bindings b ON b.device_id=d.id LEFT JOIN customers c ON c.id=b.customer_id ORDER BY d.id DESC').all());
@@ -200,6 +170,7 @@ module.exports = function registerAdminRoutes(app) {
     res.json(stmt('SELECT s.*,c.email,c.name FROM creator_submissions s JOIN customers c ON c.id=s.customer_id ORDER BY s.id DESC').all());
   });
 
+  // 投稿状态更新额外携带 admin_note，不能套用通用工厂，单独保留
   app.put('/api/admin/submissions/:id', requireAdmin, (req, res) => {
     const body = req.body || {};
     const result = stmt('UPDATE creator_submissions SET status=?,admin_note=? WHERE id=?')
@@ -212,11 +183,7 @@ module.exports = function registerAdminRoutes(app) {
     res.json(stmt('SELECT * FROM partner_applications ORDER BY id DESC').all());
   });
 
-  app.put('/api/admin/partner-applications/:id', requireAdmin, (req, res) => {
-    const result = stmt('UPDATE partner_applications SET status=? WHERE id=?').run(String((req.body || {}).status || 'new'), req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '伙伴申请不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/partner-applications', { table: 'partner_applications', defaultStatus: 'new', label: '伙伴申请' });
 
   // ---------- 统计 ----------
   // 原先 22 条独立 COUNT：每次看板刷新要编译并执行 22 次查询。
@@ -251,23 +218,13 @@ module.exports = function registerAdminRoutes(app) {
     res.json(stmt('SELECT * FROM leads ORDER BY id DESC LIMIT 200').all());
   });
 
-  app.put('/api/admin/leads/:id', requireAdmin, (req, res) => {
-    const { status } = req.body || {};
-    const result = stmt('UPDATE leads SET status=? WHERE id=?').run(status || 'new', req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '记录不存在' });
-    res.json({ ok: true });
-  });
-
-  app.delete('/api/admin/leads/:id', requireAdmin, (req, res) => {
-    const result = stmt('DELETE FROM leads WHERE id=?').run(req.params.id);
-    if (!result.changes) return res.status(404).json({ error: '记录不存在' });
-    res.json({ ok: true });
-  });
+  registerStatusRoutes(app, '/api/admin/leads', { table: 'leads', defaultStatus: 'new', label: '记录' });
 
   app.get('/api/admin/subs', requireAdmin, (req, res) => {
     res.json(stmt('SELECT * FROM subs ORDER BY id DESC').all());
   });
 
+  // 订阅没有状态列，只注册删除
   app.delete('/api/admin/subs/:id', requireAdmin, (req, res) => {
     const result = stmt('DELETE FROM subs WHERE id=?').run(req.params.id);
     if (!result.changes) return res.status(404).json({ error: '记录不存在' });

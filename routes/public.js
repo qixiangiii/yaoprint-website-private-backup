@@ -5,28 +5,16 @@ const { db, stmt, getSetting, publicSettings, PUBLIC_SETTING_KEYS } = require('.
 const { notifyWeCom } = require('../lib/notify');
 const { submitLimiter, subsLimiter, pageviewLimiter } = require('../lib/limiters');
 const {
-  parseJSON, safeLink, httpsOnly, capStrings, limitText, isPhone, isEmail, clampInt
+  safeLink, capStrings, limitText, isPhone, isEmail, clampInt
 } = require('../lib/validate');
 const { PRODUCT_PUBLIC_SELECT, parseProduct } = require('../lib/catalog');
+const {
+  parseContent, parseCourse, parseTeacher, parseCampus, parseEducationCase, parseCompetition
+} = require('../lib/transform');
 
 const TEACHING_NEWS_TAGS = ['行业动态', '课堂方法', '学生教学', '软件选型'];
 const NEWS_ORDER_SQL = `CASE WHEN tag='行业动态' THEN 0 ELSE 1 END, datetime(published_at) DESC, id DESC`;
 const CRAWLER_UA = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|twitterbot|headless|pingdom|monitor/i;
-
-function publicCompetition(row) {
-  return {
-    ...row,
-    official_url: httpsOnly(row.official_url),
-    registration_url: httpsOnly(row.registration_url),
-    notice_url: httpsOnly(row.notice_url)
-  };
-}
-
-function parseContent(item) {
-  item.meta = parseJSON(item.meta_json, {});
-  delete item.meta_json;
-  return item;
-}
 
 function courseCatalogIsPublic() {
   return getSetting('course_catalog_visibility') === 'public';
@@ -96,13 +84,13 @@ module.exports = function registerPublicRoutes(app) {
 
   app.get('/api/competitions', (req, res) => {
     const rows = stmt("SELECT * FROM competitions WHERE visibility='published' ORDER BY sort,id").all();
-    res.json(rows.map(publicCompetition).filter(row => row.official_url));
+    res.json(rows.map(parseCompetition).filter(row => row.official_url));
   });
 
   app.get('/api/competitions/:slug', (req, res) => {
     const row = stmt("SELECT * FROM competitions WHERE slug=? AND visibility='published'").get(req.params.slug);
     if (!row) return res.status(404).json({ error: '竞赛入口不存在或尚未发布' });
-    res.json(publicCompetition(row));
+    res.json(parseCompetition(row));
   });
 
   // ---------- 课程 / 师资 / 校区 / 教学案例 ----------
@@ -112,39 +100,29 @@ module.exports = function registerPublicRoutes(app) {
     const rows = category
       ? stmt("SELECT * FROM courses WHERE status='published' AND category=? ORDER BY sort,id").all(category)
       : stmt("SELECT * FROM courses WHERE status='published' ORDER BY sort,id").all();
-    res.json(rows.map(course => ({
-      ...course,
-      syllabus: parseJSON(course.syllabus_json, []),
-      outcomes: parseJSON(course.outcomes_json, []),
-      gallery: parseJSON(course.gallery_json, [])
-    })));
+    res.json(rows.map(parseCourse));
   });
 
   app.get('/api/courses/:slug', (req, res) => {
     if (!courseCatalogIsPublic()) return res.status(404).json({ error: '课程方案正在完善，暂未公开' });
     const course = stmt("SELECT * FROM courses WHERE slug=? AND status='published'").get(req.params.slug);
     if (!course) return res.status(404).json({ error: '课程不存在或尚未发布' });
-    course.syllabus = parseJSON(course.syllabus_json, []);
-    course.outcomes = parseJSON(course.outcomes_json, []);
-    course.gallery = parseJSON(course.gallery_json, []);
+    parseCourse(course);
     // 只返回已开放报名的班期；草稿班期属于后台未定稿内容，不应出现在前台
     course.sessions = stmt("SELECT * FROM course_sessions WHERE course_id=? AND status='open' ORDER BY sort,id").all(course.id);
     res.json(course);
   });
 
   app.get('/api/teachers', (req, res) => {
-    res.json(stmt("SELECT * FROM teachers WHERE status='published' ORDER BY sort,id").all()
-      .map(teacher => ({ ...teacher, specialties: parseJSON(teacher.specialties_json, []), grade_bands: parseJSON(teacher.grade_bands_json, []) })));
+    res.json(stmt("SELECT * FROM teachers WHERE status='published' ORDER BY sort,id").all().map(parseTeacher));
   });
 
   app.get('/api/campuses', (req, res) => {
-    res.json(stmt("SELECT * FROM campuses WHERE status='published' ORDER BY sort,id").all()
-      .map(campus => ({ ...campus, facilities: parseJSON(campus.facilities_json, []) })));
+    res.json(stmt("SELECT * FROM campuses WHERE status='published' ORDER BY sort,id").all().map(parseCampus));
   });
 
   app.get('/api/education-cases', (req, res) => {
-    res.json(stmt("SELECT * FROM education_cases WHERE status='published' AND visibility='public' ORDER BY sort,id").all()
-      .map(item => ({ ...item, outcomes: parseJSON(item.outcomes_json, []), gallery: parseJSON(item.gallery_json, []) })));
+    res.json(stmt("SELECT * FROM education_cases WHERE status='published' AND visibility='public' ORDER BY sort,id").all().map(parseEducationCase));
   });
 
   // ---------- 首页轮播 ----------
