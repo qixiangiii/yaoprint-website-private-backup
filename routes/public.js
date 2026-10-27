@@ -158,11 +158,17 @@ module.exports = function registerPublicRoutes(app) {
     if (!parent_name || !parent_phone) return res.status(400).json({ error: '请填写监护人姓名和联系电话' });
     if (!isPhone(parent_phone)) return res.status(400).json({ error: '请填写有效的联系电话' });
     if (!privacy_consent) return res.status(400).json({ error: '请阅读并同意隐私说明后提交' });
+    // 外键先查存在性：直接拿 Number() 落库，课程/校区被删或 id 伪造时会抛 FOREIGN KEY，
+    // 用户看到的是 500「服务器内部错误」，实际是「课程已下架」。与后台同类写入保持一致返回 400。
+    const courseId = Number(course_id) || null;
+    const campusId = Number(campus_id) || null;
+    const courseRow = courseId ? stmt('SELECT id, title FROM courses WHERE id=?').get(courseId) : null;
+    if (courseId && !courseRow) return res.status(400).json({ error: '所选课程不存在或已下架，请刷新页面后重试' });
+    const campusRow = campusId ? stmt('SELECT id, name FROM campuses WHERE id=?').get(campusId) : null;
+    if (campusId && !campusRow) return res.status(400).json({ error: '所选校区不存在，请刷新页面后重试' });
     const result = stmt(`INSERT INTO enrollment_inquiries (lead_type,parent_name,parent_phone,parent_wechat,student_grade,course_id,campus_id,preferred_time,experience_level,message,privacy_consent,privacy_version,consent_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now','localtime'))`)
-      .run(limitText(lead_type || 'trial', 20), limitText(parent_name, 40), limitText(parent_phone, 20), limitText(parent_wechat, 40), limitText(student_grade, 20), Number(course_id) || null, Number(campus_id) || null, limitText(preferred_time, 40), limitText(experience_level, 40), limitText(message, 1000), 1, limitText(privacy_version || '2026.09', 20));
+      .run(limitText(lead_type || 'trial', 20), limitText(parent_name, 40), limitText(parent_phone, 20), limitText(parent_wechat, 40), limitText(student_grade, 20), courseId, campusId, limitText(preferred_time, 40), limitText(experience_level, 40), limitText(message, 1000), 1, limitText(privacy_version || '2026.09', 20));
     const leadTypeLabel = { trial: '体验课预约', school: '学校合作咨询', competition: '竞赛咨询' }[String(lead_type || 'trial')] || '预约咨询';
-    const courseRow = Number(course_id) ? stmt('SELECT title FROM courses WHERE id=?').get(Number(course_id)) : null;
-    const campusRow = Number(campus_id) ? stmt('SELECT name FROM campuses WHERE id=?').get(Number(campus_id)) : null;
     notifyWeCom(`【起元星启】新的${leadTypeLabel}`, [
       ['监护人', parent_name], ['电话', parent_phone], ['微信号', parent_wechat],
       ['学生年级', student_grade], ['意向课程', courseRow?.title], ['校区', campusRow?.name],

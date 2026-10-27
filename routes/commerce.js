@@ -63,11 +63,24 @@ module.exports = function registerCommerceRoutes(app) {
     res.json(req.session.customer);
   });
 
+  // 部分更新：只改请求体里出现过的字段。
+  // 之前是整体覆盖，前端只传 phone 时会把 name 写成空串，返回 200 且无提示。
   app.put('/api/account/profile', requireCustomer, (req, res) => {
-    const { name, phone } = req.body || {};
-    const trimmedPhone = limitText(phone, 20);
-    if (trimmedPhone && !isPhone(trimmedPhone)) return res.status(400).json({ error: '请填写有效的联系电话' });
-    stmt('UPDATE customers SET name=?,phone=? WHERE id=?').run(limitText(name, 40), trimmedPhone, req.session.customer.id);
+    const body = req.body || {};
+    const sets = [];
+    const values = [];
+    if (Object.prototype.hasOwnProperty.call(body, 'name')) {
+      const name = limitText(body.name, 40);
+      if (!name) return res.status(400).json({ error: '请填写姓名' });
+      sets.push('name=?'); values.push(name);
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'phone')) {
+      const phone = limitText(body.phone, 20);
+      if (phone && !isPhone(phone)) return res.status(400).json({ error: '请填写有效的联系电话' });
+      sets.push('phone=?'); values.push(phone);
+    }
+    if (!sets.length) return res.status(400).json({ error: '没有需要更新的字段' });
+    stmt(`UPDATE customers SET ${sets.join(',')} WHERE id=?`).run(...values, req.session.customer.id);
     const customer = stmt('SELECT * FROM customers WHERE id=?').get(req.session.customer.id);
     req.session.customer = customerPublic(customer);
     res.json({ ok: true, customer: req.session.customer });

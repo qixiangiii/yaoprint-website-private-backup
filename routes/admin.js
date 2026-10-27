@@ -3,7 +3,7 @@
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const { db, stmt, allSettings, invalidateSettings } = require('../lib/store');
+const { db, stmt, allSettings, invalidateSettings, settableKeys } = require('../lib/store');
 const { DUMMY_HASH, requireAdmin, loginSession } = require('../lib/auth');
 const { loginLimiter } = require('../lib/limiters');
 const { parseJSON, safeLink, httpsOnly, limitText, clampInt } = require('../lib/validate');
@@ -354,16 +354,43 @@ module.exports = function registerAdminRoutes(app) {
   // ---------- 站点设置 ----------
   app.get('/api/admin/settings', requireAdmin, (req, res) => res.json(allSettings()));
 
+  // 单个设置项字数上限。/api/settings 是每个页面都会拉的接口，一个超大值会拖慢全站首屏。
+  const SETTING_VALUE_MAX = 2000;
+
   app.put('/api/admin/settings', requireAdmin, (req, res) => {
-    const body = req.body || {};
-    const upsert = db.prepare(`INSERT INTO settings (key,value) VALUES (?,?)
+    const body = req.body;
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return res.status(400).json({ error: '请求体必须是「设置项: 值」的 JSON 对象' });
+    }
+    const entries = Object.entries(body);
+    if (!entries.length) return res.status(400).json({ error: '没有需要保存的设置项' });
+
+    // 键白名单：只接受 settings 表里已存在的键（migration_* 排除在外）。
+    // 否则任意键都能落库，覆盖迁移标记会让 db.js 判定迁移未跑而重放一遍数据迁移。
+    const allowed = settableKeys();
+    const unknown = entries.filter(([key]) => !allowed.has(key)).map(([key]) => key);
+    if (unknown.length) {
+      const shown = unknown.slice(0, 5).join('、') + (unknown.length > 5 ? ` 等 ${unknown.length} 项` : '');
+      return res.status(400).json({ error: `不支持的设置项：${shown}` });
+    }
+
+    // 值只允许标量。对象/数组会被 String() 变成 "[object Object]" 静默入库。
+    const invalid = entries
+      .filter(([, value]) => !(value === null || ['string', 'number', 'boolean'].includes(typeof value))
+        || String(value ?? '').length > SETTING_VALUE_MAX)
+      .map(([key]) => key);
+    if (invalid.length) {
+      return res.status(400).json({ error: `设置值必须是不超过 ${SETTING_VALUE_MAX} 字的文本：${invalid.join('、')}` });
+    }
+
+    const upsert = stmt(`INSERT INTO settings (key,value) VALUES (?,?)
       ON CONFLICT(key) DO UPDATE SET value=excluded.value`);
-    const save = db.transaction(entries => {
-      for (const [key, value] of entries) upsert.run(key, String(value ?? ''));
+    const save = db.transaction(rows => {
+      for (const [key, value] of rows) upsert.run(key, String(value ?? ''));
     });
-    save(Object.entries(body));
+    save(entries);
     invalidateSettings(); // 写入后立即失效，下一次读取即拿到新值
-    res.json({ ok: true });
+    res.json({ ok: true, saved: entries.length });
   });
 
   // ---------- 图片上传 ----------
