@@ -45,7 +45,16 @@
   if (view === 'model') {
     const slug=new URLSearchParams(location.search).get('slug');
     main.innerHTML=page('MODEL DETAILS','模型与项目详情','查看官方精选项目的材料建议、许可与打印参数。',`<div data-model-detail></div>`);
-    if(!slug){$('[data-model-detail]').innerHTML=`<div class="empty-panel">请先从模型集合中选择一个模型或项目。</div><p class="form-note"><a class="btn btn-primary" href="/explore/models.html">浏览模型集合</a></p>`;return;}
+    if(!slug){
+      // 没有 slug 时不要只给一句提示：把官方精选直接列出来，避免用户到这里无路可走
+      $('[data-model-detail]').innerHTML=`<div class="empty-panel"><h2>还没有指定要看的模型</h2><p>下面的条目可以直接打开；想按类型、难度与打印时长筛选，去模型与项目库，或直接看带完整参数的作品档案。</p><div class="hero-actions hero-actions--center"><a class="btn btn-primary" href="/explore/models.html">浏览模型与项目库</a><a class="btn btn-outline" href="/works.html">看作品展厅</a></div></div><div class="content-grid mt-3" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))" data-model-suggest></div>`;
+      try{
+        const [models,projects]=await Promise.all([api('/api/content?type=model'),api('/api/content?type=project')]);
+        const rows=[...models,...projects].slice(0,4);
+        $('[data-model-suggest]').innerHTML=rows.map(x=>`<article class="content-card"><a class="content-cover" href="/explore/model.html?slug=${encodeURIComponent(x.slug)}">${x.cover?`<img src="${esc(x.cover)}" alt="${esc(x.title)}" loading="lazy">`:'<div class="image-fallback">官方精选</div>'}</a><div class="content-card-body"><div style="align-self:flex-start"><span class="badge">${esc(x.tag||'官方精选')}</span></div><h3>${esc(x.title)}</h3><p>${esc(x.summary||'')}</p><a class="btn-link" href="/explore/model.html?slug=${encodeURIComponent(x.slug)}">查看项目</a></div></article>`).join('')||'<div class="empty-panel">暂无精选项目，可先看作品展厅。</div>';
+      }catch{ $('[data-model-suggest]').innerHTML='<div class="empty-panel">精选内容加载失败，可先看作品展厅。</div>'; }
+      return;
+    }
     try { let item; try { item=await api(`/api/content/model/${encodeURIComponent(slug)}`); } catch { item=await api(`/api/content/project/${encodeURIComponent(slug)}`); } $('[data-model-detail]').innerHTML=`<article class="content-detail">${item.cover?`<img class="content-detail-cover" src="${esc(item.cover)}" alt="${esc(item.title)}">`:''}<div class="content-detail-copy"><span class="badge">${esc(item.tag||'官方精选')}</span><h1>${esc(item.title)}</h1><p class="content-detail-summary">${esc(item.summary)}</p><div class="content-detail-body">${esc(item.body).split(/\n+/).map(p=>`<p>${p}</p>`).join('')}</div><dl class="meta-list">${Object.entries(item.meta||{}).map(([k,v])=>`<div><dt>${esc(k.replace(/_/g,' '))}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><p class="form-note">此页展示官方精选与项目信息。模型文件下载将在完成审核和许可确认后提供。</p></div></article>`;} catch(e){$('[data-model-detail]').innerHTML=`<div class="empty-panel">${esc(e.message)}</div>`;} return;
   }
   if (view === 'submit') {
