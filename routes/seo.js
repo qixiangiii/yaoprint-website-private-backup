@@ -21,9 +21,17 @@ function siteBaseUrl() {
 }
 
 module.exports = function registerSeoRoutes(app) {
+  // lastmod 用本地日期。toISOString() 是 UTC，北京时间 00:00–08:00 会写成"昨天"，
+  // 站点按 Asia/Shanghai 运行（订单号也依赖本地日期），这里必须保持一致。
+  const localDate = () => {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  };
+
   app.get('/sitemap.xml', (req, res) => {
     const base = siteBaseUrl() || `${req.protocol}://${req.get('host')}`;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDate();
     const urls = SEO_PAGES.map(page => {
       const loc = page === '/' ? `${base}/` : base + page;
       const priority = page === '/' ? '1.0' : '0.7';
