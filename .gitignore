@@ -41,3 +41,9 @@ qa_render/
 
 # 部署打包产物
 dist/
+
+# 已弃用的旧素材（不参与部署）
+_unused-covers/
+
+# 已弃用的旧素材（不参与部署）
+_unused-covers/
