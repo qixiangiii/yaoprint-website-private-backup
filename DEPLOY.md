@@ -237,3 +237,18 @@ better-sqlite3 没装好，重新执行 `npm rebuild better-sqlite3`；仍失败
 
 **页面能开但没有内容 / 数据是旧的**
 `data/yaoprint.db` 没跟着上传。**千万不要用 `npm run seed` 来恢复**——那个脚本会清空产品、新闻、课程、设置等所有内容表，只在全新空库时用于演示数据。
+
+**打开域名是 403 Forbidden（nginx 报的）**
+站点的「运行目录」指向了项目根目录，而根目录没有 `index.html`（首页在 `public/` 里）。宝塔 → 网站 → 站点设置 → 网站目录 → 运行目录 选 `/public` → 保存，立刻恢复。
+**同时必须检查源码是否已暴露**：根目录被当成网站根时，下面这些地址都能直接下载，等于源码和数据库裸奔——
+
+```bash
+curl -sI https://你的域名/server.js | head -1          # 期望 404
+curl -sI https://你的域名/data/yaoprint.db | head -1    # 期望 404
+curl -sI https://你的域名/部署后必读.txt | head -1       # 期望 404
+```
+
+只要有一条返回 200，就当密码已泄露：立刻删掉 `部署后必读.txt` 和 `data/admin-credentials.txt`，并到后台改密码。`deploy/nginx.conf.sample` 末尾附了一组 deny 规则，可以在 `location /` 之前抄进去做兜底。
+
+**「/api/xxx 404」或页面能开但列表全是空的**
+Node 进程没起来，或者 Nginx 没做反向代理。先 `curl -s http://127.0.0.1:3000/api/health`，本机通就是反代问题，本机也不通就去看 `pm2 logs`。
