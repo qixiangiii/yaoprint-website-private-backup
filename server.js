@@ -133,17 +133,46 @@ app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
   // 框架抛出的客户端错误（如 JSON 解析失败）自带 status，直接透传
   const status = Number(error && (error.status || error.statusCode)) || 500;
-  const message = status >= 500 && IS_PROD ? '服务器内部错误，请稍后重试' : String((error && error.message) || '服务器内部错误');
+  // 客户端可纠正的错误用中文文案，不把框架原文（如 "request entity too large"）透给用户
+  const CLIENT_MESSAGES = {
+    400: '请求格式不正确，请检查后重试',
+    413: '请求内容过大，请精简后再试'
+  };
+  const message = CLIENT_MESSAGES[status]
+    || (status >= 500 && IS_PROD ? '服务器内部错误，请稍后重试' : String((error && error.message) || '服务器内部错误'));
   if (req.path.startsWith('/api/')) return res.status(status).json({ error: message });
   res.status(status).type('text').send(`请求处理失败：${message}`);
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🟢 起元星启网站已启动: http://localhost:${PORT}`);
   console.log(`   后台管理: http://localhost:${PORT}/admin`);
   warnWeakAdminPassword();
   startPruneScheduler();
 });
+
+// 优雅关闭：先停止接收新连接，再关闭数据库（触发 WAL checkpoint），最后退出。
+// 直接 SIGKILL 会让 WAL 未落盘、正在写入的事务中断；这里给 10 秒兜底，超时则强制退出。
+function gracefulShutdown(signal) {
+  console.log(`[shutdown] 收到 ${signal}，开始优雅关闭…`);
+  const forceExit = setTimeout(() => {
+    console.error('[shutdown] 超时，强制退出');
+    process.exit(1);
+  }, 10 * 1000);
+  forceExit.unref();
+
+  server.close(() => {
+    try {
+      db.close();
+      console.log('[shutdown] 数据库已关闭');
+    } catch (error) {
+      console.error('[shutdown] 关闭数据库失败', error && error.message);
+    }
+    process.exit(0);
+  });
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // 弱口令自检：命中常见默认口令时给出明确告警（替代原先只比对 admin123 的失效检查）
 function warnWeakAdminPassword() {

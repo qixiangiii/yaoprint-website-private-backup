@@ -53,7 +53,7 @@ module.exports = function registerSeoRoutes(app) {
   app.get('/robots.txt', (req, res) => {
     const base = siteBaseUrl() || `${req.protocol}://${req.get('host')}`;
     res.type('text/plain').send(
-      `User-agent: *\nAllow: /\nDisallow: /account/\nDisallow: /shop/\nDisallow: /admin\n\nSitemap: ${base}/sitemap.xml\n`
+      `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /account/\nDisallow: /shop/\nDisallow: /admin\n\nSitemap: ${base}/sitemap.xml\n`
     );
   });
 };

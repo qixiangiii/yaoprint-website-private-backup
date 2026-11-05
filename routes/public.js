@@ -182,13 +182,15 @@ module.exports = function registerPublicRoutes(app) {
   });
 
   // ---------- 服务网点 / 伙伴 ----------
+  // 把用户输入里的 LIKE 通配符（% _ \）转义成字面量，避免传 ?city=% 时匹配到全部网点
+  const escapeLike = value => String(value).replace(/[\\%_]/g, ch => '\\' + ch);
   app.get('/api/partners', (req, res) => {
     const city = String(req.query.city || '').trim();
     const type = String(req.query.type || '').trim();
     const clauses = ["status='active'"];
     const values = [];
-    if (city) { clauses.push('(city LIKE ? OR province LIKE ?)'); values.push(`%${city}%`, `%${city}%`); }
-    if (type) { clauses.push('service_type LIKE ?'); values.push(`%${type}%`); }
+    if (city) { clauses.push("(city LIKE ? ESCAPE '\\' OR province LIKE ? ESCAPE '\\')"); values.push(`%${escapeLike(city)}%`, `%${escapeLike(city)}%`); }
+    if (type) { clauses.push("service_type LIKE ? ESCAPE '\\'"); values.push(`%${escapeLike(type)}%`); }
     res.json(stmt(`SELECT * FROM partners WHERE ${clauses.join(' AND ')} ORDER BY sort,id`).all(...values));
   });
 
