@@ -557,7 +557,7 @@
       if (!list.length) return renderState(target, 'empty', '暂时没有视频。');
       target.innerHTML = list.map(item => {
         const hasUrl = item.url && item.url !== '#';
-        return `<a href="${text(hasUrl ? item.url : '/explore/creators.html')}" class="video-card" ${hasUrl ? 'target="_blank" rel="noopener"' : ''}><div class="video-thumb">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : ''}</div><div class="video-body"><span class="video-source">${text(item.source || '创作者内容')}</span><strong>${text(item.title)}</strong><span class="video-link">${hasUrl ? '打开视频网页 ↗' : '进入创作者内容 ↗'}</span></div></a>`;
+        return `<a href="${text(hasUrl ? item.url : '/explore/creators.html')}" class="video-card" ${hasUrl ? 'target="_blank" rel="noopener"' : ''}><div class="video-thumb">${item.cover ? `<img src="${text(item.cover)}" alt="${text(item.title)}" loading="lazy">` : ''}</div><div class="video-body"><span class="video-source">${text(item.source || '创作者内容')}</span><strong>${text(item.title)}</strong><span class="video-link">${hasUrl ? '在 B 站观看 ↗' : '进入创作者内容 ↗'}</span></div></a>`;
       }).join('');
     } catch (error) { renderState(target, 'error', '视频加载失败。', loadVideos); }
   }

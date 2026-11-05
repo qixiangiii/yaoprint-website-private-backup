@@ -222,20 +222,18 @@ const insRv = db.prepare('INSERT INTO reviews (source,title,excerpt,url,cover,so
 ].forEach(r => insRv.run(...r));
 console.log('  ✔ 写入 4 条媒体评测');
 
-// 视频评测
+// 视频（自有课堂实录，B 站自有账号）
 const insV = db.prepare('INSERT INTO videos (title,source,url,cover,sort) VALUES (?,?,?,?,?)');
 const vids = [
-  ['I Tested the 起元星启 H2D – And It’s More Than I Expected', 'YouTube', '#', '/img/videos/c1.jpg', 1],
-  ['My Thoughts on the 起元星启 H2C After 500 Hours of Testing', 'YouTube', '#', '/img/videos/c2.jpg', 2],
-  ['The 起元星启 H2C Changes Everything - For Better or Worse', 'YouTube', '#', '/img/videos/c3.jpg', 3],
-  ['起元星启 P2S | Der beste 3D-Drucker jetzt noch BESSER?!', 'YouTube', '#', '/img/videos/c4.jpg', 4],
-  ['Is 起元星启’s H2S truly a H2D Lite or just a bigger X1C?', 'YouTube', '#', '/img/videos/c5.jpg', 5],
-  ['起元星启Lab H2C Full In-Depth Review: Extensive Tests vs SnapMaker U1, Prusa XL', 'YouTube', '#', '/img/videos/c6.jpg', 6],
-  ['起元星启 CUTTER & PLOTTER Review - The Secret Reason This Upgrade Is Genius', 'YouTube', '#', '/img/videos/c7.jpg', 7],
-  ['Is 起元星启’s NEW H2C Tool-Changer printer a REAL game-changer?', 'YouTube', '#', '/img/videos/c8.jpg', 8],
+  ['线上第一课：使用 Tinkercad', '课堂实录 · 58:07', 'https://www.bilibili.com/video/BV18cnF6NEiw', '/img/videos/course/tinkercad-01.jpg', 1],
+  ['3.1 物体的基础形状与图形组合的魅力', '课堂实录 · 21:06', 'https://www.bilibili.com/video/BV156xx6wE6Q', '/img/videos/course/tinkercad-02.jpg', 2],
+  ['3.2 认识 Tinkercad', '课堂实录 · 09:51', 'https://www.bilibili.com/video/BV1Eaxx6qExz', '/img/videos/course/tinkercad-03.jpg', 3],
+  ['3.3 基础图形及其基本操作', '课堂实录 · 27:13', 'https://www.bilibili.com/video/BV1Jhxx6MEEz', '/img/videos/course/tinkercad-04.jpg', 4],
+  ['3.4 其他功能演示', '课堂实录 · 20:08', 'https://www.bilibili.com/video/BV17exx6KE9w', '/img/videos/course/tinkercad-05.jpg', 5],
+  ['3.5 其他功能演示', '课堂实录 · 13:33', 'https://www.bilibili.com/video/BV1aixh6gENX', '/img/videos/course/tinkercad-06.jpg', 6],
 ];
 vids.forEach(v => insV.run(...v));
-console.log('  ✔ 写入 8 条视频');
+console.log('  ✔ 写入 6 条课堂实录视频');
 
 // 应用场景
 const insSc = db.prepare('INSERT INTO scenes (title,desc,icon,link,cover,sort) VALUES (?,?,?,?,?,?)');
