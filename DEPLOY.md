@@ -4,6 +4,23 @@
 
 ---
 
+## 极速通道（5 分钟，已装 Node 的机器）
+
+如果宝塔已经装好 Node v22，忽略下面的分步说明，直接：
+
+```bash
+cd /www/wwwroot/你的站点目录        # server.js 所在这一层
+bash tools/install.sh 3d.novagnss.com
+```
+
+脚本会依次做：检查 Node 版本 → 装生产依赖（国内源，失败自动补编译工具）→ 生成 `.env`（随机
+SESSION_SECRET、SITE_URL、PORT）→ 建 logs 与上传目录并设权限 → pm2 拉起 → 自检 `/api/health`。
+已存在的 `.env` 只补缺失项，重复执行安全。
+
+脚本跑完只剩两件必须手点的事：**运行目录改成 `public`**、**站点开 SSL**。脚本末尾会把外网自检命令打出来。
+
+---
+
 ## 0. 服务器要求
 
 | 项目 | 要求 |
