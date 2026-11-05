@@ -14,7 +14,7 @@ const OUT_DIR = path.join(DIST, OUT_NAME);
 const EXCLUDE_DIRS = new Set([
   'node_modules', '.git', '.github', '.playwright-cli', '.zcode', '.workbuddy',
   'dist', 'output', 'ppt_build', 'ppt_delivery_40', 'ppt_demo_retract', 'ppt_lecture',
-  '教学资料', 'qa_render',
+  '教学资料', 'qa_render', '_unused-covers',
 ]);
 const EXCLUDE_FILES = new Set([
   '.DS_Store', '.env', '.zcodeignore', '.gitignore',
