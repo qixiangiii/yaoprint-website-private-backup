@@ -38,3 +38,6 @@ ppt_lecture/
 
 # Local QA render artifacts (generated PDF exports)
 qa_render/
+
+# 部署打包产物
+dist/

@@ -1,0 +1,39 @@
+宝塔站点配置里的「反向代理」内容参考（若使用宝塔「Node 项目」功能，反代会自动生成，无需手填）。
+
+要点只有三个：
+1. 把 X-Forwarded-Proto 传过去，否则生产模式下 HTTPS 判断错误，后台登录会失败。
+2. client_max_body_size 放大到 20m，否则后台上传大图会被 413 拦掉。
+3. Host 头保留原始域名，sitemap 与分享链接才正确。
+
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host  $host;
+
+    proxy_set_header Upgrade    $http_upgrade;
+    proxy_set_header Connection "upgrade";
+
+    proxy_connect_timeout 30s;
+    proxy_read_timeout    60s;
+    proxy_send_timeout    60s;
+
+    client_max_body_size 20m;
+}
+
+# 可选：让 Nginx 直接发静态文件，减轻 Node 压力（图片最多的站收益明显）。
+# 注意 alias 必须指向项目里的 public 目录。
+location ~* ^/(css|js|img|media)/ {
+    root /www/wwwroot/yaoprint/public;
+    expires 30d;
+    access_log off;
+    try_files $uri @node;
+}
+location @node {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_set_header Host $host;
+}

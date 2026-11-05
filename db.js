@@ -1,4 +1,5 @@
 // 起元星启 — 数据库初始化与连接
+require('./lib/env'); // 先加载 .env，保证下面读到的配置是最终值
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
