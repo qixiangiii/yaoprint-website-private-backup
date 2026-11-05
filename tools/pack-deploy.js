@@ -140,6 +140,11 @@ const notes = `起元星启官网 · 部署后必读
   3. 站点设置 → 对外电话 / 邮箱 / 详细地址（当前电话是手机号、邮箱是 gmail）
   4. support 页的「7×12 客服 / 48 小时响应 / 12 个月质保」若非实际承诺，改成实际值
 
+【服务器环境】
+  Node.js 18 及以上都能跑（有 v20/v22 更好）。一条命令装完并配好反代：
+    cd 站点目录 && bash tools/server-setup.sh 你的域名
+  Node 18 已停止安全维护，只在服务器升不上去（如 CentOS 7）时继续用。
+
 【数据库备份】
   sqlite3 data/yaoprint.db ".backup '/www/backup/yaoprint-$(date +%F).db'"
 

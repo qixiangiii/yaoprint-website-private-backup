@@ -6,7 +6,7 @@
 
 ## 极速通道（5 分钟，已装 Node 的机器）
 
-如果宝塔已经装好 Node v22，忽略下面的分步说明，直接：
+如果宝塔已经装好 Node（**v18 及以上**，v20/v22 更好），忽略下面的分步说明，直接：
 
 ```bash
 cd /www/wwwroot/你的站点目录        # server.js 所在这一层
@@ -29,15 +29,29 @@ bash tools/server-setup.sh 3d.novagnss.com
 | 项目 | 要求 |
 |---|---|
 | 系统 | CentOS 7+ / Ubuntu 20.04+ / Debian 11+（宝塔 8.0 以上） |
-| Node.js | **22（推荐）**，20 与 24 也可；低于 20 装不上 better-sqlite3 |
+| Node.js | **18 及以上**（推荐 20/22，18 也能跑；16 及以下不行） |
 | 内存 | 1 GB 起（512 MB 小机器也能跑，但要加 swap） |
 | 磁盘 | 500 MB 起 |
 | 时区 | **Asia/Shanghai**，见第 7 步，否则 sitemap 日期与订单号会差 8 小时 |
 
 宝塔面板先装两个东西：
 
-- 软件商店 → **Node.js 版本管理器** → 安装 v22
+- 软件商店 → **Node.js 版本管理器** → 安装 v20 或 v22（已装 v18 也能直接用，无需升级）
 - 软件商店 → **PM2 管理器**（用宝塔「Node 项目」功能的话可跳过）
+
+
+### 关于 Node 18
+
+项目原本锁定 `better-sqlite3@12`（要求 Node 20+），现在已降到 `11.10.0`，Node 18 可以直接跑：
+`npm install` 会直接下载 Node 18 对应的预编译二进制，不需要编译工具。实测 Node 18.20.8 下首页、
+`/api/*`、`/admin`、`sitemap.xml` 全部正常。
+
+什么时候必须停在 18：CentOS 7 的 glibc 是 2.17，Node 20 起要求 2.28，装不上去——这类机器用 v18 就行。
+能被升到 20/22（Ubuntu 20.04+、Debian 11+、CentOS 8+、Alma/Rocky）的，建议升：Node 18 已于
+2025 年 4 月停止安全维护，之后再无安全补丁。
+
+脚本的选择规则：把所有能找到的 node（PATH 里的、宝塔 `/www/server/nodejs/v*/bin/node`）都比一遍，
+取版本最高的那个来装依赖和跑服务，不会因为 PATH 里躺着旧版本而误用。
 
 ---
 
@@ -120,7 +134,7 @@ SITE_URL=https://你的域名
 | 项目名称 | `yaoprint` |
 | 项目目录 | `/www/wwwroot/yaoprint` |
 | 启动文件 | `server.js` |
-| Node 版本 | v22 |
+| Node 版本 | v18 及以上（推荐 v22；已装 v18 直接选 v18） |
 | 项目端口 | `3000`（与 .env 的 PORT 一致） |
 | 运行用户 | `www` |
 | 启动方式 | `pm2` |

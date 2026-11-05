@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^12.11.1",
+    "better-sqlite3": "^11.10.0",
     "compression": "^1.8.2",
     "express": "^4.21.0",
     "express-rate-limit": "^8.7.1",
@@ -36,6 +36,6 @@
     "terser": "^5.51.2"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18.0.0"
   }
 }

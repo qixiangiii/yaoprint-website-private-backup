@@ -13,16 +13,26 @@ ok()  { printf '  \033[1;32m✓\033[0m %s\n' "$*"; }
 warn(){ printf '  \033[1;33m!\033[0m %s\n' "$*"; }
 die() { printf '\n\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
 
-# ---------- 1. 找 Node，版本必须 >= 20 ----------
+# ---------- 1. 找 Node，版本必须 >= 18 ----------
 say "检查 Node.js"
-NODE_BIN="$(command -v node || true)"
-if [ -z "$NODE_BIN" ]; then
-  # 宝塔 Node 版本管理器装的 node 不在默认 PATH 里，找一下最新的
-  NODE_BIN="$(ls -1d /www/server/nodejs/v*/bin/node 2>/dev/null | sort -V | tail -1 || true)"
-fi
-[ -n "$NODE_BIN" ] || die "找不到 node。宝塔：软件商店 → Node.js 版本管理器 → 安装 v22，装完重新执行本脚本。"
+pick_node() {
+  # 收集所有可能的 node，取版本最高的那个（宝塔的 Node 版本管理器不一定进 PATH）
+  local cands=() p v best="" bestv=0
+  command -v node >/dev/null 2>&1 && cands+=("$(command -v node)")
+  for p in /www/server/nodejs/v*/bin/node /usr/local/bin/node /usr/bin/node; do
+    [ -x "$p" ] && cands+=("$p")
+  done
+  for p in ${cands[@]+"${cands[@]}"}; do
+    v="$("$p" -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+    if [ "${v:-0}" -gt "$bestv" ] 2>/dev/null; then bestv="$v"; best="$p"; fi
+  done
+  printf '%s' "$best"
+}
+NODE_BIN="$(pick_node)"
+[ -n "$NODE_BIN" ] || die "找不到 node。宝塔：软件商店 → Node.js 版本管理器 → 安装 v18 或 v20，装完重新执行本脚本。"
 NODE_MAJOR="$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')"
-[ "$NODE_MAJOR" -ge 20 ] || die "当前 Node 是 $("$NODE_BIN" -v)，低于 20 装不了 better-sqlite3。请装 v22 后重试，或用：$NODE_BIN 对应的 npm。"
+[ "$NODE_MAJOR" -ge 18 ] || die "当前 Node 是 $("$NODE_BIN" -v)，低于 18 跑不起来。请装 v18 或以上后重试。"
+[ "$NODE_MAJOR" -ge 20 ] || warn "Node $("$NODE_BIN" -v) 已停止安全维护，能跑；条件允许建议升到 v20/v22。"
 ok "node $("$NODE_BIN" -v) → $NODE_BIN"
 export PATH="$(dirname "$NODE_BIN"):$PATH"
 
@@ -32,9 +42,21 @@ ok "npm $("$NPM_BIN" -v)"
 
 # ---------- 2. 装依赖 ----------
 say "安装生产依赖（首次约 1–3 分钟）"
+need_install=0
 if [ -d node_modules/better-sqlite3 ]; then
-  ok "node_modules 已存在，跳过"
+  # 目录在不代表能用：换过 Node 大版本后，旧的预编译二进制会加载失败
+  if "$NODE_BIN" -e "require('better-sqlite3')" >/dev/null 2>&1; then
+    ok "node_modules 已存在且可用，跳过"
+  else
+    warn "已有 node_modules 与当前 Node（$("$NODE_BIN" -v)）不匹配，重新安装"
+    rm -rf node_modules
+    need_install=1
+  fi
 else
+  need_install=1
+fi
+
+if [ "$need_install" -eq 1 ]; then
   "$NPM_BIN" config set registry https://registry.npmmirror.com >/dev/null 2>&1 || true
   if ! "$NPM_BIN" install --omit=dev --no-audit --no-fund; then
     warn "安装失败，尝试装编译工具后重试 better-sqlite3"
@@ -42,6 +64,7 @@ else
     if command -v apt-get >/dev/null 2>&1; then apt-get install -y build-essential python3 >/dev/null 2>&1 || true; fi
     "$NPM_BIN" rebuild better-sqlite3 || die "better-sqlite3 仍装不上，见 DEPLOY.md 第 2 步。"
   fi
+  "$NODE_BIN" -e "require('better-sqlite3')" >/dev/null 2>&1 || die "better-sqlite3 装好后仍加载失败，请把上面的报错发我。"
   ok "依赖安装完成"
 fi
 [ -f data/yaoprint.db ] || die "缺少 data/yaoprint.db（站点内容全在这个文件里）。请确认上传的是解压后的完整目录。"

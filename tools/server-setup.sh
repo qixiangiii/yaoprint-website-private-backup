@@ -32,12 +32,24 @@ ok "$PROJ"
 
 # ---------- 2. Node ----------
 say "检查 Node.js"
-NODE_BIN="$(command -v node || true)"
-if [ -z "$NODE_BIN" ]; then
-  NODE_BIN="$(ls -1d /www/server/nodejs/v*/bin/node 2>/dev/null | sort -V | tail -1 || true)"
-fi
-[ -n "$NODE_BIN" ] || die "找不到 node。宝塔：软件商店 → Node.js 版本管理器 → 安装 v22，然后重跑本脚本。"
-[ "$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')" -ge 20 ] || die "Node 版本过低（$("$NODE_BIN" -v)），需要 20 以上。"
+pick_node() {
+  # 收集所有可能的 node，取版本最高的那个（宝塔的 Node 版本管理器不一定进 PATH）
+  local cands=() p v best="" bestv=0
+  command -v node >/dev/null 2>&1 && cands+=("$(command -v node)")
+  for p in /www/server/nodejs/v*/bin/node /usr/local/bin/node /usr/bin/node; do
+    [ -x "$p" ] && cands+=("$p")
+  done
+  for p in ${cands[@]+"${cands[@]}"}; do
+    v="$("$p" -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+    if [ "${v:-0}" -gt "$bestv" ] 2>/dev/null; then bestv="$v"; best="$p"; fi
+  done
+  printf '%s' "$best"
+}
+NODE_BIN="$(pick_node)"
+[ -n "$NODE_BIN" ] || die "找不到 node。宝塔：软件商店 → Node.js 版本管理器 → 安装 v18 或 v20，然后重跑本脚本。"
+NODE_MAJOR="$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')"
+[ "$NODE_MAJOR" -ge 18 ] || die "Node 版本过低（$("$NODE_BIN" -v)），需要 18 以上。"
+[ "$NODE_MAJOR" -ge 20 ] || warn "Node $("$NODE_BIN" -v) 已停止安全维护，能跑；条件允许建议升到 v20/v22。"
 export PATH="$(dirname "$NODE_BIN"):$PATH"
 NPM_BIN="$(command -v npm || echo "$(dirname "$NODE_BIN")/npm")"
 ok "node $("$NODE_BIN" -v) / npm $("$NPM_BIN" -v)"
@@ -45,9 +57,20 @@ ok "node $("$NODE_BIN" -v) / npm $("$NPM_BIN" -v)"
 # ---------- 3. 依赖 ----------
 say "安装生产依赖"
 cd "$PROJ"
+need_install=0
 if [ -d node_modules/better-sqlite3 ]; then
-  ok "已安装，跳过"
+  if "$NODE_BIN" -e "require('better-sqlite3')" >/dev/null 2>&1; then
+    ok "已安装且可用，跳过"
+  else
+    warn "已有 node_modules 与当前 Node（$("$NODE_BIN" -v)）不匹配，重新安装"
+    rm -rf node_modules
+    need_install=1
+  fi
 else
+  need_install=1
+fi
+
+if [ "$need_install" -eq 1 ]; then
   "$NPM_BIN" config set registry https://registry.npmmirror.com >/dev/null 2>&1 || true
   if ! "$NPM_BIN" install --omit=dev --no-audit --no-fund; then
     warn "安装失败，补编译工具后重试"
@@ -55,6 +78,7 @@ else
     command -v apt-get >/dev/null 2>&1 && apt-get install -y build-essential python3 >/dev/null 2>&1 || true
     "$NPM_BIN" rebuild better-sqlite3 || die "better-sqlite3 装不上，见 DEPLOY.md 第 2 步"
   fi
+  "$NODE_BIN" -e "require('better-sqlite3')" >/dev/null 2>&1 || die "better-sqlite3 装好后仍加载失败，把上面的报错发我"
   ok "依赖安装完成"
 fi
 
