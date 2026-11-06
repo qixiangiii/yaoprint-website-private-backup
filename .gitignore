@@ -47,3 +47,6 @@ _unused-covers/
 
 # 已弃用的旧素材（不参与部署）
 _unused-covers/
+
+# 本地备份归档
+backups/
